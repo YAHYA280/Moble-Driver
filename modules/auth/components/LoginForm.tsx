@@ -10,7 +10,7 @@ import { validateEmail, validatePassword } from "../../../utils/validators";
 
 export const LoginForm: React.FC = () => {
   const [email, setEmail] = useState("Loisbecket@gmail.com");
-  const [password, setPassword] = useState("*******");
+  const [password, setPassword] = useState("password123");
   const [rememberMe, setRememberMe] = useState(false);
   const [errors, setErrors] = useState<{ email?: string; password?: string }>(
     {}
@@ -38,7 +38,7 @@ export const LoginForm: React.FC = () => {
 
     try {
       await login({ email, password, rememberMe });
-      router.replace("/(tabs)/dashboard");
+      router.replace("/(tabs)");
     } catch (error) {
       Alert.alert("Error", "Login failed. Please try again.");
     }
