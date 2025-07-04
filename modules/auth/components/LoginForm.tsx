@@ -1,6 +1,13 @@
 import { router } from "expo-router";
-import React, { useState } from "react";
-import { Alert, StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import React, { useEffect, useRef, useState } from "react";
+import {
+  Alert,
+  Animated,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+} from "react-native";
 
 import { Button } from "../../../components/ui/Button";
 import { Checkbox } from "../../../components/ui/Checkbox";
@@ -17,6 +24,43 @@ export const LoginForm: React.FC = () => {
   );
 
   const { login, isLoading, error } = useAuthStore();
+
+  // Animation values for form elements
+  const titleFadeAnim = useRef(new Animated.Value(0)).current;
+  const formFadeAnim = useRef(new Animated.Value(0)).current;
+  const buttonFadeAnim = useRef(new Animated.Value(0)).current;
+
+  useEffect(() => {
+    // Stagger the animations for a smooth cascade effect
+    const titleAnimation = Animated.timing(titleFadeAnim, {
+      toValue: 1,
+      duration: 600,
+      useNativeDriver: true,
+    });
+
+    const formAnimation = Animated.timing(formFadeAnim, {
+      toValue: 1,
+      duration: 600,
+      useNativeDriver: true,
+    });
+
+    const buttonAnimation = Animated.timing(buttonFadeAnim, {
+      toValue: 1,
+      duration: 600,
+      useNativeDriver: true,
+    });
+
+    // Start animations with staggered delays
+    titleAnimation.start();
+
+    setTimeout(() => {
+      formAnimation.start();
+    }, 200);
+
+    setTimeout(() => {
+      buttonAnimation.start();
+    }, 400);
+  }, []);
 
   const validateForm = () => {
     const newErrors: { email?: string; password?: string } = {};
@@ -38,7 +82,7 @@ export const LoginForm: React.FC = () => {
 
     try {
       await login({ email, password, rememberMe });
-      router.replace("/(tabs)");
+      router.replace("/(tabs)/dashboard");
     } catch (error) {
       Alert.alert("Error", "Login failed. Please try again.");
     }
@@ -50,8 +94,8 @@ export const LoginForm: React.FC = () => {
 
   return (
     <View style={styles.container}>
-      {/* Title Section */}
-      <View style={styles.titleSection}>
+      {/* Animated Title Section */}
+      <Animated.View style={[styles.titleSection, { opacity: titleFadeAnim }]}>
         <Text style={styles.title}>Connexion</Text>
         <View style={styles.subtitleContainer}>
           <Text style={styles.subtitle}>Pas encore de compte ? </Text>
@@ -59,10 +103,10 @@ export const LoginForm: React.FC = () => {
             <Text style={styles.link}>Créer un compte</Text>
           </TouchableOpacity>
         </View>
-      </View>
+      </Animated.View>
 
-      {/* Form Section */}
-      <View style={styles.formSection}>
+      {/* Animated Form Section */}
+      <Animated.View style={[styles.formSection, { opacity: formFadeAnim }]}>
         <Input
           label="Adresse e-mail ou Nom d'utilisateur"
           value={email}
@@ -94,16 +138,21 @@ export const LoginForm: React.FC = () => {
             <Text style={styles.forgotPassword}>Mot de passe oublié ?</Text>
           </TouchableOpacity>
         </View>
-      </View>
+      </Animated.View>
 
+      {/* Error Message */}
       {error && (
-        <View style={styles.errorContainer}>
+        <Animated.View
+          style={[styles.errorContainer, { opacity: formFadeAnim }]}
+        >
           <Text style={styles.errorText}>{error}</Text>
-        </View>
+        </Animated.View>
       )}
 
-      {/* Buttons Section */}
-      <View style={styles.buttonsSection}>
+      {/* Animated Buttons Section */}
+      <Animated.View
+        style={[styles.buttonsSection, { opacity: buttonFadeAnim }]}
+      >
         <Button
           title="Se connecter"
           onPress={handleLogin}
@@ -123,7 +172,7 @@ export const LoginForm: React.FC = () => {
           variant="secondary"
           disabled={isLoading}
         />
-      </View>
+      </Animated.View>
     </View>
   );
 };
@@ -134,10 +183,10 @@ const styles = StyleSheet.create({
   },
   titleSection: {
     alignItems: "center",
-    marginBottom: 40,
+    marginBottom: 30,
   },
   title: {
-    fontSize: 36,
+    fontSize: 32,
     fontWeight: "bold",
     color: "#212b36",
     marginBottom: 12,
@@ -180,7 +229,8 @@ const styles = StyleSheet.create({
     textAlign: "center",
   },
   buttonsSection: {
-    gap: 16,
+    gap: 14,
+    marginTop: 10,
   },
   dividerContainer: {
     flexDirection: "row",
