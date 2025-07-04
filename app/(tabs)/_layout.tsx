@@ -9,24 +9,29 @@ const { width } = Dimensions.get("window");
 // Custom curved tab bar background with cutout
 const CurvedTabBarBackground = () => {
   const tabBarHeight = 88;
-  const curveRadius = 35; // Radius for the home button cutout
+  const curveRadius = 55;
+  const curveDepth = 33;
 
-  // Calculate the center position for the home button
   const centerX = width / 2;
 
-  // SVG path for the curved cutout
   const pathData = `
     M 0 24
     Q 0 0 24 0
-    L ${centerX - curveRadius - 20} 0
-    Q ${centerX - curveRadius} 0 ${centerX - curveRadius} ${curveRadius * 0.3}
-    Q ${centerX - curveRadius * 0.7} ${curveRadius * 0.8} ${centerX} ${
-    curveRadius * 0.8
+    L ${centerX - curveRadius - 35} 0
+    Q ${centerX - curveRadius - 5} 0 ${centerX - curveRadius + 5} ${
+    curveDepth * 0.4
   }
-    Q ${centerX + curveRadius * 0.7} ${curveRadius * 0.8} ${
-    centerX + curveRadius
-  } ${curveRadius * 0.3}
-    Q ${centerX + curveRadius} 0 ${centerX + curveRadius + 20} 0
+    Q ${centerX - curveRadius * 0.6} ${curveDepth * 1.2} ${
+    centerX - curveRadius * 0.3
+  } ${curveDepth * 1.4}
+    Q ${centerX - 12} ${curveDepth * 1.55} ${centerX} ${curveDepth * 1.55}
+    Q ${centerX + 12} ${curveDepth * 1.55} ${centerX + curveRadius * 0.3} ${
+    curveDepth * 1.4
+  }
+    Q ${centerX + curveRadius * 0.6} ${curveDepth * 1.2} ${
+    centerX + curveRadius - 5
+  } ${curveDepth * 0.4}
+    Q ${centerX + curveRadius + 5} 0 ${centerX + curveRadius + 30} 0
     L ${width - 24} 0
     Q ${width} 0 ${width} 24
     L ${width} ${tabBarHeight}
@@ -81,8 +86,8 @@ export default function TabLayout() {
             <View style={[styles.tabIcon, focused && styles.activeTab]}>
               <Ionicons
                 name="map"
-                size={22}
-                color={focused ? "#fff" : "#9ca3af"}
+                size={27}
+                color={focused ? "#fff" : "#2c2c2c"}
               />
             </View>
           ),
@@ -97,8 +102,8 @@ export default function TabLayout() {
             <View style={[styles.tabIcon, focused && styles.activeTab]}>
               <Ionicons
                 name="calendar"
-                size={22}
-                color={focused ? "#fff" : "#9ca3af"}
+                size={27}
+                color={focused ? "#fff" : "#2c2c2c"}
               />
             </View>
           ),
@@ -119,8 +124,8 @@ export default function TabLayout() {
             >
               <Ionicons
                 name="home"
-                size={26}
-                color={focused ? "#fff" : "#9ca3af"}
+                size={30}
+                color={focused ? "#fff" : "#2c2c2c"}
               />
             </View>
           ),
@@ -135,8 +140,8 @@ export default function TabLayout() {
             <View style={[styles.tabIcon, focused && styles.activeTab]}>
               <Ionicons
                 name="chatbubbles"
-                size={22}
-                color={focused ? "#fff" : "#9ca3af"}
+                size={27}
+                color={focused ? "#fff" : "#2c2c2c"}
               />
             </View>
           ),
@@ -151,8 +156,8 @@ export default function TabLayout() {
             <View style={[styles.tabIcon, focused && styles.activeTab]}>
               <Ionicons
                 name="person"
-                size={20}
-                color={focused ? "#fff" : "#9ca3af"}
+                size={27}
+                color={focused ? "#fff" : "#2c2c2c"}
               />
             </View>
           ),
@@ -195,14 +200,28 @@ const styles = StyleSheet.create({
     borderRadius: 24,
   },
   homeTab: {
-    width: 60,
-    height: 60,
-    borderRadius: 30,
-    marginTop: -30,
+    width: 70,
+    height: 70,
+    borderRadius: 40,
+    marginTop: -50,
     backgroundColor: "#f8fafc",
-    borderWidth: 4,
+    borderWidth: 2,
     borderColor: "#ffffff",
     zIndex: 10,
+    ...Platform.select({
+      ios: {
+        shadowColor: "#746cd4",
+        shadowOffset: {
+          width: 0,
+          height: 8,
+        },
+        shadowOpacity: 0.3,
+        shadowRadius: 20,
+      },
+      android: {
+        elevation: 15,
+      },
+    }),
   },
   activeTab: {
     backgroundColor: "#6366f1",
