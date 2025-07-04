@@ -1,4 +1,3 @@
-import { Ionicons } from "@expo/vector-icons";
 import React from "react";
 import { Dimensions, StyleSheet, Text, View } from "react-native";
 
@@ -11,26 +10,7 @@ export default function LoginScreen() {
   return (
     <Screen style={styles.container}>
       {/* Purple background header */}
-      <View style={styles.header}>
-        <View style={styles.statusBar}>
-          <Text style={styles.time}>9:41</Text>
-          <View style={styles.statusIcons}>
-            <Ionicons name="cellular" size={16} color="white" />
-            <Ionicons
-              name="wifi"
-              size={16}
-              color="white"
-              style={{ marginLeft: 4 }}
-            />
-            <Ionicons
-              name="battery-full"
-              size={16}
-              color="white"
-              style={{ marginLeft: 4 }}
-            />
-          </View>
-        </View>
-      </View>
+      <View style={styles.header}></View>
 
       {/* Main card */}
       <View style={styles.card}>
