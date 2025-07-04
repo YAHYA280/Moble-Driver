@@ -1,5 +1,5 @@
 import { create } from "zustand";
-import { AuthState, LoginCredentials, User } from "../types/auth";
+import { AuthState, LoginCredentials, User } from "../shared/types/auth";
 
 interface AuthStore extends AuthState {
   login: (credentials: LoginCredentials) => Promise<void>;

@@ -10,8 +10,8 @@ import {
   View,
 } from "react-native";
 
-import { Screen } from "../../components/layout/Screen";
-import { LoginForm } from "../../modules/auth/components/LoginForm";
+import { LoginForm } from "../../screens/auth/components/LoginForm";
+import { Screen } from "../../shared/components/layout/Screen";
 
 const { height } = Dimensions.get("window");
 

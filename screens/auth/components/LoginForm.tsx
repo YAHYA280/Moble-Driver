@@ -9,9 +9,9 @@ import {
   View,
 } from "react-native";
 
-import { Button } from "../../../components/ui/Button";
-import { Checkbox } from "../../../components/ui/Checkbox";
-import { Input } from "../../../components/ui/Input";
+import { Button } from "../../../shared/components/ui/Button";
+import { Checkbox } from "../../../shared/components/ui/Checkbox";
+import { Input } from "../../../shared/components/ui/Input";
 import { useAuthStore } from "../../../store/authStore";
 import { validateEmail, validatePassword } from "../../../utils/validators";
 
@@ -50,7 +50,6 @@ export const LoginForm: React.FC = () => {
       useNativeDriver: true,
     });
 
-    // Start animations with staggered delays
     titleAnimation.start();
 
     setTimeout(() => {
