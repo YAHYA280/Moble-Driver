@@ -1,6 +1,51 @@
+// app/(tabs)/_layout.tsx - Advanced version with curved cutout
 import { Ionicons } from "@expo/vector-icons";
 import { Tabs } from "expo-router";
-import { Platform, StyleSheet, View } from "react-native";
+import { Dimensions, Platform, StyleSheet, View } from "react-native";
+import Svg, { Path } from "react-native-svg";
+
+const { width } = Dimensions.get("window");
+
+// Custom curved tab bar background with cutout
+const CurvedTabBarBackground = () => {
+  const tabBarHeight = 88;
+  const curveRadius = 35; // Radius for the home button cutout
+
+  // Calculate the center position for the home button
+  const centerX = width / 2;
+
+  // SVG path for the curved cutout
+  const pathData = `
+    M 0 24
+    Q 0 0 24 0
+    L ${centerX - curveRadius - 20} 0
+    Q ${centerX - curveRadius} 0 ${centerX - curveRadius} ${curveRadius * 0.3}
+    Q ${centerX - curveRadius * 0.7} ${curveRadius * 0.8} ${centerX} ${
+    curveRadius * 0.8
+  }
+    Q ${centerX + curveRadius * 0.7} ${curveRadius * 0.8} ${
+    centerX + curveRadius
+  } ${curveRadius * 0.3}
+    Q ${centerX + curveRadius} 0 ${centerX + curveRadius + 20} 0
+    L ${width - 24} 0
+    Q ${width} 0 ${width} 24
+    L ${width} ${tabBarHeight}
+    L 0 ${tabBarHeight}
+    Z
+  `;
+
+  return (
+    <View style={styles.tabBarBackground}>
+      <Svg
+        width={width}
+        height={tabBarHeight}
+        style={StyleSheet.absoluteFillObject}
+      >
+        <Path d={pathData} fill="#ffffff" stroke="none" />
+      </Svg>
+    </View>
+  );
+};
 
 export default function TabLayout() {
   return (
@@ -19,7 +64,7 @@ export default function TabLayout() {
           shadowOpacity: 0,
           paddingBottom: 0,
         },
-        tabBarBackground: () => <View style={styles.tabBarBackground} />,
+        tabBarBackground: () => <CurvedTabBarBackground />,
         tabBarShowLabel: false,
         tabBarItemStyle: {
           height: 88,
@@ -74,7 +119,7 @@ export default function TabLayout() {
             >
               <Ionicons
                 name="home"
-                size={24}
+                size={26}
                 color={focused ? "#fff" : "#9ca3af"}
               />
             </View>
@@ -124,9 +169,6 @@ const styles = StyleSheet.create({
     left: 0,
     right: 0,
     height: 88,
-    backgroundColor: "#ffffff",
-    borderTopLeftRadius: 24,
-    borderTopRightRadius: 24,
     ...Platform.select({
       ios: {
         shadowColor: "#000000",
@@ -141,7 +183,7 @@ const styles = StyleSheet.create({
         elevation: 8,
       },
       web: {
-        boxShadow: "0 -4px 12px rgba(0, 0, 0, 0.08)",
+        filter: "drop-shadow(0 -4px 12px rgba(0, 0, 0, 0.08))",
       },
     }),
   },
@@ -153,13 +195,14 @@ const styles = StyleSheet.create({
     borderRadius: 24,
   },
   homeTab: {
-    width: 56,
-    height: 56,
-    borderRadius: 28,
-    marginTop: -16,
+    width: 60,
+    height: 60,
+    borderRadius: 30,
+    marginTop: -30,
     backgroundColor: "#f8fafc",
-    borderWidth: 3,
+    borderWidth: 4,
     borderColor: "#ffffff",
+    zIndex: 10,
   },
   activeTab: {
     backgroundColor: "#6366f1",
@@ -176,9 +219,6 @@ const styles = StyleSheet.create({
       android: {
         elevation: 6,
       },
-      web: {
-        boxShadow: "0 4px 8px rgba(99, 102, 241, 0.3)",
-      },
     }),
   },
   activeHomeTab: {
@@ -189,16 +229,16 @@ const styles = StyleSheet.create({
         shadowColor: "#6366f1",
         shadowOffset: {
           width: 0,
-          height: 6,
+          height: 8,
         },
         shadowOpacity: 0.4,
-        shadowRadius: 12,
+        shadowRadius: 16,
       },
       android: {
-        elevation: 8,
+        elevation: 12,
       },
       web: {
-        boxShadow: "0 6px 12px rgba(99, 102, 241, 0.4)",
+        boxShadow: "0 8px 16px rgba(99, 102, 241, 0.4)",
       },
     }),
   },

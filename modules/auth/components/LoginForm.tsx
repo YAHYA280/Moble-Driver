@@ -82,7 +82,7 @@ export const LoginForm: React.FC = () => {
 
     try {
       await login({ email, password, rememberMe });
-      router.replace("/(tabs)/index");
+      router.replace("/(tabs)/");
     } catch (error) {
       Alert.alert("Error", "Login failed. Please try again.");
     }
