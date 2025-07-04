@@ -1,5 +1,14 @@
 import React from "react";
-import { Dimensions, StyleSheet, Text, View } from "react-native";
+import {
+  Dimensions,
+  Keyboard,
+  KeyboardAvoidingView,
+  Platform,
+  StyleSheet,
+  Text,
+  TouchableWithoutFeedback,
+  View,
+} from "react-native";
 
 import { Screen } from "../../components/layout/Screen";
 import { LoginForm } from "../../modules/auth/components/LoginForm";
@@ -15,23 +24,31 @@ export default function LoginScreen() {
       {/* 50% White background */}
       <View style={styles.whiteBackground} />
 
-      {/* Content overlay */}
-      <Screen style={styles.screenContainer}>
-        {/* Purple background header */}
-        <View style={styles.header}></View>
+      {/* Content overlay with keyboard handling */}
+      <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+        <KeyboardAvoidingView
+          style={styles.keyboardAvoidingView}
+          behavior={Platform.OS === "ios" ? "padding" : "height"}
+          keyboardVerticalOffset={Platform.OS === "ios" ? 0 : 0}
+        >
+          <Screen style={styles.screenContainer}>
+            {/* Purple background header */}
+            <View style={styles.header}></View>
 
-        {/* Main card */}
-        <View style={styles.card}>
-          {/* Logo placeholder */}
-          <View style={styles.logoContainer}>
-            <View style={styles.logo}>
-              <Text style={styles.logoText}>LOGO</Text>
+            {/* Main card */}
+            <View style={styles.card}>
+              {/* Logo placeholder */}
+              <View style={styles.logoContainer}>
+                <View style={styles.logo}>
+                  <Text style={styles.logoText}>LOGO</Text>
+                </View>
+              </View>
+
+              <LoginForm />
             </View>
-          </View>
-
-          <LoginForm />
-        </View>
-      </Screen>
+          </Screen>
+        </KeyboardAvoidingView>
+      </TouchableWithoutFeedback>
     </View>
   );
 }
@@ -41,7 +58,9 @@ const styles = StyleSheet.create({
     flex: 1,
     position: "relative",
   },
-  // 50% Purple background
+  keyboardAvoidingView: {
+    flex: 1,
+  },
   purpleBackground: {
     position: "absolute",
     top: 0,
@@ -50,7 +69,6 @@ const styles = StyleSheet.create({
     height: height * 0.5,
     backgroundColor: "#746cd4",
   },
-  // 50% White background
   whiteBackground: {
     position: "absolute",
     top: height * 0.5,
@@ -68,22 +86,6 @@ const styles = StyleSheet.create({
     height: 120,
     paddingTop: 20,
   },
-  statusBar: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    paddingHorizontal: 20,
-    paddingTop: 10,
-  },
-  time: {
-    color: "white",
-    fontSize: 16,
-    fontWeight: "600",
-  },
-  statusIcons: {
-    flexDirection: "row",
-    alignItems: "center",
-  },
   card: {
     backgroundColor: "#fefeff",
     marginHorizontal: 30,
@@ -91,7 +93,6 @@ const styles = StyleSheet.create({
     borderRadius: 24,
     paddingHorizontal: 24,
     paddingVertical: 40,
-    // Enhanced shadow effects
     shadowColor: "#746cd4",
     shadowOffset: {
       width: 0,
@@ -102,7 +103,7 @@ const styles = StyleSheet.create({
     elevation: 15,
     borderWidth: 1,
     borderColor: "rgba(116, 108, 212, 0.05)",
-    minHeight: height * 0.8,
+    minHeight: height * 0.7,
   },
   logoContainer: {
     alignItems: "center",
