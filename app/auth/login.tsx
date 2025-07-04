@@ -13,23 +13,20 @@ import {
 import { Screen } from "../../components/layout/Screen";
 import { LoginForm } from "../../modules/auth/components/LoginForm";
 
-const { width, height } = Dimensions.get("window");
+const { height } = Dimensions.get("window");
 
 export default function LoginScreen() {
   return (
     <View style={styles.container}>
-      {/* 50% Purple background */}
       <View style={styles.purpleBackground} />
 
-      {/* 50% White background */}
       <View style={styles.whiteBackground} />
 
-      {/* Content overlay with keyboard handling */}
       <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
         <KeyboardAvoidingView
           style={styles.keyboardAvoidingView}
           behavior={Platform.OS === "ios" ? "padding" : "height"}
-          keyboardVerticalOffset={Platform.OS === "ios" ? 0 : 0}
+          keyboardVerticalOffset={Platform.OS === "ios" ? 0 : 3}
         >
           <Screen style={styles.screenContainer}>
             {/* Purple background header */}
@@ -99,7 +96,7 @@ const styles = StyleSheet.create({
       height: 8,
     },
     shadowOpacity: 0.25,
-    shadowRadius: 10,
+    shadowRadius: 5,
     elevation: 15,
     borderWidth: 1,
     borderColor: "rgba(116, 108, 212, 0.05)",
