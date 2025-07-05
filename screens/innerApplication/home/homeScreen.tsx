@@ -1,4 +1,3 @@
-import { FontAwesome } from "@expo/vector-icons";
 import { router } from "expo-router";
 import React from "react";
 import { ScrollView, StyleSheet, View } from "react-native";
@@ -123,13 +122,6 @@ export const HomeScreen: React.FC = () => {
         {/* Espacement pour le floating action button */}
         <View style={styles.bottomSpacing} />
       </ScrollView>
-
-      {/* Floating Action Button */}
-      <View style={styles.fabContainer}>
-        <View style={styles.fab}>
-          <FontAwesome name="home" size={24} color="#ffffff" />
-        </View>
-      </View>
     </SafeAreaView>
   );
 };
