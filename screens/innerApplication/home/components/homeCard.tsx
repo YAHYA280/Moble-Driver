@@ -1,6 +1,7 @@
 import { FontAwesome } from "@expo/vector-icons";
 import React from "react";
 import {
+  Platform,
   StyleSheet,
   Text,
   TouchableOpacity,
@@ -58,7 +59,7 @@ export const HomeCard: React.FC<HomeCardProps> = ({
       <View
         style={[styles.iconContainer, { backgroundColor: iconBackgroundColor }]}
       >
-        <FontAwesome name={icon} size={24} color={iconColor} />
+        <FontAwesome name={icon} size={26} color={iconColor} />
       </View>
 
       {/* Contenu texte */}
@@ -78,26 +79,36 @@ const styles = StyleSheet.create({
   container: {
     flexDirection: "row",
     alignItems: "center",
-    padding: 16,
+    padding: 20, // Augmenté de 16 à 20
     marginHorizontal: 16,
-    marginVertical: 6,
-    borderRadius: 12,
-    shadowColor: "#000",
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
-    shadowOpacity: 0.05,
-    shadowRadius: 4,
-    elevation: 2,
+    marginVertical: 8, // Augmenté de 6 à 8
+    borderRadius: 16, // Augmenté de 12 à 16
+    // Ombre améliorée selon le design
+    ...Platform.select({
+      ios: {
+        shadowColor: "#000",
+        shadowOffset: {
+          width: 0,
+          height: 4,
+        },
+        shadowOpacity: 0.1,
+        shadowRadius: 8,
+      },
+      android: {
+        elevation: 6,
+      },
+      web: {
+        boxShadow: "0 4px 12px rgba(0, 0, 0, 0.08)",
+      },
+    }),
   },
   disabled: {
     opacity: 0.6,
   },
   iconContainer: {
-    width: 48,
-    height: 48,
-    borderRadius: 12,
+    width: 56, // Augmenté de 48 à 56
+    height: 56, // Augmenté de 48 à 56
+    borderRadius: 16, // Augmenté de 12 à 16
     alignItems: "center",
     justifyContent: "center",
     marginRight: 16,
@@ -106,14 +117,16 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   title: {
-    fontSize: 16,
-    fontWeight: "600",
-    color: "#2c2c2c",
-    marginBottom: 4,
+    fontSize: 18, // Augmenté de 16 à 18
+    fontWeight: "700", // Augmenté de 600 à 700
+    color: "#1f2937", // Couleur plus foncée
+    marginBottom: 6, // Augmenté de 4 à 6
+    letterSpacing: 0.3, // Améliore la lisibilité
   },
   description: {
-    fontSize: 13,
-    color: "#81919a",
-    lineHeight: 18,
+    fontSize: 14, // Augmenté de 13 à 14
+    color: "#6b7280", // Couleur améliorée
+    lineHeight: 20, // Augmenté de 18 à 20
+    fontWeight: "400",
   },
 });

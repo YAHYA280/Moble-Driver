@@ -1,6 +1,7 @@
 import { FontAwesome } from "@expo/vector-icons";
 import React from "react";
 import {
+  Platform,
   StyleSheet,
   Text,
   TouchableOpacity,
@@ -15,7 +16,7 @@ type IconType = keyof typeof FontAwesome.glyphMap;
 interface IconButton {
   icon: IconType;
   onPress: () => void;
-  badge?: number; // Pour les notifications
+  badge?: number;
   size?: number;
   color?: string;
 }
@@ -25,12 +26,12 @@ interface HeaderProps {
   // Contenu principal
   title?: string;
   subtitle?: string;
-  emoji?: string; // Pour les emojis comme 👋 🚗 etc.
+  emoji?: string;
 
-  // Icône gauche (généralement retour ou menu)
+  // Icône gauche
   leftIcon?: IconButton;
 
-  // Icônes droite (peut être 1 ou 2 icônes)
+  // Icônes droite
   rightIcons?: IconButton[];
 
   // Styling
@@ -40,7 +41,7 @@ interface HeaderProps {
   style?: ViewStyle;
 
   // Comportement
-  onTitlePress?: () => void; // Si le titre est cliquable
+  onTitlePress?: () => void;
 }
 
 export const Header: React.FC<HeaderProps> = ({
@@ -50,7 +51,7 @@ export const Header: React.FC<HeaderProps> = ({
   leftIcon,
   rightIcons = [],
   backgroundColor = "#fefeff",
-  titleColor = "#2c2c2c",
+  titleColor = "#1f2937",
   subtitleColor = "#81919a",
   style,
   onTitlePress,
@@ -80,7 +81,7 @@ export const Header: React.FC<HeaderProps> = ({
     </TouchableOpacity>
   );
 
-  // Rendu du contenu central (titre + sous-titre + emoji)
+  // Rendu du contenu principal (titre aligné à gauche)
   const renderTitle = () => {
     if (!title && !subtitle) return <View style={styles.titleContainer} />;
 
@@ -117,7 +118,7 @@ export const Header: React.FC<HeaderProps> = ({
         {leftIcon && renderIconButton(leftIcon, -1)}
       </View>
 
-      {/* Section centre */}
+      {/* Section centre/titre (aligné à gauche maintenant) */}
       {renderTitle()}
 
       {/* Section droite */}
@@ -135,19 +136,34 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     paddingHorizontal: 16,
-    paddingVertical: 12,
+    paddingVertical: 16, // Remis à 16 pour l'espacement
     minHeight: 60,
-    shadowColor: "#000",
-    shadowOffset: {
-      width: 0,
-      height: 1,
-    },
-    shadowOpacity: 0.05,
-    shadowRadius: 3,
-    elevation: 2,
+    // Ombre de séparation plus visible
+    ...Platform.select({
+      ios: {
+        shadowColor: "#000",
+        shadowOffset: {
+          width: 0,
+          height: 4,
+        },
+        shadowOpacity: 0.15,
+        shadowRadius: 12,
+      },
+      android: {
+        elevation: 8,
+      },
+      web: {
+        boxShadow: "0 4px 16px rgba(0, 0, 0, 0.12)",
+      },
+    }),
+    // Bordure plus visible en bas
+    borderBottomWidth: 1,
+    borderBottomColor: "#e2e8f0",
+    // Z-index pour s'assurer que l'ombre apparaît au-dessus du contenu
+    zIndex: 10,
   },
   leftSection: {
-    width: 50,
+    width: 30,
     alignItems: "flex-start",
   },
   rightSection: {
@@ -159,23 +175,23 @@ const styles = StyleSheet.create({
   },
   titleContainer: {
     flex: 1,
-    alignItems: "center",
+    alignItems: "flex-start",
     paddingHorizontal: 16,
   },
   titleRow: {
     flexDirection: "row",
     alignItems: "center",
-    justifyContent: "center",
+    justifyContent: "flex-start",
   },
   title: {
-    fontSize: 18,
-    fontWeight: "600",
-    textAlign: "center",
+    fontSize: 20,
+    fontWeight: "700",
+    textAlign: "left",
   },
   subtitle: {
     fontSize: 14,
     fontWeight: "400",
-    textAlign: "center",
+    textAlign: "left",
     marginTop: 2,
   },
   emoji: {
