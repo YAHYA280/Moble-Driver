@@ -9,10 +9,8 @@ import {
   ViewStyle,
 } from "react-native";
 
-// Types pour les icônes Font Awesome
 type IconType = keyof typeof FontAwesome.glyphMap;
 
-// Interface pour un bouton d'icône
 interface IconButton {
   icon: IconType;
   onPress: () => void;
@@ -21,42 +19,32 @@ interface IconButton {
   color?: string;
 }
 
-// Interface principale du Header
-interface HeaderProps {
-  // Contenu principal
-  title?: string;
+interface HomeHeaderProps {
+  title: string;
   subtitle?: string;
   emoji?: string;
 
-  // Icône gauche
-  leftIcon?: IconButton;
-
-  // Icônes droite
   rightIcons?: IconButton[];
 
-  // Styling
   backgroundColor?: string;
   titleColor?: string;
   subtitleColor?: string;
   style?: ViewStyle;
 
-  // Comportement
   onTitlePress?: () => void;
 }
 
-export const Header: React.FC<HeaderProps> = ({
+export const HomeHeader: React.FC<HomeHeaderProps> = ({
   title,
   subtitle,
   emoji,
-  leftIcon,
   rightIcons = [],
-  backgroundColor = "#fefeff",
+  backgroundColor = "#f8f9fa",
   titleColor = "#1f2937",
   subtitleColor = "#81919a",
   style,
   onTitlePress,
 }) => {
-  // Rendu d'un bouton d'icône avec badge optionnel
   const renderIconButton = (iconButton: IconButton, index: number) => (
     <TouchableOpacity
       key={index}
@@ -81,10 +69,7 @@ export const Header: React.FC<HeaderProps> = ({
     </TouchableOpacity>
   );
 
-  // Rendu du contenu principal (titre aligné à gauche)
   const renderTitle = () => {
-    if (!title && !subtitle) return <View style={styles.titleContainer} />;
-
     const TitleWrapper = onTitlePress ? TouchableOpacity : View;
 
     return (
@@ -113,15 +98,8 @@ export const Header: React.FC<HeaderProps> = ({
 
   return (
     <View style={[styles.container, { backgroundColor }, style]}>
-      {/* Section gauche */}
-      <View style={styles.leftSection}>
-        {leftIcon && renderIconButton(leftIcon, -1)}
-      </View>
-
-      {/* Section centre/titre (aligné à gauche maintenant) */}
       {renderTitle()}
 
-      {/* Section droite */}
       <View style={styles.rightSection}>
         {rightIcons.map((iconButton, index) =>
           renderIconButton(iconButton, index)
@@ -136,45 +114,38 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     paddingHorizontal: 16,
-    paddingVertical: 16, // Remis à 16 pour l'espacement
+    paddingVertical: 16,
     minHeight: 60,
-    // Ombre de séparation plus visible
     ...Platform.select({
       ios: {
         shadowColor: "#000",
         shadowOffset: {
           width: 0,
-          height: 4,
+          height: 2,
         },
-        shadowOpacity: 0.15,
-        shadowRadius: 12,
+        shadowOpacity: 0.08,
+        shadowRadius: 8,
       },
       android: {
-        elevation: 8,
+        elevation: 4,
       },
       web: {
-        boxShadow: "0 4px 16px rgba(0, 0, 0, 0.12)",
+        boxShadow: "0 2px 8px rgba(0, 0, 0, 0.08)",
       },
     }),
-    borderBottomWidth: 1,
-    borderBottomColor: "#e2e8f0",
+    borderBottomWidth: 0,
     zIndex: 10,
   },
-  leftSection: {
-    width: 30,
-    alignItems: "flex-start",
-  },
   rightSection: {
-    width: 100,
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "flex-end",
     gap: 12,
+    marginLeft: "auto",
   },
   titleContainer: {
     flex: 1,
     alignItems: "flex-start",
-    paddingHorizontal: 16,
   },
   titleRow: {
     flexDirection: "row",
@@ -182,7 +153,7 @@ const styles = StyleSheet.create({
     justifyContent: "flex-start",
   },
   title: {
-    fontSize: 20,
+    fontSize: 22,
     fontWeight: "700",
     textAlign: "left",
   },
@@ -193,8 +164,8 @@ const styles = StyleSheet.create({
     marginTop: 2,
   },
   emoji: {
-    fontSize: 18,
-    marginLeft: 6,
+    fontSize: 20,
+    marginLeft: 8,
   },
   iconButton: {
     width: 44,
@@ -202,6 +173,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
     borderRadius: 22,
+    backgroundColor: "rgba(255, 255, 255, 0.7)",
   },
   iconContainer: {
     position: "relative",
@@ -217,6 +189,20 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
     paddingHorizontal: 4,
+    ...Platform.select({
+      ios: {
+        shadowColor: "#ff4444",
+        shadowOffset: {
+          width: 0,
+          height: 2,
+        },
+        shadowOpacity: 0.3,
+        shadowRadius: 4,
+      },
+      android: {
+        elevation: 3,
+      },
+    }),
   },
   badgeText: {
     color: "white",

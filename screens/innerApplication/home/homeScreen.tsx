@@ -2,8 +2,8 @@ import { router } from "expo-router";
 import React, { useEffect, useRef } from "react";
 import { Animated, ScrollView, StyleSheet, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { Header } from "../../../shared/components/ui/Header";
 import { HomeCard } from "./components/homeCard";
+import { HomeHeader } from "./components/homeHeader";
 
 export const HomeScreen: React.FC = () => {
   // Animation values
@@ -82,7 +82,7 @@ export const HomeScreen: React.FC = () => {
 
   return (
     <SafeAreaView style={styles.container}>
-      {/* Header avec animation */}
+      {/* Header avec animation - utilisant le nouveau HomeHeader */}
       <Animated.View
         style={[
           styles.headerContainer,
@@ -92,18 +92,16 @@ export const HomeScreen: React.FC = () => {
           },
         ]}
       >
-        <Header
+        <HomeHeader
           title="Menu des options"
           rightIcons={[
             {
               icon: "bell",
               onPress: handleNotificationPress,
-              badge: 1,
+              badge: 3, // Exemple de badge
               color: "#2c2c2c",
             },
           ]}
-          backgroundColor="#fefeff"
-          style={styles.header}
         />
       </Animated.View>
 
@@ -286,12 +284,6 @@ const styles = StyleSheet.create({
   headerContainer: {
     zIndex: 10,
   },
-  header: {
-    borderBottomWidth: 0,
-    elevation: 0,
-    shadowOpacity: 0,
-    backgroundColor: "#f8f9fa",
-  },
   content: {
     flex: 1,
   },
@@ -307,28 +299,5 @@ const styles = StyleSheet.create({
   },
   bottomSpacing: {
     height: 80,
-  },
-  fabContainer: {
-    position: "absolute",
-    bottom: 20,
-    left: 0,
-    right: 0,
-    alignItems: "center",
-  },
-  fab: {
-    width: 56,
-    height: 56,
-    borderRadius: 28,
-    backgroundColor: "#6366f1",
-    alignItems: "center",
-    justifyContent: "center",
-    shadowColor: "#6366f1",
-    shadowOffset: {
-      width: 0,
-      height: 4,
-    },
-    shadowOpacity: 0.3,
-    shadowRadius: 8,
-    elevation: 8,
   },
 });
