@@ -1,3 +1,4 @@
+import { LogoVSN } from "@/shared/components/ui/logoVSN";
 import { router } from "expo-router";
 import React, { useEffect, useRef } from "react";
 import {
@@ -42,7 +43,6 @@ export const LoginHeader: React.FC = () => {
 
   return (
     <View style={styles.container}>
-      {/* Logo animé */}
       <Animated.View
         style={[
           styles.logoContainer,
@@ -53,11 +53,10 @@ export const LoginHeader: React.FC = () => {
         ]}
       >
         <View style={styles.logo}>
-          <logoVSN />
+          <LogoVSN width={129} height={116} />
         </View>
       </Animated.View>
 
-      {/* Section titre animée */}
       <Animated.View
         style={[
           styles.titleSection,
@@ -90,7 +89,6 @@ const styles = StyleSheet.create({
   logo: {
     width: 80,
     height: 80,
-    backgroundColor: "#f0f0f0",
     borderRadius: 40,
     justifyContent: "center",
     alignItems: "center",
