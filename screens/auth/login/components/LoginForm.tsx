@@ -8,12 +8,11 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
-
-import { Button } from "../../../shared/components/ui/Button";
-import { Checkbox } from "../../../shared/components/ui/Checkbox";
-import { Input } from "../../../shared/components/ui/Input";
-import { useAuthStore } from "../../../store/authStore";
-import { validateEmail, validatePassword } from "../../../utils/validators";
+import { Button } from "../../../../shared/components/ui/Button";
+import { Checkbox } from "../../../../shared/components/ui/Checkbox";
+import { Input } from "../../../../shared/components/ui/Input";
+import { useAuthStore } from "../../../../store/authStore";
+import { validateEmail, validatePassword } from "../../../../utils/validators";
 
 export const LoginForm: React.FC = () => {
   const [email, setEmail] = useState("Loisbecket@gmail.com");
@@ -26,18 +25,11 @@ export const LoginForm: React.FC = () => {
   const { login, isLoading, error } = useAuthStore();
 
   // Animation values for form elements
-  const titleFadeAnim = useRef(new Animated.Value(0)).current;
   const formFadeAnim = useRef(new Animated.Value(0)).current;
   const buttonFadeAnim = useRef(new Animated.Value(0)).current;
 
   useEffect(() => {
     // Stagger the animations for a smooth cascade effect
-    const titleAnimation = Animated.timing(titleFadeAnim, {
-      toValue: 1,
-      duration: 600,
-      useNativeDriver: true,
-    });
-
     const formAnimation = Animated.timing(formFadeAnim, {
       toValue: 1,
       duration: 600,
@@ -50,11 +42,7 @@ export const LoginForm: React.FC = () => {
       useNativeDriver: true,
     });
 
-    titleAnimation.start();
-
-    setTimeout(() => {
-      formAnimation.start();
-    }, 200);
+    formAnimation.start();
 
     setTimeout(() => {
       buttonAnimation.start();
@@ -81,29 +69,14 @@ export const LoginForm: React.FC = () => {
 
     try {
       await login({ email, password, rememberMe });
-      router.replace("/(tabs)");
+      router.replace("/(tabs)"); // Fixed routing to tabs
     } catch (error) {
       Alert.alert("Error", "Login failed. Please try again.");
     }
   };
 
-  const handleGoogleLogin = () => {
-    Alert.alert("Google Login", "Google login not implemented yet");
-  };
-
   return (
     <View style={styles.container}>
-      {/* Animated Title Section */}
-      <Animated.View style={[styles.titleSection, { opacity: titleFadeAnim }]}>
-        <Text style={styles.title}>Connexion</Text>
-        <View style={styles.subtitleContainer}>
-          <Text style={styles.subtitle}>Pas encore de compte ? </Text>
-          <TouchableOpacity onPress={() => router.push("/auth/register")}>
-            <Text style={styles.link}>Créer un compte</Text>
-          </TouchableOpacity>
-        </View>
-      </Animated.View>
-
       {/* Animated Form Section */}
       <Animated.View style={[styles.formSection, { opacity: formFadeAnim }]}>
         <Input
@@ -148,7 +121,7 @@ export const LoginForm: React.FC = () => {
         </Animated.View>
       )}
 
-      {/* Animated Buttons Section */}
+      {/* Animated Buttons Section - REMOVED GOOGLE BUTTON */}
       <Animated.View
         style={[styles.buttonsSection, { opacity: buttonFadeAnim }]}
       >
@@ -156,19 +129,6 @@ export const LoginForm: React.FC = () => {
           title="Se connecter"
           onPress={handleLogin}
           loading={isLoading}
-          disabled={isLoading}
-        />
-
-        <View style={styles.dividerContainer}>
-          <View style={styles.divider} />
-          <Text style={styles.dividerText}>Ou</Text>
-          <View style={styles.divider} />
-        </View>
-
-        <Button
-          title="Continue avec Google"
-          onPress={handleGoogleLogin}
-          variant="secondary"
           disabled={isLoading}
         />
       </Animated.View>
@@ -179,31 +139,6 @@ export const LoginForm: React.FC = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-  },
-  titleSection: {
-    alignItems: "center",
-    marginBottom: 30,
-  },
-  title: {
-    fontSize: 32,
-    fontWeight: "bold",
-    color: "#212b36",
-    marginBottom: 12,
-  },
-  subtitleContainer: {
-    flexDirection: "row",
-    alignItems: "center",
-  },
-  subtitle: {
-    fontSize: 12,
-    color: "#81919a",
-    fontWeight: "500",
-  },
-  link: {
-    fontSize: 12,
-    color: "#746cd4",
-    fontWeight: "600",
-    textDecorationLine: "underline",
   },
   formSection: {
     marginBottom: 20,
@@ -228,21 +163,6 @@ const styles = StyleSheet.create({
     textAlign: "center",
   },
   buttonsSection: {
-    gap: 14,
     marginTop: 10,
-  },
-  dividerContainer: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 16,
-  },
-  divider: {
-    flex: 1,
-    height: 1,
-    backgroundColor: "#edf1f3",
-  },
-  dividerText: {
-    fontSize: 12,
-    color: "#81919a",
   },
 });

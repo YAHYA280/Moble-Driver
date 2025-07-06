@@ -1,45 +1,58 @@
-import { router } from "expo-router";
 import React from "react";
-import { StyleSheet, Text, View } from "react-native";
-import { Screen } from "../../shared/components/layout/Screen";
-import { Button } from "../../shared/components/ui/Button";
+import {
+  Dimensions,
+  Keyboard,
+  KeyboardAvoidingView,
+  Platform,
+  StyleSheet,
+  TouchableWithoutFeedback,
+  View,
+} from "react-native";
+import { ForgotPasswordScreen } from "../../screens/auth/forgotPassword/forgotPasswordScreen";
 
-export default function ForgotPasswordScreen() {
+const { height } = Dimensions.get("window");
+
+export default function ForgotPassword() {
   return (
-    <Screen style={styles.container}>
-      <View style={styles.content}>
-        <Text style={styles.title}>Forgot Password</Text>
-        <Text style={styles.subtitle}>Reset your password</Text>
+    <View style={styles.container}>
+      <View style={styles.purpleBackground} />
+      <View style={styles.whiteBackground} />
 
-        <Button
-          title="Back to Login"
-          onPress={() => router.back()}
-          variant="outline"
-        />
-      </View>
-    </Screen>
+      <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+        <KeyboardAvoidingView
+          style={styles.keyboardAvoidingView}
+          behavior={Platform.OS === "ios" ? "padding" : "height"}
+          keyboardVerticalOffset={Platform.OS === "ios" ? 0 : 3}
+        >
+          <ForgotPasswordScreen />
+        </KeyboardAvoidingView>
+      </TouchableWithoutFeedback>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
+    flex: 1,
+    position: "relative",
+  },
+  keyboardAvoidingView: {
+    flex: 1,
+  },
+  purpleBackground: {
+    position: "absolute",
+    top: 0,
+    left: 0,
+    right: 0,
+    height: height * 0.5,
     backgroundColor: "#746cd4",
   },
-  content: {
-    flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
-    padding: 20,
-  },
-  title: {
-    fontSize: 24,
-    fontWeight: "bold",
-    color: "white",
-    marginBottom: 10,
-  },
-  subtitle: {
-    fontSize: 16,
-    color: "white",
-    marginBottom: 30,
+  whiteBackground: {
+    position: "absolute",
+    top: height * 0.5,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: "#ffffff",
   },
 });

@@ -5,21 +5,18 @@ import {
   KeyboardAvoidingView,
   Platform,
   StyleSheet,
-  Text,
   TouchableWithoutFeedback,
   View,
 } from "react-native";
 
-import { LoginForm } from "../../screens/auth/components/LoginForm";
-import { Screen } from "../../shared/components/layout/Screen";
+import { LoginScreen } from "../../screens/auth/login/loginScreen";
 
 const { height } = Dimensions.get("window");
 
-export default function LoginScreen() {
+export default function Login() {
   return (
     <View style={styles.container}>
       <View style={styles.purpleBackground} />
-
       <View style={styles.whiteBackground} />
 
       <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
@@ -28,22 +25,7 @@ export default function LoginScreen() {
           behavior={Platform.OS === "ios" ? "padding" : "height"}
           keyboardVerticalOffset={Platform.OS === "ios" ? 0 : 3}
         >
-          <Screen style={styles.screenContainer}>
-            {/* Purple background header */}
-            <View style={styles.header}></View>
-
-            {/* Main card */}
-            <View style={styles.card}>
-              {/* Logo placeholder */}
-              <View style={styles.logoContainer}>
-                <View style={styles.logo}>
-                  <Text style={styles.logoText}>LOGO</Text>
-                </View>
-              </View>
-
-              <LoginForm />
-            </View>
-          </Screen>
+          <LoginScreen />
         </KeyboardAvoidingView>
       </TouchableWithoutFeedback>
     </View>
@@ -73,50 +55,5 @@ const styles = StyleSheet.create({
     right: 0,
     bottom: 0,
     backgroundColor: "#ffffff",
-  },
-  screenContainer: {
-    backgroundColor: "transparent",
-    flex: 1,
-  },
-  header: {
-    backgroundColor: "transparent",
-    height: 120,
-    paddingTop: 20,
-  },
-  card: {
-    backgroundColor: "#fefeff",
-    marginHorizontal: 30,
-    marginTop: -50,
-    borderRadius: 24,
-    paddingHorizontal: 24,
-    paddingVertical: 40,
-    shadowColor: "#746cd4",
-    shadowOffset: {
-      width: 0,
-      height: 8,
-    },
-    shadowOpacity: 0.25,
-    shadowRadius: 5,
-    elevation: 15,
-    borderWidth: 1,
-    borderColor: "rgba(116, 108, 212, 0.05)",
-    minHeight: height * 0.7,
-  },
-  logoContainer: {
-    alignItems: "center",
-    marginBottom: 40,
-  },
-  logo: {
-    width: 80,
-    height: 80,
-    backgroundColor: "#f0f0f0",
-    borderRadius: 40,
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  logoText: {
-    fontSize: 12,
-    fontWeight: "600",
-    color: "#666",
   },
 });
