@@ -8,6 +8,7 @@ import {
   View,
   ViewStyle,
 } from "react-native";
+import { useThemeColors } from "../../../../hooks/useTheme";
 
 type IconType = keyof typeof FontAwesome.glyphMap;
 
@@ -39,12 +40,14 @@ export const HomeHeader: React.FC<HomeHeaderProps> = ({
   subtitle,
   emoji,
   rightIcons = [],
-  backgroundColor = "#f8f9fa",
-  titleColor = "#1f2937",
-  subtitleColor = "#81919a",
+  backgroundColor,
+  titleColor,
+  subtitleColor,
   style,
   onTitlePress,
 }) => {
+  const colors = useThemeColors();
+
   const renderIconButton = (iconButton: IconButton, index: number) => (
     <TouchableOpacity
       key={index}
@@ -56,7 +59,7 @@ export const HomeHeader: React.FC<HomeHeaderProps> = ({
         <FontAwesome
           name={iconButton.icon}
           size={iconButton.size || 24}
-          color={iconButton.color || "#2c2c2c"}
+          color={iconButton.color || colors.icon}
         />
         {iconButton.badge && iconButton.badge > 0 && (
           <View style={styles.badge}>
@@ -79,14 +82,20 @@ export const HomeHeader: React.FC<HomeHeaderProps> = ({
         activeOpacity={onTitlePress ? 0.7 : 1}
       >
         <View style={styles.titleRow}>
-          <Text style={[styles.title, { color: titleColor }]} numberOfLines={1}>
+          <Text
+            style={[styles.title, { color: titleColor || colors.text }]}
+            numberOfLines={1}
+          >
             {title}
           </Text>
           {emoji && <Text style={styles.emoji}>{emoji}</Text>}
         </View>
         {subtitle && (
           <Text
-            style={[styles.subtitle, { color: subtitleColor }]}
+            style={[
+              styles.subtitle,
+              { color: subtitleColor || colors.textSecondary },
+            ]}
             numberOfLines={1}
           >
             {subtitle}
@@ -96,8 +105,115 @@ export const HomeHeader: React.FC<HomeHeaderProps> = ({
     );
   };
 
+  const styles = StyleSheet.create({
+    container: {
+      flexDirection: "row",
+      alignItems: "center",
+      paddingHorizontal: 16,
+      paddingVertical: 16,
+      minHeight: 60,
+      backgroundColor: backgroundColor || colors.headerBackground,
+      ...Platform.select({
+        ios: {
+          shadowColor: colors.shadow,
+          shadowOffset: {
+            width: 0,
+            height: 2,
+          },
+          shadowOpacity: colors.isDark ? 0.3 : 0.08,
+          shadowRadius: 8,
+        },
+        android: {
+          elevation: 4,
+        },
+        web: {
+          boxShadow: colors.isDark
+            ? "0 2px 8px rgba(0, 0, 0, 0.3)"
+            : "0 2px 8px rgba(0, 0, 0, 0.08)",
+        },
+      }),
+      borderBottomWidth: 0,
+      zIndex: 10,
+    },
+    rightSection: {
+      flexDirection: "row",
+      alignItems: "center",
+      justifyContent: "flex-end",
+      gap: 12,
+      marginLeft: "auto",
+    },
+    titleContainer: {
+      flex: 1,
+      alignItems: "flex-start",
+    },
+    titleRow: {
+      flexDirection: "row",
+      alignItems: "center",
+      justifyContent: "flex-start",
+    },
+    title: {
+      fontSize: 22,
+      fontWeight: "700",
+      textAlign: "left",
+    },
+    subtitle: {
+      fontSize: 14,
+      fontWeight: "400",
+      textAlign: "left",
+      marginTop: 2,
+    },
+    emoji: {
+      fontSize: 20,
+      marginLeft: 8,
+    },
+    iconButton: {
+      width: 44,
+      height: 44,
+      alignItems: "center",
+      justifyContent: "center",
+      borderRadius: 22,
+      backgroundColor: colors.isDark
+        ? colors.surfaceSecondary
+        : "rgba(255, 255, 255, 0.7)",
+    },
+    iconContainer: {
+      position: "relative",
+    },
+    badge: {
+      position: "absolute",
+      top: -8,
+      right: -8,
+      backgroundColor: colors.error,
+      borderRadius: 10,
+      minWidth: 20,
+      height: 20,
+      alignItems: "center",
+      justifyContent: "center",
+      paddingHorizontal: 4,
+      ...Platform.select({
+        ios: {
+          shadowColor: colors.error,
+          shadowOffset: {
+            width: 0,
+            height: 2,
+          },
+          shadowOpacity: 0.3,
+          shadowRadius: 4,
+        },
+        android: {
+          elevation: 3,
+        },
+      }),
+    },
+    badgeText: {
+      color: "white",
+      fontSize: 12,
+      fontWeight: "600",
+    },
+  });
+
   return (
-    <View style={[styles.container, { backgroundColor }, style]}>
+    <View style={[styles.container, style]}>
       {renderTitle()}
 
       <View style={styles.rightSection}>
@@ -108,105 +224,3 @@ export const HomeHeader: React.FC<HomeHeaderProps> = ({
     </View>
   );
 };
-
-const styles = StyleSheet.create({
-  container: {
-    flexDirection: "row",
-    alignItems: "center",
-    paddingHorizontal: 16,
-    paddingVertical: 16,
-    minHeight: 60,
-    ...Platform.select({
-      ios: {
-        shadowColor: "#000",
-        shadowOffset: {
-          width: 0,
-          height: 2,
-        },
-        shadowOpacity: 0.08,
-        shadowRadius: 8,
-      },
-      android: {
-        elevation: 4,
-      },
-      web: {
-        boxShadow: "0 2px 8px rgba(0, 0, 0, 0.08)",
-      },
-    }),
-    borderBottomWidth: 0,
-    zIndex: 10,
-  },
-  rightSection: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "flex-end",
-    gap: 12,
-    marginLeft: "auto",
-  },
-  titleContainer: {
-    flex: 1,
-    alignItems: "flex-start",
-  },
-  titleRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "flex-start",
-  },
-  title: {
-    fontSize: 22,
-    fontWeight: "700",
-    textAlign: "left",
-  },
-  subtitle: {
-    fontSize: 14,
-    fontWeight: "400",
-    textAlign: "left",
-    marginTop: 2,
-  },
-  emoji: {
-    fontSize: 20,
-    marginLeft: 8,
-  },
-  iconButton: {
-    width: 44,
-    height: 44,
-    alignItems: "center",
-    justifyContent: "center",
-    borderRadius: 22,
-    backgroundColor: "rgba(255, 255, 255, 0.7)",
-  },
-  iconContainer: {
-    position: "relative",
-  },
-  badge: {
-    position: "absolute",
-    top: -8,
-    right: -8,
-    backgroundColor: "#ff4444",
-    borderRadius: 10,
-    minWidth: 20,
-    height: 20,
-    alignItems: "center",
-    justifyContent: "center",
-    paddingHorizontal: 4,
-    ...Platform.select({
-      ios: {
-        shadowColor: "#ff4444",
-        shadowOffset: {
-          width: 0,
-          height: 2,
-        },
-        shadowOpacity: 0.3,
-        shadowRadius: 4,
-      },
-      android: {
-        elevation: 3,
-      },
-    }),
-  },
-  badgeText: {
-    color: "white",
-    fontSize: 12,
-    fontWeight: "600",
-  },
-});

@@ -8,6 +8,7 @@ import {
   View,
   ViewStyle,
 } from "react-native";
+import { useThemeColors } from "../../../hooks/useTheme";
 
 // Types pour les icônes Font Awesome
 type IconType = keyof typeof FontAwesome.glyphMap;
@@ -50,12 +51,14 @@ export const Header: React.FC<HeaderProps> = ({
   emoji,
   leftIcon,
   rightIcons = [],
-  backgroundColor = "#fefeff",
-  titleColor = "#1f2937",
-  subtitleColor = "#81919a",
+  backgroundColor,
+  titleColor,
+  subtitleColor,
   style,
   onTitlePress,
 }) => {
+  const colors = useThemeColors();
+
   // Rendu d'un bouton d'icône avec badge optionnel
   const renderIconButton = (iconButton: IconButton, index: number) => (
     <TouchableOpacity
@@ -68,7 +71,7 @@ export const Header: React.FC<HeaderProps> = ({
         <FontAwesome
           name={iconButton.icon}
           size={iconButton.size || 24}
-          color={iconButton.color || "#2c2c2c"}
+          color={iconButton.color || colors.icon}
         />
         {iconButton.badge && iconButton.badge > 0 && (
           <View style={styles.badge}>
@@ -94,14 +97,20 @@ export const Header: React.FC<HeaderProps> = ({
         activeOpacity={onTitlePress ? 0.7 : 1}
       >
         <View style={styles.titleRow}>
-          <Text style={[styles.title, { color: titleColor }]} numberOfLines={1}>
+          <Text
+            style={[styles.title, { color: titleColor || colors.text }]}
+            numberOfLines={1}
+          >
             {title}
           </Text>
           {emoji && <Text style={styles.emoji}>{emoji}</Text>}
         </View>
         {subtitle && (
           <Text
-            style={[styles.subtitle, { color: subtitleColor }]}
+            style={[
+              styles.subtitle,
+              { color: subtitleColor || colors.textSecondary },
+            ]}
             numberOfLines={1}
           >
             {subtitle}
@@ -111,8 +120,122 @@ export const Header: React.FC<HeaderProps> = ({
     );
   };
 
+  const styles = StyleSheet.create({
+    container: {
+      flexDirection: "row",
+      alignItems: "center",
+      paddingHorizontal: 16,
+      paddingVertical: 16,
+      minHeight: 60,
+      backgroundColor: backgroundColor || colors.headerBackground,
+      // Ombre de séparation plus visible
+      ...Platform.select({
+        ios: {
+          shadowColor: colors.shadow,
+          shadowOffset: {
+            width: 0,
+            height: 4,
+          },
+          shadowOpacity: colors.isDark ? 0.3 : 0.15,
+          shadowRadius: 12,
+        },
+        android: {
+          elevation: 8,
+        },
+        web: {
+          boxShadow: colors.isDark
+            ? "0 4px 16px rgba(0, 0, 0, 0.3)"
+            : "0 4px 16px rgba(0, 0, 0, 0.12)",
+        },
+      }),
+      borderBottomWidth: 1,
+      borderBottomColor: colors.border,
+      zIndex: 10,
+    },
+    leftSection: {
+      width: 30,
+      alignItems: "flex-start",
+    },
+    rightSection: {
+      width: 100,
+      flexDirection: "row",
+      alignItems: "center",
+      justifyContent: "flex-end",
+      gap: 12,
+    },
+    titleContainer: {
+      flex: 1,
+      alignItems: "flex-start",
+      paddingHorizontal: 16,
+    },
+    titleRow: {
+      flexDirection: "row",
+      alignItems: "center",
+      justifyContent: "flex-start",
+    },
+    title: {
+      fontSize: 20,
+      fontWeight: "700",
+      textAlign: "left",
+    },
+    subtitle: {
+      fontSize: 14,
+      fontWeight: "400",
+      textAlign: "left",
+      marginTop: 2,
+    },
+    emoji: {
+      fontSize: 18,
+      marginLeft: 6,
+    },
+    iconButton: {
+      width: 44,
+      height: 44,
+      alignItems: "center",
+      justifyContent: "center",
+      borderRadius: 22,
+      backgroundColor: colors.isDark
+        ? colors.surfaceSecondary
+        : "rgba(255, 255, 255, 0.7)",
+    },
+    iconContainer: {
+      position: "relative",
+    },
+    badge: {
+      position: "absolute",
+      top: -8,
+      right: -8,
+      backgroundColor: colors.error,
+      borderRadius: 10,
+      minWidth: 20,
+      height: 20,
+      alignItems: "center",
+      justifyContent: "center",
+      paddingHorizontal: 4,
+      ...Platform.select({
+        ios: {
+          shadowColor: colors.error,
+          shadowOffset: {
+            width: 0,
+            height: 2,
+          },
+          shadowOpacity: 0.3,
+          shadowRadius: 4,
+        },
+        android: {
+          elevation: 3,
+        },
+      }),
+    },
+    badgeText: {
+      color: "white",
+      fontSize: 12,
+      fontWeight: "600",
+    },
+  });
+
   return (
-    <View style={[styles.container, { backgroundColor }, style]}>
+    <View style={[styles.container, style]}>
       {/* Section gauche */}
       <View style={styles.leftSection}>
         {leftIcon && renderIconButton(leftIcon, -1)}
@@ -130,97 +253,3 @@ export const Header: React.FC<HeaderProps> = ({
     </View>
   );
 };
-
-const styles = StyleSheet.create({
-  container: {
-    flexDirection: "row",
-    alignItems: "center",
-    paddingHorizontal: 16,
-    paddingVertical: 16, // Remis à 16 pour l'espacement
-    minHeight: 60,
-    // Ombre de séparation plus visible
-    ...Platform.select({
-      ios: {
-        shadowColor: "#000",
-        shadowOffset: {
-          width: 0,
-          height: 4,
-        },
-        shadowOpacity: 0.15,
-        shadowRadius: 12,
-      },
-      android: {
-        elevation: 8,
-      },
-      web: {
-        boxShadow: "0 4px 16px rgba(0, 0, 0, 0.12)",
-      },
-    }),
-    borderBottomWidth: 1,
-    borderBottomColor: "#e2e8f0",
-    zIndex: 10,
-  },
-  leftSection: {
-    width: 30,
-    alignItems: "flex-start",
-  },
-  rightSection: {
-    width: 100,
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "flex-end",
-    gap: 12,
-  },
-  titleContainer: {
-    flex: 1,
-    alignItems: "flex-start",
-    paddingHorizontal: 16,
-  },
-  titleRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "flex-start",
-  },
-  title: {
-    fontSize: 20,
-    fontWeight: "700",
-    textAlign: "left",
-  },
-  subtitle: {
-    fontSize: 14,
-    fontWeight: "400",
-    textAlign: "left",
-    marginTop: 2,
-  },
-  emoji: {
-    fontSize: 18,
-    marginLeft: 6,
-  },
-  iconButton: {
-    width: 44,
-    height: 44,
-    alignItems: "center",
-    justifyContent: "center",
-    borderRadius: 22,
-  },
-  iconContainer: {
-    position: "relative",
-  },
-  badge: {
-    position: "absolute",
-    top: -8,
-    right: -8,
-    backgroundColor: "#ff4444",
-    borderRadius: 10,
-    minWidth: 20,
-    height: 20,
-    alignItems: "center",
-    justifyContent: "center",
-    paddingHorizontal: 4,
-  },
-  badgeText: {
-    color: "white",
-    fontSize: 12,
-    fontWeight: "600",
-  },
-});

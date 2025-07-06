@@ -1,3 +1,4 @@
+// screens/auth/login/components/LoginHeader.tsx - With theme applied
 import { LogoVSN } from "@/shared/components/ui/logoVSN";
 import { router } from "expo-router";
 import React, { useEffect, useRef } from "react";
@@ -8,8 +9,11 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
+import { useTheme } from "../../../../contexts/ThemeContext";
 
 export const LoginHeader: React.FC = () => {
+  const { colors } = useTheme();
+
   // Animation values
   const logoFadeAnim = useRef(new Animated.Value(0)).current;
   const logoScaleAnim = useRef(new Animated.Value(0.8)).current;
@@ -40,6 +44,48 @@ export const LoginHeader: React.FC = () => {
       }).start();
     }, 300);
   }, []);
+
+  const styles = StyleSheet.create({
+    container: {
+      alignItems: "center",
+      marginBottom: 40,
+    },
+    logoContainer: {
+      alignItems: "center",
+      marginBottom: 40,
+    },
+    logo: {
+      width: 80,
+      height: 80,
+      borderRadius: 40,
+      justifyContent: "center",
+      alignItems: "center",
+    },
+    titleSection: {
+      alignItems: "center",
+    },
+    title: {
+      fontSize: 32,
+      fontWeight: "bold",
+      color: colors.text,
+      marginBottom: 12,
+    },
+    subtitleContainer: {
+      flexDirection: "row",
+      alignItems: "center",
+    },
+    subtitle: {
+      fontSize: 12,
+      color: colors.textSecondary,
+      fontWeight: "500",
+    },
+    link: {
+      fontSize: 12,
+      color: colors.primary,
+      fontWeight: "600",
+      textDecorationLine: "underline",
+    },
+  });
 
   return (
     <View style={styles.container}>
@@ -76,50 +122,3 @@ export const LoginHeader: React.FC = () => {
     </View>
   );
 };
-
-const styles = StyleSheet.create({
-  container: {
-    alignItems: "center",
-    marginBottom: 40,
-  },
-  logoContainer: {
-    alignItems: "center",
-    marginBottom: 40,
-  },
-  logo: {
-    width: 80,
-    height: 80,
-    borderRadius: 40,
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  logoText: {
-    fontSize: 12,
-    fontWeight: "600",
-    color: "#666",
-  },
-  titleSection: {
-    alignItems: "center",
-  },
-  title: {
-    fontSize: 32,
-    fontWeight: "bold",
-    color: "#212b36",
-    marginBottom: 12,
-  },
-  subtitleContainer: {
-    flexDirection: "row",
-    alignItems: "center",
-  },
-  subtitle: {
-    fontSize: 12,
-    color: "#81919a",
-    fontWeight: "500",
-  },
-  link: {
-    fontSize: 12,
-    color: "#746cd4",
-    fontWeight: "600",
-    textDecorationLine: "underline",
-  },
-});

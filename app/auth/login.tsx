@@ -9,15 +9,20 @@ import {
   View,
 } from "react-native";
 
+import { useTheme } from "../../contexts/ThemeContext";
 import { LoginScreen } from "../../screens/auth/login/loginScreen";
 
 const { height } = Dimensions.get("window");
 
 export default function Login() {
+  const { colors } = useTheme();
+
   return (
     <View style={styles.container}>
       <View style={styles.purpleBackground} />
-      <View style={styles.whiteBackground} />
+      <View
+        style={[styles.whiteBackground, { backgroundColor: colors.background }]}
+      />
 
       <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
         <KeyboardAvoidingView

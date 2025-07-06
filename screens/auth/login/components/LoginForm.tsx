@@ -1,3 +1,4 @@
+// screens/auth/login/components/LoginForm.tsx - Fixed positioning
 import { router } from "expo-router";
 import React, { useEffect, useRef, useState } from "react";
 import {
@@ -8,6 +9,7 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
+import { useTheme } from "../../../../contexts/ThemeContext";
 import { Button } from "../../../../shared/components/ui/Button";
 import { Checkbox } from "../../../../shared/components/ui/Checkbox";
 import { Input } from "../../../../shared/components/ui/Input";
@@ -15,6 +17,7 @@ import { useAuthStore } from "../../../../store/authStore";
 import { validateEmail, validatePassword } from "../../../../utils/validators";
 
 export const LoginForm: React.FC = () => {
+  const { colors } = useTheme();
   const [email, setEmail] = useState("Loisbecket@gmail.com");
   const [password, setPassword] = useState("password123");
   const [rememberMe, setRememberMe] = useState(false);
@@ -69,11 +72,54 @@ export const LoginForm: React.FC = () => {
 
     try {
       await login({ email, password, rememberMe });
-      router.replace("/(tabs)"); // Fixed routing to tabs
+      router.replace("/(tabs)");
     } catch (error) {
       Alert.alert("Error", "Login failed. Please try again.");
     }
   };
+
+  const styles = StyleSheet.create({
+    container: {
+      flex: 1,
+    },
+    formSection: {
+      marginBottom: 20,
+    },
+    optionsContainer: {
+      flexDirection: "row",
+      justifyContent: "space-between",
+      alignItems: "flex-start", // Changed from "center" to "flex-start"
+      marginTop: 16, // Increased margin for better spacing
+      paddingHorizontal: 4, // Add small padding to prevent cutoff
+    },
+    checkboxContainer: {
+      flex: 1, // Take available space
+      marginRight: 12, // Add margin to separate from forgot password
+    },
+    forgotPasswordContainer: {
+      alignItems: "flex-end", // Align to the right
+      justifyContent: "center",
+      minHeight: 24, // Ensure minimum height for touch target
+    },
+    forgotPassword: {
+      fontSize: 12,
+      color: colors.primary,
+      fontWeight: "600",
+      textAlign: "right", // Ensure text is right-aligned
+      lineHeight: 16, // Set line height for better spacing
+    },
+    errorContainer: {
+      marginBottom: 20,
+    },
+    errorText: {
+      fontSize: 14,
+      color: colors.error,
+      textAlign: "center",
+    },
+    buttonsSection: {
+      marginTop: 20, // Increased margin for better spacing
+    },
+  });
 
   return (
     <View style={styles.container}>
@@ -98,14 +144,18 @@ export const LoginForm: React.FC = () => {
         />
 
         <View style={styles.optionsContainer}>
-          <Checkbox
-            checked={rememberMe}
-            onPress={() => setRememberMe(!rememberMe)}
-            label="Se souvenir de moi"
-          />
+          <View style={styles.checkboxContainer}>
+            <Checkbox
+              checked={rememberMe}
+              onPress={() => setRememberMe(!rememberMe)}
+              label="Se souvenir de moi"
+            />
+          </View>
 
           <TouchableOpacity
+            style={styles.forgotPasswordContainer}
             onPress={() => router.push("/auth/forgot-password")}
+            activeOpacity={0.7}
           >
             <Text style={styles.forgotPassword}>Mot de passe oublié ?</Text>
           </TouchableOpacity>
@@ -121,7 +171,7 @@ export const LoginForm: React.FC = () => {
         </Animated.View>
       )}
 
-      {/* Animated Buttons Section - REMOVED GOOGLE BUTTON */}
+      {/* Animated Buttons Section */}
       <Animated.View
         style={[styles.buttonsSection, { opacity: buttonFadeAnim }]}
       >
@@ -135,34 +185,3 @@ export const LoginForm: React.FC = () => {
     </View>
   );
 };
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-  },
-  formSection: {
-    marginBottom: 20,
-  },
-  optionsContainer: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    marginTop: 8,
-  },
-  forgotPassword: {
-    fontSize: 12,
-    color: "#746cd4",
-    fontWeight: "600",
-  },
-  errorContainer: {
-    marginBottom: 20,
-  },
-  errorText: {
-    fontSize: 14,
-    color: "#ff4444",
-    textAlign: "center",
-  },
-  buttonsSection: {
-    marginTop: 10,
-  },
-});

@@ -1,11 +1,14 @@
+// screens/innerApplication/home/homeScreen.tsx - With theme applied
 import { router } from "expo-router";
 import React, { useEffect, useRef } from "react";
 import { Animated, ScrollView, StyleSheet, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { useTheme } from "../../../contexts/ThemeContext";
 import { HomeCard } from "./components/homeCard";
 import { HomeHeader } from "./components/homeHeader";
 
 export const HomeScreen: React.FC = () => {
+  const { colors } = useTheme();
   const fadeAnim = useRef(new Animated.Value(0)).current;
   const slideAnim = useRef(new Animated.Value(50)).current;
 
@@ -74,9 +77,35 @@ export const HomeScreen: React.FC = () => {
     router.push("/innerApplication/planning");
   };
 
+  const styles = StyleSheet.create({
+    container: {
+      flex: 1,
+      backgroundColor: colors.backgroundSecondary,
+    },
+    headerContainer: {
+      zIndex: 10,
+    },
+    content: {
+      flex: 1,
+    },
+    scrollContent: {
+      paddingBottom: 100,
+    },
+    cardsContainer: {
+      paddingTop: 8,
+      paddingBottom: 16,
+    },
+    cardWrapper: {
+      // Wrapper pour les animations des cartes
+    },
+    bottomSpacing: {
+      height: 80,
+    },
+  });
+
   return (
     <SafeAreaView style={styles.container}>
-      {/* Header avec animation - utilisant le nouveau HomeHeader */}
+      {/* Header avec animation */}
       <Animated.View
         style={[
           styles.headerContainer,
@@ -92,8 +121,8 @@ export const HomeScreen: React.FC = () => {
             {
               icon: "bell",
               onPress: handleNotificationPress,
-              badge: 3, // Exemple de badge
-              color: "#2c2c2c",
+              badge: 3,
+              color: colors.icon,
             },
           ]}
         />
@@ -128,6 +157,7 @@ export const HomeScreen: React.FC = () => {
               description="Consultez et téléchargez vos bulletins de paie en un clic."
               icon="credit-card"
               iconBackgroundColor="#6366f1"
+              backgroundColor={colors.card}
               onPress={handlePayslipsPress}
             />
           </Animated.View>
@@ -154,6 +184,7 @@ export const HomeScreen: React.FC = () => {
               description="Suivez l'état et l'historique de vos véhicules en temps réel."
               icon="car"
               iconBackgroundColor="#64748b"
+              backgroundColor={colors.card}
               onPress={handleVehiclesPress}
             />
           </Animated.View>
@@ -180,6 +211,7 @@ export const HomeScreen: React.FC = () => {
               description="Accédez à tous vos documents administratifs et justificatifs."
               icon="file-text"
               iconBackgroundColor="#22c55e"
+              backgroundColor={colors.card}
               onPress={handleDocumentsPress}
             />
           </Animated.View>
@@ -206,6 +238,7 @@ export const HomeScreen: React.FC = () => {
               description="Visualisez vos trajets planifiés et vos missions du jour."
               icon="exclamation-triangle"
               iconBackgroundColor="#ef4444"
+              backgroundColor={colors.card}
               onPress={handleRoutesPress}
             />
           </Animated.View>
@@ -232,6 +265,7 @@ export const HomeScreen: React.FC = () => {
               description="Suivez en direct la position de vos véhicules."
               icon="map-marker"
               iconBackgroundColor="#f59e0b"
+              backgroundColor={colors.card}
               onPress={handleGeolocationPress}
             />
           </Animated.View>
@@ -258,6 +292,7 @@ export const HomeScreen: React.FC = () => {
               description="Consultez et gérez votre emploi du temps facilement."
               icon="calendar"
               iconBackgroundColor="#06b6d4"
+              backgroundColor={colors.card}
               onPress={handlePlanningPress}
             />
           </Animated.View>
@@ -269,29 +304,3 @@ export const HomeScreen: React.FC = () => {
     </SafeAreaView>
   );
 };
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: "#f8f9fa",
-  },
-  headerContainer: {
-    zIndex: 10,
-  },
-  content: {
-    flex: 1,
-  },
-  scrollContent: {
-    paddingBottom: 100,
-  },
-  cardsContainer: {
-    paddingTop: 8,
-    paddingBottom: 16,
-  },
-  cardWrapper: {
-    // Wrapper pour les animations des cartes
-  },
-  bottomSpacing: {
-    height: 80,
-  },
-});

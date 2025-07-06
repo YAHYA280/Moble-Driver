@@ -1,13 +1,14 @@
-// FILE: shared/components/ui/card.tsx
 import { FontAwesome } from "@expo/vector-icons";
 import React from "react";
 import {
+  Platform,
   StyleSheet,
   Text,
   TouchableOpacity,
   View,
   ViewStyle,
 } from "react-native";
+import { useThemeColors } from "../../../hooks/useTheme";
 
 // Types pour les icônes Font Awesome
 type IconType = keyof typeof FontAwesome.glyphMap;
@@ -67,7 +68,7 @@ interface CardProps {
   layout?: "default" | "compact" | "detailed";
 }
 
-export const card: React.FC<CardProps> = ({
+export const Card: React.FC<CardProps> = ({
   title,
   subtitle,
   description,
@@ -76,9 +77,9 @@ export const card: React.FC<CardProps> = ({
   leftIcon,
   rightIcons = [],
   badge,
-  backgroundColor = "#ffffff",
-  borderColor = "#f0f0f0",
-  borderWidth = 1,
+  backgroundColor,
+  borderColor,
+  borderWidth,
   borderRadius = 12,
   padding = 16,
   margin = 8,
@@ -87,6 +88,8 @@ export const card: React.FC<CardProps> = ({
   disabled = false,
   layout = "default",
 }) => {
+  const colors = useThemeColors();
+
   // Rendu de l'icône gauche
   const renderLeftIcon = () => {
     if (!leftIcon) return null;
@@ -96,14 +99,15 @@ export const card: React.FC<CardProps> = ({
         style={[
           styles.leftIconContainer,
           {
-            backgroundColor: leftIcon.backgroundColor || "#f8f9fa",
+            backgroundColor:
+              leftIcon.backgroundColor || colors.surfaceSecondary,
           },
         ]}
       >
         <FontAwesome
           name={leftIcon.icon}
           size={leftIcon.size || 20}
-          color={leftIcon.iconColor || "#6366f1"}
+          color={leftIcon.iconColor || colors.primary}
         />
       </View>
     );
@@ -126,7 +130,7 @@ export const card: React.FC<CardProps> = ({
             <FontAwesome
               name={iconAction.icon}
               size={iconAction.size || 18}
-              color={iconAction.color || "#666"}
+              color={iconAction.color || colors.iconSecondary}
             />
           </TouchableOpacity>
         ))}
@@ -143,7 +147,7 @@ export const card: React.FC<CardProps> = ({
         style={[
           styles.badge,
           {
-            backgroundColor: badge.backgroundColor || "#e3f2fd",
+            backgroundColor: badge.backgroundColor || colors.info + "20", // 20% opacity
           },
         ]}
       >
@@ -151,7 +155,7 @@ export const card: React.FC<CardProps> = ({
           style={[
             styles.badgeText,
             {
-              color: badge.textColor || "#1976d2",
+              color: badge.textColor || colors.info,
             },
           ]}
         >
@@ -168,17 +172,26 @@ export const card: React.FC<CardProps> = ({
         return (
           <View style={styles.contentContainer}>
             <View style={styles.mainContent}>
-              <Text style={styles.title} numberOfLines={1}>
+              <Text
+                style={[styles.title, { color: colors.text }]}
+                numberOfLines={1}
+              >
                 {title}
               </Text>
               {metadata && (
-                <Text style={styles.metadata} numberOfLines={1}>
+                <Text
+                  style={[styles.metadata, { color: colors.textTertiary }]}
+                  numberOfLines={1}
+                >
                   {metadata}
                 </Text>
               )}
             </View>
             {status && (
-              <Text style={styles.status} numberOfLines={1}>
+              <Text
+                style={[styles.status, { color: colors.textSecondary }]}
+                numberOfLines={1}
+              >
                 {status}
               </Text>
             )}
@@ -189,24 +202,41 @@ export const card: React.FC<CardProps> = ({
         return (
           <View style={styles.contentContainer}>
             <View style={styles.headerRow}>
-              <Text style={styles.title} numberOfLines={1}>
+              <Text
+                style={[styles.title, { color: colors.text }]}
+                numberOfLines={1}
+              >
                 {title}
               </Text>
               {renderBadge()}
             </View>
             {subtitle && (
-              <Text style={styles.subtitle} numberOfLines={1}>
+              <Text
+                style={[styles.subtitle, { color: colors.textSecondary }]}
+                numberOfLines={1}
+              >
                 {subtitle}
               </Text>
             )}
             {description && (
-              <Text style={styles.description} numberOfLines={2}>
+              <Text
+                style={[styles.description, { color: colors.textTertiary }]}
+                numberOfLines={2}
+              >
                 {description}
               </Text>
             )}
             <View style={styles.metadataRow}>
-              {metadata && <Text style={styles.metadata}>{metadata}</Text>}
-              {status && <Text style={styles.status}>{status}</Text>}
+              {metadata && (
+                <Text style={[styles.metadata, { color: colors.textTertiary }]}>
+                  {metadata}
+                </Text>
+              )}
+              {status && (
+                <Text style={[styles.status, { color: colors.textSecondary }]}>
+                  {status}
+                </Text>
+              )}
             </View>
           </View>
         );
@@ -215,25 +245,46 @@ export const card: React.FC<CardProps> = ({
         return (
           <View style={styles.contentContainer}>
             <View style={styles.headerRow}>
-              <Text style={styles.title} numberOfLines={1}>
+              <Text
+                style={[styles.title, { color: colors.text }]}
+                numberOfLines={1}
+              >
                 {title}
               </Text>
               {renderBadge()}
             </View>
             {subtitle && (
-              <Text style={styles.subtitle} numberOfLines={1}>
+              <Text
+                style={[styles.subtitle, { color: colors.textSecondary }]}
+                numberOfLines={1}
+              >
                 {subtitle}
               </Text>
             )}
             {description && (
-              <Text style={styles.description} numberOfLines={2}>
+              <Text
+                style={[styles.description, { color: colors.textTertiary }]}
+                numberOfLines={2}
+              >
                 {description}
               </Text>
             )}
             {(metadata || status) && (
               <View style={styles.footerRow}>
-                {metadata && <Text style={styles.metadata}>{metadata}</Text>}
-                {status && <Text style={styles.status}>{status}</Text>}
+                {metadata && (
+                  <Text
+                    style={[styles.metadata, { color: colors.textTertiary }]}
+                  >
+                    {metadata}
+                  </Text>
+                )}
+                {status && (
+                  <Text
+                    style={[styles.status, { color: colors.textSecondary }]}
+                  >
+                    {status}
+                  </Text>
+                )}
               </View>
             )}
           </View>
@@ -244,21 +295,125 @@ export const card: React.FC<CardProps> = ({
   // Container principal
   const CardContainer = onPress ? TouchableOpacity : View;
 
+  const styles = StyleSheet.create({
+    card: {
+      backgroundColor: backgroundColor || colors.card,
+      borderColor: borderColor || colors.border,
+      borderWidth: borderWidth || 1,
+      borderRadius,
+      padding,
+      margin,
+      ...Platform.select({
+        ios: {
+          shadowColor: colors.shadow,
+          shadowOffset: {
+            width: 0,
+            height: 2,
+          },
+          shadowOpacity: colors.isDark ? 0.3 : 0.05,
+          shadowRadius: 4,
+        },
+        android: {
+          elevation: 2,
+        },
+        web: {
+          boxShadow: colors.isDark
+            ? "0 2px 4px rgba(0, 0, 0, 0.3)"
+            : "0 2px 4px rgba(0, 0, 0, 0.05)",
+        },
+      }),
+    },
+    disabled: {
+      opacity: 0.6,
+    },
+    cardContent: {
+      flexDirection: "row",
+      alignItems: "flex-start",
+    },
+    leftIconContainer: {
+      width: 40,
+      height: 40,
+      borderRadius: 8,
+      alignItems: "center",
+      justifyContent: "center",
+      marginRight: 12,
+    },
+    contentContainer: {
+      flex: 1,
+      justifyContent: "center",
+    },
+    mainContent: {
+      flex: 1,
+    },
+    headerRow: {
+      flexDirection: "row",
+      alignItems: "flex-start",
+      justifyContent: "space-between",
+      marginBottom: 4,
+    },
+    title: {
+      fontSize: 16,
+      fontWeight: "600",
+      flex: 1,
+      marginRight: 8,
+    },
+    subtitle: {
+      fontSize: 14,
+      fontWeight: "500",
+      marginBottom: 4,
+    },
+    description: {
+      fontSize: 13,
+      lineHeight: 18,
+      marginBottom: 8,
+    },
+    metadataRow: {
+      flexDirection: "row",
+      justifyContent: "space-between",
+      alignItems: "center",
+    },
+    footerRow: {
+      flexDirection: "row",
+      justifyContent: "space-between",
+      alignItems: "center",
+      marginTop: 8,
+    },
+    metadata: {
+      fontSize: 12,
+      fontWeight: "400",
+    },
+    status: {
+      fontSize: 12,
+      fontWeight: "500",
+    },
+    badge: {
+      paddingHorizontal: 8,
+      paddingVertical: 4,
+      borderRadius: 12,
+      alignSelf: "flex-start",
+    },
+    badgeText: {
+      fontSize: 11,
+      fontWeight: "600",
+    },
+    rightIconsContainer: {
+      flexDirection: "row",
+      alignItems: "center",
+      gap: 8,
+      marginLeft: 8,
+    },
+    rightIconButton: {
+      width: 32,
+      height: 32,
+      borderRadius: 16,
+      alignItems: "center",
+      justifyContent: "center",
+    },
+  });
+
   return (
     <CardContainer
-      style={[
-        styles.card,
-        {
-          backgroundColor,
-          borderColor,
-          borderWidth,
-          borderRadius,
-          padding,
-          margin,
-        },
-        disabled && styles.disabled,
-        style,
-      ]}
+      style={[styles.card, disabled && styles.disabled, style]}
       onPress={onPress}
       disabled={disabled}
       activeOpacity={onPress ? 0.7 : 1}
@@ -271,107 +426,3 @@ export const card: React.FC<CardProps> = ({
     </CardContainer>
   );
 };
-
-const styles = StyleSheet.create({
-  card: {
-    shadowColor: "#000",
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
-    shadowOpacity: 0.05,
-    shadowRadius: 4,
-    elevation: 2,
-  },
-  disabled: {
-    opacity: 0.6,
-  },
-  cardContent: {
-    flexDirection: "row",
-    alignItems: "flex-start",
-  },
-  leftIconContainer: {
-    width: 40,
-    height: 40,
-    borderRadius: 8,
-    alignItems: "center",
-    justifyContent: "center",
-    marginRight: 12,
-  },
-  contentContainer: {
-    flex: 1,
-    justifyContent: "center",
-  },
-  mainContent: {
-    flex: 1,
-  },
-  headerRow: {
-    flexDirection: "row",
-    alignItems: "flex-start",
-    justifyContent: "space-between",
-    marginBottom: 4,
-  },
-  title: {
-    fontSize: 16,
-    fontWeight: "600",
-    color: "#2c2c2c",
-    flex: 1,
-    marginRight: 8,
-  },
-  subtitle: {
-    fontSize: 14,
-    fontWeight: "500",
-    color: "#666",
-    marginBottom: 4,
-  },
-  description: {
-    fontSize: 13,
-    color: "#81919a",
-    lineHeight: 18,
-    marginBottom: 8,
-  },
-  metadataRow: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-  },
-  footerRow: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    marginTop: 8,
-  },
-  metadata: {
-    fontSize: 12,
-    color: "#81919a",
-    fontWeight: "400",
-  },
-  status: {
-    fontSize: 12,
-    color: "#666",
-    fontWeight: "500",
-  },
-  badge: {
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    borderRadius: 12,
-    alignSelf: "flex-start",
-  },
-  badgeText: {
-    fontSize: 11,
-    fontWeight: "600",
-  },
-  rightIconsContainer: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 8,
-    marginLeft: 8,
-  },
-  rightIconButton: {
-    width: 32,
-    height: 32,
-    borderRadius: 16,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-});
