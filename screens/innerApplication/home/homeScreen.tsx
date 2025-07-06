@@ -6,11 +6,9 @@ import { HomeCard } from "./components/homeCard";
 import { HomeHeader } from "./components/homeHeader";
 
 export const HomeScreen: React.FC = () => {
-  // Animation values
   const fadeAnim = useRef(new Animated.Value(0)).current;
   const slideAnim = useRef(new Animated.Value(50)).current;
 
-  // Animation des cartes avec délai échelonné
   const cardAnimations = useRef([
     new Animated.Value(0),
     new Animated.Value(0),
@@ -21,7 +19,6 @@ export const HomeScreen: React.FC = () => {
   ]).current;
 
   useEffect(() => {
-    // Animation du header
     Animated.parallel([
       Animated.timing(fadeAnim, {
         toValue: 1,
@@ -35,23 +32,20 @@ export const HomeScreen: React.FC = () => {
       }),
     ]).start();
 
-    // Animation des cartes avec délai échelonné
     const cardAnimationSequence = cardAnimations.map((anim, index) =>
       Animated.timing(anim, {
         toValue: 1,
         duration: 500,
-        delay: index * 100, // Délai de 100ms entre chaque carte
+        delay: index * 100,
         useNativeDriver: true,
       })
     );
 
-    // Démarrer les animations des cartes après un court délai
     setTimeout(() => {
       Animated.parallel(cardAnimationSequence).start();
     }, 300);
   }, []);
 
-  // Fonctions de navigation
   const handleNotificationPress = () => {
     router.push("/innerApplication/notifications");
   };
