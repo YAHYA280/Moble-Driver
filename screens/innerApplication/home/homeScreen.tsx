@@ -4,13 +4,14 @@ import React, { useEffect, useRef } from "react";
 import { Animated, ScrollView, StyleSheet, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useTheme } from "../../../contexts/ThemeContext";
+import { useNotificationStore } from "../../../store/notificationStore";
 import { HomeCard } from "./components/homeCard";
 import { HomeHeader } from "./components/homeHeader";
-
 export const HomeScreen: React.FC = () => {
   const { colors } = useTheme();
   const fadeAnim = useRef(new Animated.Value(0)).current;
   const slideAnim = useRef(new Animated.Value(50)).current;
+  const { getUnreadCount } = useNotificationStore();
 
   const cardAnimations = useRef([
     new Animated.Value(0),
@@ -121,7 +122,7 @@ export const HomeScreen: React.FC = () => {
             {
               icon: "bell",
               onPress: handleNotificationPress,
-              badge: 3,
+              badge: getUnreadCount(),
               color: colors.icon,
             },
           ]}

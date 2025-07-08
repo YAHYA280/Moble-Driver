@@ -1,4 +1,3 @@
-// screens/auth/login/components/LoginHeader.tsx - With theme applied
 import { LogoVSN } from "@/shared/components/ui/logoVSN";
 import { router } from "expo-router";
 import React, { useEffect, useRef } from "react";
@@ -14,13 +13,11 @@ import { useTheme } from "../../../../contexts/ThemeContext";
 export const LoginHeader: React.FC = () => {
   const { colors } = useTheme();
 
-  // Animation values
   const logoFadeAnim = useRef(new Animated.Value(0)).current;
   const logoScaleAnim = useRef(new Animated.Value(0.8)).current;
   const titleFadeAnim = useRef(new Animated.Value(0)).current;
 
   useEffect(() => {
-    // Animation du logo
     Animated.parallel([
       Animated.timing(logoFadeAnim, {
         toValue: 1,
@@ -35,7 +32,6 @@ export const LoginHeader: React.FC = () => {
       }),
     ]).start();
 
-    // Animation du titre avec délai
     setTimeout(() => {
       Animated.timing(titleFadeAnim, {
         toValue: 1,

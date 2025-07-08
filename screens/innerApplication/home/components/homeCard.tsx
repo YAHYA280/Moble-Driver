@@ -10,25 +10,19 @@ import {
 } from "react-native";
 import { useThemeColors } from "../../../../hooks/useTheme";
 
-// Types pour les icônes Font Awesome
 type IconType = keyof typeof FontAwesome.glyphMap;
 
-// Interface pour le HomeCard
 interface HomeCardProps {
-  // Contenu
   title: string;
   description: string;
 
-  // Icône
   icon: IconType;
   iconColor?: string;
   iconBackgroundColor?: string;
 
-  // Styling
   backgroundColor?: string;
   style?: ViewStyle;
 
-  // Action
   onPress: () => void;
   disabled?: boolean;
 }
@@ -55,7 +49,6 @@ export const HomeCard: React.FC<HomeCardProps> = ({
       marginVertical: 8,
       borderRadius: 16,
       backgroundColor: backgroundColor || colors.card,
-      // Ombre améliorée selon le design
       ...Platform.select({
         ios: {
           shadowColor: colors.shadow,

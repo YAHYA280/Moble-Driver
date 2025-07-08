@@ -12,7 +12,7 @@ import { useThemeColors } from "../../../hooks/useTheme";
 interface ButtonProps {
   title: string;
   onPress: () => void;
-  variant?: "primary" | "secondary" | "outline";
+  variant?: "primary" | "secondary" | "outline" | "danger";
   disabled?: boolean;
   loading?: boolean;
   style?: ViewStyle;
@@ -41,6 +41,10 @@ export const Button: React.FC<ButtonProps> = ({
           backgroundColor: colors.surface,
           borderWidth: 1,
           borderColor: colors.border,
+        };
+      case "danger":
+        return {
+          backgroundColor: colors.error,
         };
       case "outline":
         return {

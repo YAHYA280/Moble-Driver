@@ -1,4 +1,4 @@
-// screens/auth/login/components/LoginForm.tsx - Fixed positioning
+import ConditionalComponent from "@/shared/components/conditionalComponent/conditionalComponent";
 import { router } from "expo-router";
 import React, { useEffect, useRef, useState } from "react";
 import {
@@ -163,13 +163,16 @@ export const LoginForm: React.FC = () => {
       </Animated.View>
 
       {/* Error Message */}
-      {error && (
+
+      <ConditionalComponent isValid={Boolean(error)}>
+        (
         <Animated.View
           style={[styles.errorContainer, { opacity: formFadeAnim }]}
         >
           <Text style={styles.errorText}>{error}</Text>
         </Animated.View>
-      )}
+        )
+      </ConditionalComponent>
 
       {/* Animated Buttons Section */}
       <Animated.View

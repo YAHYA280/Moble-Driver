@@ -64,7 +64,6 @@ export const useThemeColors = () => {
     // Navigation colors
     headerBackground: isDark ? "#1a1a1a" : "#fefeff",
 
-    // Boolean for conditional styling
     isDark,
   };
 };

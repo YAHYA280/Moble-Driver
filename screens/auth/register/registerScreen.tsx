@@ -8,12 +8,10 @@ import { Button } from "../../../shared/components/ui/Button";
 const { height } = Dimensions.get("window");
 
 export const RegisterScreen: React.FC = () => {
-  // Animation values
   const cardSlideAnim = useRef(new Animated.Value(50)).current;
   const cardFadeAnim = useRef(new Animated.Value(0)).current;
 
   useEffect(() => {
-    // Animation de la carte principale
     Animated.parallel([
       Animated.timing(cardSlideAnim, {
         toValue: 0,

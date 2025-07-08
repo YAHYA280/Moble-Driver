@@ -1,50 +1,288 @@
-# Welcome to your Expo app 👋
+# VSN Driver Frontend
 
-This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
+A comprehensive React Native mobile application built with Expo for vehicle fleet management and driver operations.
 
-## Get started
+## 🚀 Features
 
-1. Install dependencies
+### Core Features
 
-   ```bash
-   npm install
-   ```
+- **Dashboard**: Feature cards with quick access to all modules
+- **Payslips**: Digital payslip management and downloads
+- **Fleet Management**: Vehicle tracking and status monitoring
+- **Documents**: Digital document storage and access
+- **Route Planning**: Trip planning and navigation
+- **Geolocation**: Real-time vehicle tracking
+- **Planning**: Schedule and calendar management
+- **Notifications**: In-app messaging and alerts
 
-2. Start the app
+## 🛠️ Tech Stack
 
-   ```bash
-   npx expo start
-   ```
+- **Framework**: Expo 53
+- **Runtime**: React Native 0.79
+- **Language**: TypeScript (strict mode)
+- **Navigation**: Expo Router (file-based routing)
+- **Styling**: React Native StyleSheet with theme system
+- **Icons**: FontAwesome + Expo Vector Icons
+- **Graphics**: React Native SVG
 
-In the output, you'll find options to open the app in a
+## 📁 Project Architecture
 
-- [development build](https://docs.expo.dev/develop/development-builds/introduction/)
-- [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
-- [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
-- [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
+```
+vsn-driver-front/
+├── app/                          # Expo Router pages
+│   ├── (tabs)/                  # Tab navigation routes
+│   │   ├── _layout.tsx          # Custom curved tab bar
+│   │   ├── index.tsx            # Home tab
+│   │   ├── map.tsx              # Map tab
+│   │   ├── calendar.tsx         # Calendar tab
+│   │   ├── chat.tsx             # Chat tab
+│   │   └── profile.tsx          # Profile tab
+│   ├── auth/                    # Authentication screens
+│   │   ├── login.tsx            # Login screen
+│   │   ├── register.tsx         # Register screen
+│   │   └── forgot-password.tsx  # Password recovery
+│   ├── innerApplication/        # Main app features
+│   │   ├── home/                # Dashboard
+│   │   ├── payslips/            # Payslip management
+│   │   ├── vehicles/            # Fleet management
+│   │   ├── documents/           # Document storage
+│   │   ├── routes/              # Route planning
+│   │   ├── geolocation/         # GPS tracking
+│   │   ├── planning/            # Schedule management
+│   │   └── notifications/       # Alerts & messages
+│   ├── _layout.tsx              # Root layout
+│   └── index.tsx                # Entry point
+├── screens/                     # Screen components
+│   ├── auth/                    # Auth screen implementations
+│   └── innerApplication/        # Feature screen implementations
+├── shared/                      # Shared resources
+│   ├── components/              # Reusable UI components
+│   │   ├── layout/              # Layout components
+│   │   ├── ui/                  # UI component library
+│   │   └── conditionalComponent/ # Conditional rendering
+│   └── types/                   # TypeScript interfaces
+├── contexts/                    # React contexts
 
-You can start developing by editing the files inside the **app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
+├── hooks/                       # Custom hooks
 
-## Get a fresh project
+├── store/                       # State management
 
-When you're ready, run:
+├── constants/                   # App constants
 
-```bash
-npm run reset-project
+├── utils/                       # Utility functions
+
+└── assets/                      # Static assets
+    ├── images/                  # App images
+    └── fonts/                   # Custom fonts
 ```
 
-This command will move the starter code to the **app-example** directory and create a blank **app** directory where you can start developing.
+## 🚦 Getting Started
 
-## Learn more
+### Prerequisites
 
-To learn more about developing your project with Expo, look at the following resources:
+- Node.js (v18 or higher)
+- npm or yarn
+- Expo CLI
+- iOS Simulator (for iOS development)
+- Android Studio (for Android development)
 
-- [Expo documentation](https://docs.expo.dev/): Learn fundamentals, or go into advanced topics with our [guides](https://docs.expo.dev/guides).
-- [Learn Expo tutorial](https://docs.expo.dev/tutorial/introduction/): Follow a step-by-step tutorial where you'll create a project that runs on Android, iOS, and the web.
+### Installation
 
-## Join the community
+1. Clone the repository
 
-Join our community of developers creating universal apps.
+```bash
+git clone <repository-url>
+cd vsn-driver-front
+```
 
-- [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
-- [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
+2. Install dependencies
+
+```bash
+npm install
+```
+
+3. Start the development server
+
+```bash
+npx expo start
+```
+
+4. Run on your preferred platform
+
+```bash
+# iOS Simulator
+npx expo start --ios
+
+# Android Emulator
+npx expo start --android
+
+# Web
+npx expo start --web
+```
+
+## 🎨 UI Component Library
+
+### Core Components
+
+- **Button**: Primary, secondary, and outline variants with loading states
+- **Input**: Text input with validation, password toggle, and animations
+- **Checkbox**: Customizable checkbox with different sizes
+- **Header**: Navigation header with icons, badges, and actions
+- **Card**: Flexible card component with multiple layouts
+- **Screen**: Layout wrapper with safe area and scroll handling
+
+### Theme System
+
+- Centralized color management
+- Dark/light mode support
+- Platform-specific styling
+- Consistent design tokens
+
+## 🎯 Development Guidelines
+
+### Coding Standards & Rules
+
+#### File Size Limits
+
+- **Maximum 500 lines per file** - If a file exceeds this limit, consider breaking it into smaller, focused components or modules
+- Use composition over large monolithic components
+- Extract utilities, types, and constants to separate files
+
+#### Code Quality Requirements
+
+- **Always run ESLint before pushing**:
+  ```bash
+  npm run lint
+  ```
+- **Always run TypeScript type checking before pushing**:
+  ```bash
+  npx tsc --noEmit
+  ```
+- **Pre-commit checklist**:
+  - [ ] ESLint passes with no errors
+  - [ ] TypeScript compilation successful
+  - [ ] No console.log statements in production code
+  - [ ] All imports are used and properly typed
+
+#### Code Style
+
+- TypeScript strict mode enabled
+- ESLint configuration for code quality
+- Consistent component structure
+- Proper type definitions
+- Use meaningful variable and function names
+- Follow consistent indentation (2 spaces)
+
+#### Component Development Rules
+
+- **One component per file** (except for small, tightly coupled components)
+- **Component files should not exceed 300 lines** (excluding styles)
+- Export components as named exports, not default exports (except for screens)
+- Always use TypeScript interfaces for props
+- Include proper prop validation and default values
+- Theme integration required for all UI components
+- Accessibility considerations (proper labels, touch targets)
+- Platform-specific optimizations when needed
+- **Always wrap `&&` conditional rendering in ConditionalComponent** for consistent default rendering:
+
+  ```typescript
+  // ❌ Don't do this
+  {
+    condition && <Component />;
+  }
+
+  // ✅ Do this instead
+  <ConditionalComponent isValid={!!condition}>
+    <Component />
+  </ConditionalComponent>;
+  ```
+
+#### File Naming Conventions
+
+- Components: `PascalCase.tsx` (e.g., `HomeCard.tsx`)
+- Hooks: `camelCase.ts` starting with 'use' (e.g., `useTheme.ts`)
+- Utilities: `camelCase.ts` (e.g., `validators.ts`)
+- Types: `camelCase.ts` (e.g., `auth.ts`)
+- Constants: `camelCase.ts` (e.g., `colors.ts`)
+
+#### Import Organization
+
+```typescript
+// 1. React and React Native imports
+import React from "react";
+import { View, Text } from "react-native";
+
+// 2. Third-party libraries
+import { router } from "expo-router";
+
+// 3. Internal imports (components, hooks, utils)
+import { Button } from "@/shared/components/ui/Button";
+import { useTheme } from "@/hooks/useTheme";
+
+// 4. Type imports (always last)
+import type { ComponentProps } from "@/types";
+```
+
+#### Performance Guidelines
+
+- Use `React.memo` for expensive components
+- Implement proper `useMemo` and `useCallback` where needed
+- Optimize images and SVGs
+- Lazy load screens and heavy components
+- Use FlatList for large lists
+
+#### Git Workflow Rules
+
+1. **Never push directly to develop**
+2. **Create feature branches** with descriptive names
+3. **Always pull latest changes** before creating new branches
+4. **Run quality checks** before every commit:
+   ```bash
+   # Add to your pre-commit routine
+   npm run lint
+   npx tsc --noEmit
+   npm test # when tests are added
+   ```
+5. **Use conventional commit messages**:
+   - `feat:` for new features
+   - `fix:` for bug fixes
+   - `refactor:` for code refactoring
+   - `docs:` for documentation
+   - `style:` for formatting changes
+   - `test:` for testing
+
+#### Error Handling
+
+- Always wrap async operations in try-catch blocks
+- Provide meaningful error messages
+- Use proper TypeScript error types
+- Implement proper loading and error states in UI
+
+## 🚀 Build
+
+### Development Build
+
+```bash
+npx expo build:android
+npx expo build:ios
+```
+
+### Production Build
+
+```bash
+npx expo build:android --release-channel production
+npx expo build:ios --release-channel production
+```
+
+## 📱 Platform Support
+
+- **iOS**: iOS 13.0+
+- **Android**: Android 6.0+ (API 23)
+
+## 🤝 Contributing
+
+1. Fork the repository
+2. Create a feature branch
+3. Make your changes
+4. Run tests and linting
+5. Submit a pull request

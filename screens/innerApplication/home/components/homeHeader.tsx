@@ -1,3 +1,4 @@
+import ConditionalComponent from "@/shared/components/conditionalComponent/conditionalComponent";
 import { FontAwesome } from "@expo/vector-icons";
 import React from "react";
 import {
@@ -61,13 +62,17 @@ export const HomeHeader: React.FC<HomeHeaderProps> = ({
           size={iconButton.size || 24}
           color={iconButton.color || colors.icon}
         />
-        {iconButton.badge && iconButton.badge > 0 && (
+        <ConditionalComponent
+          isValid={!!(iconButton.badge && iconButton.badge > 0)}
+        >
           <View style={styles.badge}>
             <Text style={styles.badgeText}>
-              {iconButton.badge > 99 ? "99+" : iconButton.badge}
+              {iconButton.badge && iconButton.badge > 99
+                ? "99+"
+                : iconButton.badge}
             </Text>
           </View>
-        )}
+        </ConditionalComponent>
       </View>
     </TouchableOpacity>
   );
@@ -88,9 +93,11 @@ export const HomeHeader: React.FC<HomeHeaderProps> = ({
           >
             {title}
           </Text>
-          {emoji && <Text style={styles.emoji}>{emoji}</Text>}
+          <ConditionalComponent isValid={!!emoji}>
+            <Text style={styles.emoji}>{emoji}</Text>
+          </ConditionalComponent>
         </View>
-        {subtitle && (
+        <ConditionalComponent isValid={!!subtitle}>
           <Text
             style={[
               styles.subtitle,
@@ -100,7 +107,7 @@ export const HomeHeader: React.FC<HomeHeaderProps> = ({
           >
             {subtitle}
           </Text>
-        )}
+        </ConditionalComponent>
       </TitleWrapper>
     );
   };

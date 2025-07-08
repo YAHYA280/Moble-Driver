@@ -1,4 +1,3 @@
-// app/(tabs)/_layout.tsx - Complete version with theme support
 import { Ionicons } from "@expo/vector-icons";
 import { Tabs } from "expo-router";
 import { Dimensions, Platform, StyleSheet, View } from "react-native";
@@ -7,7 +6,6 @@ import { useThemeColors } from "../../hooks/useTheme";
 
 const { width } = Dimensions.get("window");
 
-// Custom curved tab bar background with cutout
 const CurvedTabBarBackground = () => {
   const colors = useThemeColors();
   const tabBarHeight = 88;

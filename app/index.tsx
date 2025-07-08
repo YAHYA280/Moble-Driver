@@ -7,7 +7,6 @@ export default function Index() {
   const { isAuthenticated } = useAuthStore();
 
   useEffect(() => {
-    // CORRECTION: Rediriger vers innerApplication au lieu de (tabs)
     if (isAuthenticated) {
       router.replace("/innerApplication/home");
     } else {
