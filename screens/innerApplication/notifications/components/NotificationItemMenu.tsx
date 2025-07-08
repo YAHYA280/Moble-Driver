@@ -23,7 +23,6 @@ interface NotificationItemMenuProps {
   onMarkAsUnread?: () => void;
   onPin?: () => void;
   onUnpin?: () => void;
-  onArchive?: () => void;
   onDelete?: () => void;
 }
 
@@ -40,7 +39,6 @@ export const NotificationItemMenu: React.FC<NotificationItemMenuProps> = ({
   onMarkAsUnread,
   onPin,
   onUnpin,
-  onArchive,
   onDelete,
 }) => {
   const colors = useThemeColors();
@@ -55,7 +53,7 @@ export const NotificationItemMenu: React.FC<NotificationItemMenuProps> = ({
   );
 
   // Ensure menu doesn't go below screen
-  const maxTop = SCREEN_HEIGHT - 300; // Approximate menu height
+  const maxTop = SCREEN_HEIGHT - 250; // Approximate menu height
   const clampedTop = Math.min(position.y, maxTop);
 
   const handleToggleRead = () => {
@@ -72,13 +70,6 @@ export const NotificationItemMenu: React.FC<NotificationItemMenuProps> = ({
       onUnpin();
     } else if (!notification.isPinned && onPin) {
       onPin();
-    }
-    onClose();
-  };
-
-  const handleArchive = () => {
-    if (onArchive) {
-      onArchive();
     }
     onClose();
   };
@@ -186,19 +177,6 @@ export const NotificationItemMenu: React.FC<NotificationItemMenuProps> = ({
           />
           <Text style={[styles.menuText, { color: colors.text }]}>
             {notification.isPinned ? "Dépingler" : "Épingler"}
-          </Text>
-        </TouchableOpacity>
-
-        {/* Archive Option */}
-        <TouchableOpacity onPress={handleArchive} style={styles.menuItem}>
-          <FontAwesome
-            name="archive"
-            size={16}
-            style={styles.menuIcon}
-            color={colors.primary}
-          />
-          <Text style={[styles.menuText, { color: colors.text }]}>
-            Archiver
           </Text>
         </TouchableOpacity>
 

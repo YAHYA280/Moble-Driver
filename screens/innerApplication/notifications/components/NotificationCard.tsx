@@ -20,7 +20,6 @@ interface NotificationCardProps {
   onPin?: () => void;
   onUnpin?: () => void;
   onDelete?: () => void;
-  onArchive?: () => void;
   style?: ViewStyle;
 }
 
@@ -32,7 +31,6 @@ export const NotificationCard: React.FC<NotificationCardProps> = ({
   onPin,
   onUnpin,
   onDelete,
-  onArchive,
   style,
 }) => {
   const colors = useThemeColors();
@@ -205,17 +203,17 @@ export const NotificationCard: React.FC<NotificationCardProps> = ({
       marginRight: 8,
       letterSpacing: 0.3,
     },
-    timestamp: {
-      fontSize: 12,
-      fontWeight: "400",
-      color: colors.textTertiary,
-    },
     message: {
       fontSize: 14,
       lineHeight: 20,
       color: colors.textSecondary,
       marginBottom: 8,
       fontWeight: "400",
+    },
+    bottomRow: {
+      flexDirection: "row",
+      alignItems: "center",
+      justifyContent: "space-between",
     },
     statusRow: {
       flexDirection: "row",
@@ -228,7 +226,9 @@ export const NotificationCard: React.FC<NotificationCardProps> = ({
     pinnedIcon: {
       color: colors.warning,
     },
-    archivedIcon: {
+    timestamp: {
+      fontSize: 12,
+      fontWeight: "400",
       color: colors.textTertiary,
     },
     rightSection: {
@@ -273,30 +273,26 @@ export const NotificationCard: React.FC<NotificationCardProps> = ({
             <Text style={styles.title} numberOfLines={1}>
               {notification.title}
             </Text>
-            <Text style={styles.timestamp}>
-              {formatTimestamp(notification.timestamp)}
-            </Text>
           </View>
 
           <Text style={styles.message} numberOfLines={2}>
             {notification.message}
           </Text>
 
-          <View style={styles.statusRow}>
-            {notification.isPinned && (
-              <Ionicons
-                name="bookmark"
-                size={12}
-                style={[styles.statusIcon, styles.pinnedIcon]}
-              />
-            )}
-            {notification.status === "archived" && (
-              <Ionicons
-                name="archive"
-                size={12}
-                style={[styles.statusIcon, styles.archivedIcon]}
-              />
-            )}
+          <View style={styles.bottomRow}>
+            <View style={styles.statusRow}>
+              {notification.isPinned && (
+                <Ionicons
+                  name="bookmark"
+                  size={12}
+                  style={[styles.statusIcon, styles.pinnedIcon]}
+                />
+              )}
+            </View>
+
+            <Text style={styles.timestamp}>
+              {formatTimestamp(notification.timestamp)}
+            </Text>
           </View>
         </View>
 
@@ -326,7 +322,6 @@ export const NotificationCard: React.FC<NotificationCardProps> = ({
         onMarkAsUnread={() => handleMenuAction(() => onMarkAsUnread?.())}
         onPin={() => handleMenuAction(() => onPin?.())}
         onUnpin={() => handleMenuAction(() => onUnpin?.())}
-        onArchive={() => handleMenuAction(() => onArchive?.())}
         onDelete={() => handleMenuAction(() => onDelete?.())}
       />
     </>

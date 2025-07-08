@@ -11,13 +11,7 @@ import {
 import { useThemeColors } from "../../../../hooks/useTheme";
 import { NotificationPriority } from "../../../../shared/types";
 
-type FilterType =
-  | "all"
-  | "unread"
-  | "read"
-  | "pinned"
-  | "archived"
-  | NotificationPriority;
+type FilterType = "all" | "unread" | "read" | "pinned" | NotificationPriority;
 
 interface FilterOption {
   id: FilterType;
@@ -34,7 +28,6 @@ interface NotificationFilterBarProps {
     unread: number;
     read: number;
     pinned: number;
-    archived: number;
     urgent: number;
     important: number;
     informative: number;
@@ -93,12 +86,6 @@ export const NotificationFilterBar: React.FC<NotificationFilterBarProps> = ({
       icon: "information-circle",
       count: notificationCounts.informative,
     },
-    {
-      id: "archived",
-      label: "Archivées",
-      icon: "archive",
-      count: notificationCounts.archived,
-    },
   ];
 
   const getFilterColors = (filterId: FilterType) => {
@@ -138,12 +125,6 @@ export const NotificationFilterBar: React.FC<NotificationFilterBarProps> = ({
           activeColor: colors.warning,
           activeBg: colors.warning + "15",
           activeBorder: colors.warning,
-        };
-      case "archived":
-        return {
-          activeColor: colors.textSecondary,
-          activeBg: colors.textSecondary + "15",
-          activeBorder: colors.textSecondary,
         };
       default:
         return {

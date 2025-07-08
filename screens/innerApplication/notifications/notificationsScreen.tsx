@@ -24,7 +24,6 @@ type FilterType =
   | "unread"
   | "read"
   | "pinned"
-  | "archived"
   | "urgent"
   | "important"
   | "informative";
@@ -41,8 +40,8 @@ export const NotificationsScreen: React.FC = () => {
     pinNotification,
     unpinNotification,
     deleteNotification,
-    archiveNotification,
     setFilters,
+    clearFilters,
     getFilteredNotifications,
     getUnreadCount,
     getNotificationCounts,
@@ -60,36 +59,39 @@ export const NotificationsScreen: React.FC = () => {
   }, []);
 
   useEffect(() => {
-    // Update filters based on active filter
-    const filters: any = {};
+    // Always clear filters first, then apply new ones
+    clearFilters();
 
-    switch (activeFilter) {
-      case "unread":
-        filters.status = ["unread"];
-        break;
-      case "read":
-        filters.status = ["read"];
-        break;
-      case "pinned":
-        filters.status = ["pinned"];
-        break;
-      case "archived":
-        filters.status = ["archived"];
-        break;
-      case "urgent":
-      case "important":
-      case "informative":
-        filters.priority = [activeFilter];
-        filters.status = ["unread", "read", "pinned"]; // Exclude archived for priority filters
-        break;
-      case "all":
-      default:
-        filters.status = ["unread", "read", "pinned"]; // Exclude archived by default
-        break;
+    if (activeFilter !== "all") {
+      const filters: any = {};
+
+      switch (activeFilter) {
+        case "unread":
+          // Show only unread notifications (not pinned)
+          filters.status = ["unread"];
+          break;
+        case "read":
+          // Show only read notifications (not pinned)
+          filters.status = ["read"];
+          break;
+        case "pinned":
+          // Show only pinned notifications
+          filters.status = ["pinned"];
+          break;
+        case "urgent":
+        case "important":
+        case "informative":
+          // Show notifications by priority
+          filters.priority = [activeFilter];
+          break;
+      }
+
+      // Only set filters if we have any
+      if (Object.keys(filters).length > 0) {
+        setFilters(filters);
+      }
     }
-
-    setFilters(filters);
-  }, [activeFilter, setFilters]);
+  }, [activeFilter, setFilters, clearFilters]);
 
   const filteredNotifications = getFilteredNotifications();
 
@@ -143,10 +145,6 @@ export const NotificationsScreen: React.FC = () => {
     );
   };
 
-  const handleArchive = (notification: Notification) => {
-    archiveNotification(notification.id);
-  };
-
   const handleNotificationAction = (actionId: string) => {
     // Handle notification actions (accept, refuse, report, etc.)
     console.log("Action triggered:", actionId);
@@ -180,12 +178,6 @@ export const NotificationsScreen: React.FC = () => {
           icon: "bookmark",
           title: "Aucune notification favorite",
           subtitle: "Épinglez vos notifications importantes",
-        };
-      case "archived":
-        return {
-          icon: "archive",
-          title: "Aucune notification archivée",
-          subtitle: "Les notifications archivées apparaîtront ici",
         };
       case "urgent":
         return {
@@ -223,7 +215,6 @@ export const NotificationsScreen: React.FC = () => {
       onPin={() => handlePin(item)}
       onUnpin={() => handleUnpin(item)}
       onDelete={() => handleDelete(item)}
-      onArchive={() => handleArchive(item)}
     />
   );
 
