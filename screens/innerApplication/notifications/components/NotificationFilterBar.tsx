@@ -1,8 +1,6 @@
-// shared/components/ui/NotificationFilterBar.tsx
-import { FontAwesome } from "@expo/vector-icons";
+import { Ionicons } from "@expo/vector-icons";
 import React from "react";
 import {
-  Platform,
   ScrollView,
   StyleSheet,
   Text,
@@ -13,12 +11,18 @@ import {
 import { useThemeColors } from "../../../../hooks/useTheme";
 import { NotificationPriority } from "../../../../shared/types";
 
-type FilterType = "all" | NotificationPriority | "history";
+type FilterType =
+  | "all"
+  | "unread"
+  | "read"
+  | "pinned"
+  | "archived"
+  | NotificationPriority;
 
 interface FilterOption {
   id: FilterType;
   label: string;
-  icon: keyof typeof FontAwesome.glyphMap;
+  icon: keyof typeof Ionicons.glyphMap;
   count?: number;
 }
 
@@ -27,10 +31,13 @@ interface NotificationFilterBarProps {
   onFilterChange: (filter: FilterType) => void;
   notificationCounts: {
     all: number;
+    unread: number;
+    read: number;
+    pinned: number;
+    archived: number;
     urgent: number;
     important: number;
     informative: number;
-    history: number;
   };
   style?: ViewStyle;
 }
@@ -51,28 +58,46 @@ export const NotificationFilterBar: React.FC<NotificationFilterBarProps> = ({
       count: notificationCounts.all,
     },
     {
+      id: "unread",
+      label: "Non lues",
+      icon: "radio-button-on",
+      count: notificationCounts.unread,
+    },
+    {
+      id: "read",
+      label: "Lues",
+      icon: "checkmark-circle",
+      count: notificationCounts.read,
+    },
+    {
+      id: "pinned",
+      label: "Favorites",
+      icon: "bookmark",
+      count: notificationCounts.pinned,
+    },
+    {
       id: "urgent",
       label: "Urgentes",
-      icon: "exclamation-triangle",
+      icon: "warning",
       count: notificationCounts.urgent,
     },
     {
       id: "important",
       label: "Importantes",
-      icon: "exclamation-circle",
+      icon: "alert-circle",
       count: notificationCounts.important,
     },
     {
       id: "informative",
-      label: "Informatives",
-      icon: "info-circle",
+      label: "Infos",
+      icon: "information-circle",
       count: notificationCounts.informative,
     },
     {
-      id: "history",
-      label: "Historique",
-      icon: "history",
-      count: notificationCounts.history,
+      id: "archived",
+      label: "Archivées",
+      icon: "archive",
+      count: notificationCounts.archived,
     },
   ];
 
@@ -81,32 +106,50 @@ export const NotificationFilterBar: React.FC<NotificationFilterBarProps> = ({
       case "urgent":
         return {
           activeColor: colors.error,
-          activeBg: colors.error + "15",
-          activeBorder: colors.error + "30",
+          activeBg: colors.error + "10",
+          activeBorder: colors.error,
         };
       case "important":
         return {
           activeColor: colors.warning,
-          activeBg: colors.warning + "15",
-          activeBorder: colors.warning + "30",
+          activeBg: colors.warning + "10",
+          activeBorder: colors.warning,
         };
       case "informative":
         return {
           activeColor: colors.info,
-          activeBg: colors.info + "15",
-          activeBorder: colors.info + "30",
+          activeBg: colors.info + "10",
+          activeBorder: colors.info,
         };
-      case "history":
+      case "unread":
+        return {
+          activeColor: colors.primary,
+          activeBg: colors.primary + "10",
+          activeBorder: colors.primary,
+        };
+      case "read":
+        return {
+          activeColor: colors.success,
+          activeBg: colors.success + "10",
+          activeBorder: colors.success,
+        };
+      case "pinned":
+        return {
+          activeColor: colors.warning,
+          activeBg: colors.warning + "10",
+          activeBorder: colors.warning,
+        };
+      case "archived":
         return {
           activeColor: colors.textSecondary,
-          activeBg: colors.textSecondary + "15",
-          activeBorder: colors.textSecondary + "30",
+          activeBg: colors.textSecondary + "10",
+          activeBorder: colors.textSecondary,
         };
       default:
         return {
           activeColor: colors.primary,
-          activeBg: colors.primary + "15",
-          activeBorder: colors.primary + "30",
+          activeBg: colors.primary + "10",
+          activeBorder: colors.primary,
         };
     }
   };
@@ -117,75 +160,59 @@ export const NotificationFilterBar: React.FC<NotificationFilterBarProps> = ({
       paddingVertical: 8,
       borderBottomWidth: 1,
       borderBottomColor: colors.border,
-      ...Platform.select({
-        ios: {
-          shadowColor: colors.shadow,
-          shadowOffset: { width: 0, height: 2 },
-          shadowOpacity: colors.isDark ? 0.2 : 0.05,
-          shadowRadius: 4,
-        },
-        android: {
-          elevation: 2,
-        },
-        web: {
-          boxShadow: colors.isDark
-            ? "0 2px 4px rgba(0, 0, 0, 0.2)"
-            : "0 2px 4px rgba(0, 0, 0, 0.05)",
-        },
-      }),
     },
     scrollView: {
-      paddingHorizontal: 12,
+      paddingHorizontal: 16,
     },
     scrollContent: {
-      paddingHorizontal: 4,
+      paddingRight: 16,
     },
     filterButton: {
       flexDirection: "row",
       alignItems: "center",
-      paddingHorizontal: 16,
+      paddingHorizontal: 12,
       paddingVertical: 8,
-      marginHorizontal: 4,
+      marginRight: 8,
       borderRadius: 20,
+      backgroundColor: colors.backgroundSecondary,
       borderWidth: 1,
-      backgroundColor: colors.surface,
-      borderColor: colors.border,
+      borderColor: "transparent",
       minHeight: 36,
     },
     activeFilterButton: {
-      borderWidth: 1.5,
+      borderColor: "transparent",
     },
     filterIcon: {
       marginRight: 6,
     },
     filterLabel: {
-      fontSize: 14,
+      fontSize: 13,
       fontWeight: "500",
       color: colors.textSecondary,
     },
     activeFilterLabel: {
       fontWeight: "600",
     },
-    countBadge: {
-      backgroundColor: colors.primary,
-      borderRadius: 10,
-      minWidth: 20,
-      height: 20,
+    countContainer: {
+      marginLeft: 6,
+      minWidth: 18,
+      height: 18,
+      borderRadius: 9,
+      backgroundColor: colors.textTertiary,
       alignItems: "center",
       justifyContent: "center",
-      marginLeft: 8,
-      paddingHorizontal: 6,
+      paddingHorizontal: 5,
     },
-    activeCountBadge: {
+    activeCountContainer: {
       backgroundColor: colors.surface,
     },
     countText: {
-      fontSize: 12,
+      fontSize: 11,
       fontWeight: "600",
       color: colors.surface,
     },
     activeCountText: {
-      color: colors.primary,
+      fontWeight: "700",
     },
   });
 
@@ -200,6 +227,7 @@ export const NotificationFilterBar: React.FC<NotificationFilterBarProps> = ({
         {filterOptions.map((option) => {
           const isActive = activeFilter === option.id;
           const filterColors = getFilterColors(option.id);
+          const hasCount = option.count !== undefined && option.count > 0;
 
           return (
             <TouchableOpacity
@@ -215,14 +243,15 @@ export const NotificationFilterBar: React.FC<NotificationFilterBarProps> = ({
               onPress={() => onFilterChange(option.id)}
               activeOpacity={0.7}
             >
-              <FontAwesome
+              <Ionicons
                 name={option.icon}
-                size={16}
+                size={14}
                 color={
                   isActive ? filterColors.activeColor : colors.textSecondary
                 }
                 style={styles.filterIcon}
               />
+
               <Text
                 style={[
                   styles.filterLabel,
@@ -234,13 +263,15 @@ export const NotificationFilterBar: React.FC<NotificationFilterBarProps> = ({
               >
                 {option.label}
               </Text>
-              {option.count !== undefined && option.count > 0 && (
+
+              {hasCount && (
                 <View
                   style={[
-                    styles.countBadge,
+                    styles.countContainer,
                     isActive && {
                       backgroundColor: filterColors.activeColor,
                     },
+                    isActive && styles.activeCountContainer,
                   ]}
                 >
                   <Text
@@ -249,9 +280,10 @@ export const NotificationFilterBar: React.FC<NotificationFilterBarProps> = ({
                       isActive && {
                         color: colors.surface,
                       },
+                      isActive && styles.activeCountText,
                     ]}
                   >
-                    {option.count > 99 ? "99+" : option.count}
+                    {option.count! > 99 ? "99+" : option.count!.toString()}
                   </Text>
                 </View>
               )}

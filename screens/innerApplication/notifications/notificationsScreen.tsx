@@ -1,5 +1,5 @@
 // screens/innerApplication/notifications/notificationsScreen.tsx
-import { FontAwesome } from "@expo/vector-icons";
+import { Ionicons } from "@expo/vector-icons";
 import { router } from "expo-router";
 import React, { useEffect, useState } from "react";
 import {
@@ -19,7 +19,15 @@ import { NotificationCard } from "./components/NotificationCard";
 import { NotificationDetailModal } from "./components/NotificationDetailModal";
 import { NotificationFilterBar } from "./components/NotificationFilterBar";
 
-type FilterType = "all" | "urgent" | "important" | "informative" | "history";
+type FilterType =
+  | "all"
+  | "unread"
+  | "read"
+  | "pinned"
+  | "archived"
+  | "urgent"
+  | "important"
+  | "informative";
 
 export const NotificationsScreen: React.FC = () => {
   const { colors } = useTheme();
@@ -37,6 +45,7 @@ export const NotificationsScreen: React.FC = () => {
     setFilters,
     getFilteredNotifications,
     getUnreadCount,
+    getNotificationCounts,
     clearError,
   } = useNotificationStore();
 
@@ -53,14 +62,29 @@ export const NotificationsScreen: React.FC = () => {
     // Update filters based on active filter
     const filters: any = {};
 
-    if (activeFilter !== "all" && activeFilter !== "history") {
-      filters.priority = [activeFilter];
-    }
-
-    if (activeFilter === "history") {
-      filters.status = ["archived"];
-    } else {
-      filters.status = ["unread", "read", "pinned"];
+    switch (activeFilter) {
+      case "unread":
+        filters.status = ["unread"];
+        break;
+      case "read":
+        filters.status = ["read"];
+        break;
+      case "pinned":
+        filters.status = ["pinned"];
+        break;
+      case "archived":
+        filters.status = ["archived"];
+        break;
+      case "urgent":
+      case "important":
+      case "informative":
+        filters.priority = [activeFilter];
+        filters.status = ["unread", "read", "pinned"]; // Exclude archived for priority filters
+        break;
+      case "all":
+      default:
+        filters.status = ["unread", "read", "pinned"]; // Exclude archived by default
+        break;
     }
 
     setFilters(filters);
@@ -68,25 +92,8 @@ export const NotificationsScreen: React.FC = () => {
 
   const filteredNotifications = getFilteredNotifications();
 
-  const getNotificationCounts = () => {
-    const counts = {
-      all: 0,
-      urgent: 0,
-      important: 0,
-      informative: 0,
-      history: 0,
-    };
-
-    notifications.forEach((notification) => {
-      if (notification.status === "archived") {
-        counts.history++;
-      } else {
-        counts.all++;
-        counts[notification.priority]++;
-      }
-    });
-
-    return counts;
+  const getNotificationCountsData = () => {
+    return getNotificationCounts();
   };
 
   const handleNotificationPress = (notification: Notification) => {
@@ -149,6 +156,59 @@ export const NotificationsScreen: React.FC = () => {
     fetchNotifications();
   };
 
+  const getEmptyStateConfig = () => {
+    switch (activeFilter) {
+      case "unread":
+        return {
+          icon: "mail-unread",
+          title: "Aucune notification non lue",
+          subtitle: "Toutes vos notifications ont été lues",
+        };
+      case "read":
+        return {
+          icon: "mail-open",
+          title: "Aucune notification lue",
+          subtitle: "Les notifications lues apparaîtront ici",
+        };
+      case "pinned":
+        return {
+          icon: "bookmark",
+          title: "Aucune notification favorite",
+          subtitle: "Épinglez vos notifications importantes",
+        };
+      case "archived":
+        return {
+          icon: "archive",
+          title: "Aucune notification archivée",
+          subtitle: "Les notifications archivées apparaîtront ici",
+        };
+      case "urgent":
+        return {
+          icon: "warning",
+          title: "Aucune notification urgente",
+          subtitle: "Les notifications urgentes apparaîtront ici",
+        };
+      case "important":
+        return {
+          icon: "alert-circle",
+          title: "Aucune notification importante",
+          subtitle: "Les notifications importantes apparaîtront ici",
+        };
+      case "informative":
+        return {
+          icon: "information-circle",
+          title: "Aucune notification informative",
+          subtitle: "Les notifications informatives apparaîtront ici",
+        };
+      default:
+        return {
+          icon: "notifications-off",
+          title: "Aucune notification",
+          subtitle: "Vous recevrez vos notifications ici",
+        };
+    }
+  };
+
   const renderNotificationItem = ({ item }: { item: Notification }) => (
     <NotificationCard
       notification={item}
@@ -162,23 +222,21 @@ export const NotificationsScreen: React.FC = () => {
     />
   );
 
+  const emptyStateConfig = getEmptyStateConfig();
+
   const renderEmptyState = () => (
     <View style={styles.emptyState}>
-      <FontAwesome
-        name="bell-slash"
+      <Ionicons
+        name={emptyStateConfig.icon as keyof typeof Ionicons.glyphMap}
         size={64}
         color={colors.textTertiary}
         style={styles.emptyIcon}
       />
       <Text style={[styles.emptyTitle, { color: colors.text }]}>
-        {activeFilter === "history"
-          ? "Aucune notification archivée"
-          : "Aucune notification"}
+        {emptyStateConfig.title}
       </Text>
       <Text style={[styles.emptySubtitle, { color: colors.textSecondary }]}>
-        {activeFilter === "history"
-          ? "Les notifications archivées apparaîtront ici"
-          : "Vous recevrez vos notifications ici"}
+        {emptyStateConfig.subtitle}
       </Text>
     </View>
   );
@@ -232,7 +290,7 @@ export const NotificationsScreen: React.FC = () => {
 
   return (
     <SafeAreaView style={styles.container}>
-      {/* Header - Only with settings icon */}
+      {/* Header */}
       <Header
         leftIcon={{
           icon: "chevron-left",
@@ -250,11 +308,11 @@ export const NotificationsScreen: React.FC = () => {
         ]}
       />
 
-      {/* Filter Bar Only */}
+      {/* Filter Bar */}
       <NotificationFilterBar
         activeFilter={activeFilter}
         onFilterChange={setActiveFilter}
-        notificationCounts={getNotificationCounts()}
+        notificationCounts={getNotificationCountsData()}
       />
 
       {/* Error Display */}

@@ -1,4 +1,4 @@
-import { FontAwesome } from "@expo/vector-icons";
+import { Ionicons } from "@expo/vector-icons";
 import React, { useState } from "react";
 import {
   Platform,
@@ -9,10 +9,7 @@ import {
   ViewStyle,
 } from "react-native";
 import { useThemeColors } from "../../../../hooks/useTheme";
-import {
-  Notification,
-  NotificationPriority,
-} from "../../../../shared/types/notification";
+import { Notification } from "../../../../shared/types/notification";
 import { NotificationItemMenu } from "../../../innerApplication/notifications/components/NotificationItemMenu";
 
 interface NotificationCardProps {
@@ -42,53 +39,66 @@ export const NotificationCard: React.FC<NotificationCardProps> = ({
   const [showMenu, setShowMenu] = useState(false);
   const [menuPosition, setMenuPosition] = useState({ x: 0, y: 0 });
 
-  const getPriorityConfig = (priority: NotificationPriority) => {
-    switch (priority) {
+  const getNotificationTypeIcon = () => {
+    const title = notification.title.toLowerCase();
+
+    if (title.includes("trajet")) {
+      return "car" as keyof typeof Ionicons.glyphMap;
+    } else if (title.includes("email") || title.includes("modif")) {
+      return "mail" as keyof typeof Ionicons.glyphMap;
+    } else if (title.includes("congé") || title.includes("refus")) {
+      return "close-circle" as keyof typeof Ionicons.glyphMap;
+    } else if (title.includes("départ")) {
+      return "time" as keyof typeof Ionicons.glyphMap;
+    } else if (title.includes("rappel")) {
+      return "notifications" as keyof typeof Ionicons.glyphMap;
+    } else if (title.includes("trophée")) {
+      return "trophy" as keyof typeof Ionicons.glyphMap;
+    } else if (title.includes("conseil")) {
+      return "bulb" as keyof typeof Ionicons.glyphMap;
+    }
+
+    return "notifications" as keyof typeof Ionicons.glyphMap;
+  };
+
+  const getIconColor = () => {
+    switch (notification.priority) {
       case "urgent":
-        return {
-          color: colors.error,
-          backgroundColor: colors.error + "15",
-          icon: "exclamation-triangle" as keyof typeof FontAwesome.glyphMap,
-          borderColor: colors.error,
-        };
+        return colors.error;
       case "important":
-        return {
-          color: colors.warning,
-          backgroundColor: colors.warning + "15",
-          icon: "exclamation-circle" as keyof typeof FontAwesome.glyphMap,
-          borderColor: colors.warning,
-        };
+        return colors.warning;
       case "informative":
-        return {
-          color: colors.info,
-          backgroundColor: colors.info + "15",
-          icon: "info-circle" as keyof typeof FontAwesome.glyphMap,
-          borderColor: colors.info,
-        };
+        return colors.info;
+      default:
+        return colors.primary;
     }
   };
 
-  const priorityConfig = getPriorityConfig(notification.priority);
+  const typeIcon = getNotificationTypeIcon();
+  const iconColor = getIconColor();
 
   const formatTimestamp = (date: Date) => {
     const now = new Date();
-    const diffInHours = Math.floor(
-      (now.getTime() - date.getTime()) / (1000 * 60 * 60)
+    const diffInMinutes = Math.floor(
+      (now.getTime() - date.getTime()) / (1000 * 60)
     );
+    const diffInHours = Math.floor(diffInMinutes / 60);
+    const diffInDays = Math.floor(diffInHours / 24);
 
-    if (diffInHours < 1) {
-      const diffInMinutes = Math.floor(
-        (now.getTime() - date.getTime()) / (1000 * 60)
-      );
-      return diffInMinutes < 1 ? "À l'instant" : `Il y a ${diffInMinutes}min`;
+    if (diffInMinutes < 1) {
+      return "À l'instant";
+    } else if (diffInMinutes < 60) {
+      return `${diffInMinutes}min`;
     } else if (diffInHours < 24) {
-      return `Il y a ${diffInHours}h`;
+      return `${diffInHours}h`;
+    } else if (diffInDays === 1) {
+      return "Hier";
+    } else if (diffInDays < 7) {
+      return `${diffInDays}j`;
     } else {
       return date.toLocaleDateString("fr-FR", {
         day: "2-digit",
         month: "2-digit",
-        hour: "2-digit",
-        minute: "2-digit",
       });
     }
   };
@@ -100,68 +110,74 @@ export const NotificationCard: React.FC<NotificationCardProps> = ({
   };
 
   const styles = StyleSheet.create({
-    card: {
+    container: {
+      flexDirection: "row",
+      alignItems: "center",
       backgroundColor: colors.card,
       marginHorizontal: 16,
-      marginVertical: 6,
-      borderRadius: 16,
+      marginVertical: 4,
+      borderRadius: 12,
+      padding: 16,
+      minHeight: 80,
       borderWidth: 1,
       borderColor: colors.border,
-      borderLeftWidth: 4,
-      borderLeftColor: priorityConfig.borderColor,
-      overflow: "hidden",
       ...Platform.select({
         ios: {
           shadowColor: colors.shadow,
-          shadowOffset: { width: 0, height: 2 },
-          shadowOpacity: colors.isDark ? 0.3 : 0.08,
-          shadowRadius: 8,
+          shadowOffset: { width: 0, height: 1 },
+          shadowOpacity: colors.isDark ? 0.3 : 0.05,
+          shadowRadius: 3,
         },
         android: {
-          elevation: 3,
+          elevation: 2,
         },
         web: {
           boxShadow: colors.isDark
-            ? "0 2px 8px rgba(0, 0, 0, 0.3)"
-            : "0 2px 8px rgba(0, 0, 0, 0.08)",
+            ? "0 1px 3px rgba(0, 0, 0, 0.3)"
+            : "0 1px 3px rgba(0, 0, 0, 0.05)",
         },
       }),
     },
-    unreadCard: {
-      backgroundColor: colors.isDark ? colors.card : colors.surface,
-      borderWidth: 1.5,
-      borderColor: priorityConfig.borderColor + "40",
+    unreadContainer: {
+      backgroundColor: colors.backgroundSecondary,
+      borderLeftWidth: 3,
+      borderLeftColor: iconColor,
     },
-    contentContainer: {
-      padding: 16,
+    leftSection: {
+      marginRight: 12,
+      alignItems: "center",
+      position: "relative",
     },
-    headerRow: {
-      flexDirection: "row",
-      alignItems: "flex-start",
-      marginBottom: 12,
-    },
-    priorityIcon: {
-      width: 48,
-      height: 48,
-      borderRadius: 24,
+    iconContainer: {
+      width: 40,
+      height: 40,
+      borderRadius: 20,
+      backgroundColor: colors.backgroundSecondary,
       alignItems: "center",
       justifyContent: "center",
-      backgroundColor: priorityConfig.backgroundColor,
-      marginRight: 12,
+    },
+    unreadDot: {
+      position: "absolute",
+      top: -2,
+      right: -2,
+      width: 8,
+      height: 8,
+      borderRadius: 4,
+      backgroundColor: iconColor,
     },
     contentSection: {
       flex: 1,
-      marginRight: 8,
+      justifyContent: "center",
     },
     titleRow: {
       flexDirection: "row",
-      alignItems: "flex-start",
+      alignItems: "center",
       justifyContent: "space-between",
       marginBottom: 4,
     },
     title: {
       fontSize: 16,
-      fontWeight: "700",
+      fontWeight: notification.isRead ? "500" : "600",
       color: colors.text,
       flex: 1,
       marginRight: 8,
@@ -171,9 +187,30 @@ export const NotificationCard: React.FC<NotificationCardProps> = ({
       fontWeight: "400",
       color: colors.textTertiary,
     },
+    message: {
+      fontSize: 14,
+      lineHeight: 18,
+      color: colors.textSecondary,
+      marginBottom: 4,
+    },
+    statusRow: {
+      flexDirection: "row",
+      alignItems: "center",
+      gap: 8,
+    },
+    statusIcon: {
+      fontSize: 12,
+    },
+    pinnedIcon: {
+      color: colors.warning,
+    },
+    archivedIcon: {
+      color: colors.textTertiary,
+    },
     rightSection: {
-      alignItems: "flex-end",
-      minWidth: 24,
+      alignItems: "center",
+      justifyContent: "center",
+      marginLeft: 8,
     },
     menuButton: {
       width: 32,
@@ -182,133 +219,74 @@ export const NotificationCard: React.FC<NotificationCardProps> = ({
       alignItems: "center",
       justifyContent: "center",
       backgroundColor: colors.backgroundSecondary,
-      marginBottom: 8,
-    },
-    statusIndicators: {
-      alignItems: "center",
-      gap: 4,
-    },
-    unreadDot: {
-      width: 8,
-      height: 8,
-      borderRadius: 4,
-      backgroundColor: priorityConfig.borderColor,
-    },
-    pinnedIcon: {
-      color: colors.primary,
-    },
-    message: {
-      fontSize: 14,
-      lineHeight: 20,
-      color: colors.textSecondary,
-      marginBottom: 8,
-    },
-    contextContainer: {
-      flexDirection: "row",
-      gap: 8,
-      flexWrap: "wrap",
-    },
-    contextTag: {
-      flexDirection: "row",
-      alignItems: "center",
-      paddingHorizontal: 8,
-      paddingVertical: 4,
-      borderRadius: 12,
-      backgroundColor: colors.backgroundSecondary,
-      gap: 4,
-    },
-    contextText: {
-      fontSize: 11,
-      fontWeight: "500",
-      color: colors.textTertiary,
     },
   });
 
   return (
     <>
       <TouchableOpacity
-        style={[styles.card, !notification.isRead && styles.unreadCard, style]}
+        style={[
+          styles.container,
+          !notification.isRead && styles.unreadContainer,
+          style,
+        ]}
         onPress={onPress}
         activeOpacity={0.7}
       >
-        <View style={styles.contentContainer}>
-          <View style={styles.headerRow}>
-            {/* Priority Icon */}
-            <View style={styles.priorityIcon}>
-              <FontAwesome
-                name={priorityConfig.icon}
-                size={20}
-                color={priorityConfig.color}
-              />
-            </View>
-
-            {/* Main Content */}
-            <View style={styles.contentSection}>
-              <View style={styles.titleRow}>
-                <Text style={styles.title} numberOfLines={1}>
-                  {notification.title}
-                </Text>
-                <Text style={styles.timestamp}>
-                  {formatTimestamp(notification.timestamp)}
-                </Text>
-              </View>
-
-              <Text style={styles.message} numberOfLines={2}>
-                {notification.message}
-              </Text>
-
-              {notification.context && (
-                <View style={styles.contextContainer}>
-                  {notification.context.vehicleId && (
-                    <View style={styles.contextTag}>
-                      <FontAwesome
-                        name="car"
-                        size={12}
-                        color={colors.textTertiary}
-                      />
-                      <Text style={styles.contextText}>Véhicule</Text>
-                    </View>
-                  )}
-                  {notification.context.routeId && (
-                    <View style={styles.contextTag}>
-                      <FontAwesome
-                        name="road"
-                        size={12}
-                        color={colors.textTertiary}
-                      />
-                      <Text style={styles.contextText}>Trajet</Text>
-                    </View>
-                  )}
-                </View>
-              )}
-            </View>
-
-            {/* Right Section - Menu & Status */}
-            <View style={styles.rightSection}>
-              <TouchableOpacity
-                style={styles.menuButton}
-                onPress={handleMenuPress}
-                hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
-              >
-                <FontAwesome
-                  name="ellipsis-v"
-                  size={16}
-                  color={colors.textSecondary}
-                />
-              </TouchableOpacity>
-
-              <View style={styles.statusIndicators}>
-                {!notification.isRead && <View style={styles.unreadDot} />}
-                {notification.isPinned && (
-                  <FontAwesome
-                    name="bookmark"
-                    size={12}
-                    style={styles.pinnedIcon}
-                  />
-                )}
-              </View>
-            </View>
+        {/* Left Section - Icon */}
+        <View style={styles.leftSection}>
+          <View style={styles.iconContainer}>
+            <Ionicons name={typeIcon} size={20} color={iconColor} />
           </View>
+          {!notification.isRead && <View style={styles.unreadDot} />}
+        </View>
+
+        {/* Content Section */}
+        <View style={styles.contentSection}>
+          <View style={styles.titleRow}>
+            <Text style={styles.title} numberOfLines={1}>
+              {notification.title}
+            </Text>
+            <Text style={styles.timestamp}>
+              {formatTimestamp(notification.timestamp)}
+            </Text>
+          </View>
+
+          <Text style={styles.message} numberOfLines={1}>
+            {notification.message}
+          </Text>
+
+          <View style={styles.statusRow}>
+            {notification.isPinned && (
+              <Ionicons
+                name="bookmark"
+                size={12}
+                style={[styles.statusIcon, styles.pinnedIcon]}
+              />
+            )}
+            {notification.status === "archived" && (
+              <Ionicons
+                name="archive"
+                size={12}
+                style={[styles.statusIcon, styles.archivedIcon]}
+              />
+            )}
+          </View>
+        </View>
+
+        {/* Right Section - Menu */}
+        <View style={styles.rightSection}>
+          <TouchableOpacity
+            style={styles.menuButton}
+            onPress={handleMenuPress}
+            hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+          >
+            <Ionicons
+              name="ellipsis-vertical"
+              size={16}
+              color={colors.textSecondary}
+            />
+          </TouchableOpacity>
         </View>
       </TouchableOpacity>
 

@@ -34,6 +34,16 @@ interface NotificationActions {
   // Utils
   getFilteredNotifications: () => Notification[];
   getUnreadCount: () => number;
+  getNotificationCounts: () => {
+    all: number;
+    unread: number;
+    read: number;
+    pinned: number;
+    archived: number;
+    urgent: number;
+    important: number;
+    informative: number;
+  };
   clearError: () => void;
 }
 
@@ -85,7 +95,7 @@ const mockNotifications: Notification[] = [
     detailedMessage:
       "Votre demande de congé pour le 26 avril a été refusée. Raison: Manque d'effectif. Veuillez contacter votre superviseur pour plus d'informations.",
     priority: "urgent",
-    status: "unread",
+    status: "pinned",
     timestamp: new Date(2025, 3, 14, 14, 0),
     context: {
       planningId: "leave_789",
@@ -120,6 +130,42 @@ const mockNotifications: Notification[] = [
     ],
     isPinned: false,
     isRead: false,
+  },
+  {
+    id: "5",
+    title: "Rappel planning",
+    message: "N'oubliez pas votre rendez-vous de 14h",
+    detailedMessage:
+      "Votre rendez-vous avec le superviseur est prévu à 14h en salle de réunion.",
+    priority: "informative",
+    status: "read",
+    timestamp: new Date(2025, 3, 13, 12, 0),
+    isPinned: false,
+    isRead: true,
+  },
+  {
+    id: "6",
+    title: "Trophée débloqué",
+    message: "Félicitations ! Conducteur du mois",
+    detailedMessage:
+      "Vous avez été élu conducteur du mois grâce à vos excellentes performances.",
+    priority: "informative",
+    status: "archived",
+    timestamp: new Date(2025, 3, 1, 9, 0),
+    isPinned: false,
+    isRead: true,
+  },
+  {
+    id: "7",
+    title: "Conseil de sécurité",
+    message: "Vérifiez toujours vos rétroviseurs",
+    detailedMessage:
+      "Rappel de sécurité: Pensez à vérifier et ajuster vos rétroviseurs avant chaque départ.",
+    priority: "informative",
+    status: "archived",
+    timestamp: new Date(2025, 2, 28, 8, 0),
+    isPinned: false,
+    isRead: true,
   },
 ];
 
@@ -163,7 +209,13 @@ export const useNotificationStore = create<NotificationStore>((set, get) => ({
     set((state) => ({
       notifications: state.notifications.map((notification) =>
         notification.id === id
-          ? { ...notification, isRead: true, status: "read" as const }
+          ? {
+              ...notification,
+              isRead: true,
+              status: notification.isPinned
+                ? ("pinned" as const)
+                : ("read" as const),
+            }
           : notification
       ),
     }));
@@ -173,7 +225,13 @@ export const useNotificationStore = create<NotificationStore>((set, get) => ({
     set((state) => ({
       notifications: state.notifications.map((notification) =>
         notification.id === id
-          ? { ...notification, isRead: false, status: "unread" as const }
+          ? {
+              ...notification,
+              isRead: false,
+              status: notification.isPinned
+                ? ("pinned" as const)
+                : ("unread" as const),
+            }
           : notification
       ),
     }));
@@ -217,7 +275,11 @@ export const useNotificationStore = create<NotificationStore>((set, get) => ({
     set((state) => ({
       notifications: state.notifications.map((notification) =>
         notification.id === id
-          ? { ...notification, status: "archived" as const }
+          ? {
+              ...notification,
+              status: "archived" as const,
+              isPinned: false,
+            }
           : notification
       ),
     }));
@@ -277,7 +339,49 @@ export const useNotificationStore = create<NotificationStore>((set, get) => ({
   },
 
   getUnreadCount: () => {
-    return get().notifications.filter((n) => !n.isRead).length;
+    return get().notifications.filter(
+      (n) => !n.isRead && n.status !== "archived"
+    ).length;
+  },
+
+  getNotificationCounts: () => {
+    const notifications = get().notifications;
+    const counts = {
+      all: 0,
+      unread: 0,
+      read: 0,
+      pinned: 0,
+      archived: 0,
+      urgent: 0,
+      important: 0,
+      informative: 0,
+    };
+
+    notifications.forEach((notification) => {
+      // Count by status
+      if (notification.status === "archived") {
+        counts.archived++;
+      } else {
+        counts.all++;
+
+        if (notification.isPinned) {
+          counts.pinned++;
+        }
+
+        if (notification.isRead) {
+          counts.read++;
+        } else {
+          counts.unread++;
+        }
+      }
+
+      // Count by priority (excluding archived)
+      if (notification.status !== "archived") {
+        counts[notification.priority]++;
+      }
+    });
+
+    return counts;
   },
 
   clearError: () => {
