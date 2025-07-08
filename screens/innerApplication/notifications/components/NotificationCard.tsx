@@ -61,7 +61,7 @@ export const NotificationCard: React.FC<NotificationCardProps> = ({
     return "notifications" as keyof typeof Ionicons.glyphMap;
   };
 
-  const getIconColor = () => {
+  const getIconBackgroundColor = () => {
     switch (notification.priority) {
       case "urgent":
         return colors.error;
@@ -75,7 +75,7 @@ export const NotificationCard: React.FC<NotificationCardProps> = ({
   };
 
   const typeIcon = getNotificationTypeIcon();
-  const iconColor = getIconColor();
+  const iconColor = getIconBackgroundColor();
 
   const formatTimestamp = (date: Date) => {
     const now = new Date();
@@ -84,21 +84,36 @@ export const NotificationCard: React.FC<NotificationCardProps> = ({
     );
     const diffInHours = Math.floor(diffInMinutes / 60);
     const diffInDays = Math.floor(diffInHours / 24);
+    const diffInWeeks = Math.floor(diffInDays / 7);
+    const diffInMonths = Math.floor(diffInDays / 30);
 
     if (diffInMinutes < 1) {
       return "À l'instant";
+    } else if (diffInMinutes === 1) {
+      return "Il y a 1 min";
     } else if (diffInMinutes < 60) {
-      return `${diffInMinutes}min`;
+      return `Il y a ${diffInMinutes} min`;
+    } else if (diffInHours === 1) {
+      return "Il y a 1 heure";
     } else if (diffInHours < 24) {
-      return `${diffInHours}h`;
+      return `Il y a ${diffInHours} heures`;
     } else if (diffInDays === 1) {
-      return "Hier";
+      return "Il y a 1 jour";
     } else if (diffInDays < 7) {
-      return `${diffInDays}j`;
+      return `Il y a ${diffInDays} jours`;
+    } else if (diffInWeeks === 1) {
+      return "Il y a 1 semaine";
+    } else if (diffInWeeks < 4) {
+      return `Il y a ${diffInWeeks} semaines`;
+    } else if (diffInMonths === 1) {
+      return "Il y a 1 mois";
+    } else if (diffInMonths < 12) {
+      return `Il y a ${diffInMonths} mois`;
     } else {
       return date.toLocaleDateString("fr-FR", {
         day: "2-digit",
         month: "2-digit",
+        year: "numeric",
       });
     }
   };
@@ -109,50 +124,57 @@ export const NotificationCard: React.FC<NotificationCardProps> = ({
     setShowMenu(true);
   };
 
+  const handleMenuAction = (action: () => void) => {
+    setShowMenu(false);
+    // Add a small delay to ensure menu closes before action
+    setTimeout(() => {
+      action();
+    }, 100);
+  };
+
   const styles = StyleSheet.create({
     container: {
       flexDirection: "row",
       alignItems: "center",
-      backgroundColor: colors.card,
+      padding: 20,
       marginHorizontal: 16,
-      marginVertical: 4,
-      borderRadius: 12,
-      padding: 16,
-      minHeight: 80,
-      borderWidth: 1,
-      borderColor: colors.border,
+      marginVertical: 8,
+      borderRadius: 16,
+      backgroundColor: colors.card,
       ...Platform.select({
         ios: {
           shadowColor: colors.shadow,
-          shadowOffset: { width: 0, height: 1 },
-          shadowOpacity: colors.isDark ? 0.3 : 0.05,
-          shadowRadius: 3,
+          shadowOffset: {
+            width: 0,
+            height: 4,
+          },
+          shadowOpacity: colors.isDark ? 0.3 : 0.1,
+          shadowRadius: 8,
         },
         android: {
-          elevation: 2,
+          elevation: 6,
         },
         web: {
           boxShadow: colors.isDark
-            ? "0 1px 3px rgba(0, 0, 0, 0.3)"
-            : "0 1px 3px rgba(0, 0, 0, 0.05)",
+            ? "0 4px 12px rgba(0, 0, 0, 0.3)"
+            : "0 4px 12px rgba(0, 0, 0, 0.08)",
         },
       }),
     },
     unreadContainer: {
-      backgroundColor: colors.backgroundSecondary,
-      borderLeftWidth: 3,
+      borderLeftWidth: 4,
       borderLeftColor: iconColor,
     },
     leftSection: {
-      marginRight: 12,
+      marginRight: 16,
       alignItems: "center",
       position: "relative",
     },
     iconContainer: {
-      width: 40,
-      height: 40,
-      borderRadius: 20,
-      backgroundColor: colors.backgroundSecondary,
+      width: 56,
+      height: 56,
+      borderRadius: 16,
+      backgroundColor: iconColor,
       alignItems: "center",
       justifyContent: "center",
     },
@@ -163,7 +185,7 @@ export const NotificationCard: React.FC<NotificationCardProps> = ({
       width: 8,
       height: 8,
       borderRadius: 4,
-      backgroundColor: iconColor,
+      backgroundColor: colors.error,
     },
     contentSection: {
       flex: 1,
@@ -173,14 +195,15 @@ export const NotificationCard: React.FC<NotificationCardProps> = ({
       flexDirection: "row",
       alignItems: "center",
       justifyContent: "space-between",
-      marginBottom: 4,
+      marginBottom: 6,
     },
     title: {
-      fontSize: 16,
-      fontWeight: notification.isRead ? "500" : "600",
+      fontSize: 18,
+      fontWeight: notification.isRead ? "500" : "700",
       color: colors.text,
       flex: 1,
       marginRight: 8,
+      letterSpacing: 0.3,
     },
     timestamp: {
       fontSize: 12,
@@ -189,9 +212,10 @@ export const NotificationCard: React.FC<NotificationCardProps> = ({
     },
     message: {
       fontSize: 14,
-      lineHeight: 18,
+      lineHeight: 20,
       color: colors.textSecondary,
-      marginBottom: 4,
+      marginBottom: 8,
+      fontWeight: "400",
     },
     statusRow: {
       flexDirection: "row",
@@ -213,12 +237,14 @@ export const NotificationCard: React.FC<NotificationCardProps> = ({
       marginLeft: 8,
     },
     menuButton: {
-      width: 32,
-      height: 32,
-      borderRadius: 16,
+      width: 44,
+      height: 44,
+      borderRadius: 22,
       alignItems: "center",
       justifyContent: "center",
-      backgroundColor: colors.backgroundSecondary,
+      backgroundColor: colors.isDark
+        ? colors.surfaceSecondary
+        : "rgba(255, 255, 255, 0.7)",
     },
   });
 
@@ -236,7 +262,7 @@ export const NotificationCard: React.FC<NotificationCardProps> = ({
         {/* Left Section - Icon */}
         <View style={styles.leftSection}>
           <View style={styles.iconContainer}>
-            <Ionicons name={typeIcon} size={20} color={iconColor} />
+            <Ionicons name={typeIcon} size={26} color="white" />
           </View>
           {!notification.isRead && <View style={styles.unreadDot} />}
         </View>
@@ -252,7 +278,7 @@ export const NotificationCard: React.FC<NotificationCardProps> = ({
             </Text>
           </View>
 
-          <Text style={styles.message} numberOfLines={1}>
+          <Text style={styles.message} numberOfLines={2}>
             {notification.message}
           </Text>
 
@@ -296,12 +322,12 @@ export const NotificationCard: React.FC<NotificationCardProps> = ({
         position={menuPosition}
         visible={showMenu}
         onClose={() => setShowMenu(false)}
-        onMarkAsRead={onMarkAsRead}
-        onMarkAsUnread={onMarkAsUnread}
-        onPin={onPin}
-        onUnpin={onUnpin}
-        onArchive={onArchive}
-        onDelete={onDelete}
+        onMarkAsRead={() => handleMenuAction(() => onMarkAsRead?.())}
+        onMarkAsUnread={() => handleMenuAction(() => onMarkAsUnread?.())}
+        onPin={() => handleMenuAction(() => onPin?.())}
+        onUnpin={() => handleMenuAction(() => onUnpin?.())}
+        onArchive={() => handleMenuAction(() => onArchive?.())}
+        onDelete={() => handleMenuAction(() => onDelete?.())}
       />
     </>
   );

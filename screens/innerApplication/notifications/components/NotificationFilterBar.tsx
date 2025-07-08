@@ -106,49 +106,49 @@ export const NotificationFilterBar: React.FC<NotificationFilterBarProps> = ({
       case "urgent":
         return {
           activeColor: colors.error,
-          activeBg: colors.error + "10",
+          activeBg: colors.error + "15",
           activeBorder: colors.error,
         };
       case "important":
         return {
           activeColor: colors.warning,
-          activeBg: colors.warning + "10",
+          activeBg: colors.warning + "15",
           activeBorder: colors.warning,
         };
       case "informative":
         return {
           activeColor: colors.info,
-          activeBg: colors.info + "10",
+          activeBg: colors.info + "15",
           activeBorder: colors.info,
         };
       case "unread":
         return {
           activeColor: colors.primary,
-          activeBg: colors.primary + "10",
+          activeBg: colors.primary + "15",
           activeBorder: colors.primary,
         };
       case "read":
         return {
           activeColor: colors.success,
-          activeBg: colors.success + "10",
+          activeBg: colors.success + "15",
           activeBorder: colors.success,
         };
       case "pinned":
         return {
           activeColor: colors.warning,
-          activeBg: colors.warning + "10",
+          activeBg: colors.warning + "15",
           activeBorder: colors.warning,
         };
       case "archived":
         return {
           activeColor: colors.textSecondary,
-          activeBg: colors.textSecondary + "10",
+          activeBg: colors.textSecondary + "15",
           activeBorder: colors.textSecondary,
         };
       default:
         return {
           activeColor: colors.primary,
-          activeBg: colors.primary + "10",
+          activeBg: colors.primary + "15",
           activeBorder: colors.primary,
         };
     }
@@ -204,7 +204,7 @@ export const NotificationFilterBar: React.FC<NotificationFilterBarProps> = ({
       paddingHorizontal: 5,
     },
     activeCountContainer: {
-      backgroundColor: colors.surface,
+      backgroundColor: "rgba(255, 255, 255, 0.9)",
     },
     countText: {
       fontSize: 11,
@@ -268,9 +268,6 @@ export const NotificationFilterBar: React.FC<NotificationFilterBarProps> = ({
                 <View
                   style={[
                     styles.countContainer,
-                    isActive && {
-                      backgroundColor: filterColors.activeColor,
-                    },
                     isActive && styles.activeCountContainer,
                   ]}
                 >
@@ -278,7 +275,7 @@ export const NotificationFilterBar: React.FC<NotificationFilterBarProps> = ({
                     style={[
                       styles.countText,
                       isActive && {
-                        color: colors.surface,
+                        color: filterColors.activeColor,
                       },
                       isActive && styles.activeCountText,
                     ]}

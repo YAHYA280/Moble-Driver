@@ -8,6 +8,7 @@ import {
 
 interface NotificationState {
   notifications: Notification[];
+  filteredNotifications: Notification[];
   filters: NotificationFilters;
   preferences: NotificationPreferences;
   isLoading: boolean;
@@ -27,6 +28,7 @@ interface NotificationActions {
   // Filters
   setFilters: (filters: Partial<NotificationFilters>) => void;
   clearFilters: () => void;
+  applyFilters: () => void;
 
   // Preferences
   updatePreferences: (preferences: Partial<NotificationPreferences>) => void;
@@ -185,6 +187,7 @@ const defaultPreferences: NotificationPreferences = {
 export const useNotificationStore = create<NotificationStore>((set, get) => ({
   // State
   notifications: mockNotifications,
+  filteredNotifications: mockNotifications,
   filters: {},
   preferences: defaultPreferences,
   isLoading: false,
@@ -196,7 +199,11 @@ export const useNotificationStore = create<NotificationStore>((set, get) => ({
     try {
       // Simulate API call
       await new Promise((resolve) => setTimeout(resolve, 1000));
-      set({ notifications: mockNotifications, isLoading: false });
+      set({
+        notifications: mockNotifications,
+        filteredNotifications: mockNotifications,
+        isLoading: false,
+      });
     } catch (error) {
       set({
         error: "Erreur lors du chargement des notifications",
@@ -206,102 +213,167 @@ export const useNotificationStore = create<NotificationStore>((set, get) => ({
   },
 
   markAsRead: (id: string) => {
-    set((state) => ({
-      notifications: state.notifications.map((notification) =>
-        notification.id === id
-          ? {
-              ...notification,
-              isRead: true,
-              status: notification.isPinned
-                ? ("pinned" as const)
-                : ("read" as const),
-            }
-          : notification
-      ),
-    }));
+    // Set loading state for this specific action
+    set({ isLoading: true });
+
+    setTimeout(() => {
+      set((state) => {
+        const updatedNotifications = state.notifications.map((notification) =>
+          notification.id === id
+            ? {
+                ...notification,
+                isRead: true,
+                status: notification.isPinned
+                  ? ("pinned" as const)
+                  : ("read" as const),
+              }
+            : notification
+        );
+
+        return {
+          notifications: updatedNotifications,
+          isLoading: false,
+        };
+      });
+      // Reapply filters after updating
+      get().applyFilters();
+    }, 300);
   },
 
   markAsUnread: (id: string) => {
-    set((state) => ({
-      notifications: state.notifications.map((notification) =>
-        notification.id === id
-          ? {
-              ...notification,
-              isRead: false,
-              status: notification.isPinned
-                ? ("pinned" as const)
-                : ("unread" as const),
-            }
-          : notification
-      ),
-    }));
+    set({ isLoading: true });
+
+    setTimeout(() => {
+      set((state) => {
+        const updatedNotifications = state.notifications.map((notification) =>
+          notification.id === id
+            ? {
+                ...notification,
+                isRead: false,
+                status: notification.isPinned
+                  ? ("pinned" as const)
+                  : ("unread" as const),
+              }
+            : notification
+        );
+
+        return {
+          notifications: updatedNotifications,
+          isLoading: false,
+        };
+      });
+      // Reapply filters after updating
+      get().applyFilters();
+    }, 300);
   },
 
   pinNotification: (id: string) => {
-    set((state) => ({
-      notifications: state.notifications.map((notification) =>
-        notification.id === id
-          ? { ...notification, isPinned: true, status: "pinned" as const }
-          : notification
-      ),
-    }));
+    set({ isLoading: true });
+
+    setTimeout(() => {
+      set((state) => {
+        const updatedNotifications = state.notifications.map((notification) =>
+          notification.id === id
+            ? { ...notification, isPinned: true, status: "pinned" as const }
+            : notification
+        );
+
+        return {
+          notifications: updatedNotifications,
+          isLoading: false,
+        };
+      });
+      // Reapply filters after updating
+      get().applyFilters();
+    }, 300);
   },
 
   unpinNotification: (id: string) => {
-    set((state) => ({
-      notifications: state.notifications.map((notification) =>
-        notification.id === id
-          ? {
-              ...notification,
-              isPinned: false,
-              status: notification.isRead
-                ? ("read" as const)
-                : ("unread" as const),
-            }
-          : notification
-      ),
-    }));
+    set({ isLoading: true });
+
+    setTimeout(() => {
+      set((state) => {
+        const updatedNotifications = state.notifications.map((notification) =>
+          notification.id === id
+            ? {
+                ...notification,
+                isPinned: false,
+                status: notification.isRead
+                  ? ("read" as const)
+                  : ("unread" as const),
+              }
+            : notification
+        );
+
+        return {
+          notifications: updatedNotifications,
+          isLoading: false,
+        };
+      });
+      // Reapply filters after updating
+      get().applyFilters();
+    }, 300);
   },
 
   deleteNotification: (id: string) => {
-    set((state) => ({
-      notifications: state.notifications.filter(
-        (notification) => notification.id !== id
-      ),
-    }));
+    set({ isLoading: true });
+
+    setTimeout(() => {
+      set((state) => {
+        const updatedNotifications = state.notifications.filter(
+          (notification) => notification.id !== id
+        );
+
+        return {
+          notifications: updatedNotifications,
+          isLoading: false,
+        };
+      });
+      // Reapply filters after updating
+      get().applyFilters();
+    }, 300);
   },
 
   archiveNotification: (id: string) => {
-    set((state) => ({
-      notifications: state.notifications.map((notification) =>
-        notification.id === id
-          ? {
-              ...notification,
-              status: "archived" as const,
-              isPinned: false,
-            }
-          : notification
-      ),
-    }));
+    set({ isLoading: true });
+
+    setTimeout(() => {
+      set((state) => {
+        const updatedNotifications = state.notifications.map((notification) =>
+          notification.id === id
+            ? {
+                ...notification,
+                status: "archived" as const,
+                isPinned: false,
+                isRead: true, // Mark as read when archiving
+              }
+            : notification
+        );
+
+        return {
+          notifications: updatedNotifications,
+          isLoading: false,
+        };
+      });
+      // Reapply filters after updating
+      get().applyFilters();
+    }, 300);
   },
 
   setFilters: (newFilters: Partial<NotificationFilters>) => {
     set((state) => ({
       filters: { ...state.filters, ...newFilters },
     }));
+    // Apply filters immediately after setting them
+    get().applyFilters();
   },
 
   clearFilters: () => {
     set({ filters: {} });
+    get().applyFilters();
   },
 
-  updatePreferences: (newPreferences: Partial<NotificationPreferences>) => {
-    set((state) => ({
-      preferences: { ...state.preferences, ...newPreferences },
-    }));
-  },
-
-  getFilteredNotifications: () => {
+  applyFilters: () => {
     const { notifications, filters } = get();
     let filtered = [...notifications];
 
@@ -331,11 +403,23 @@ export const useNotificationStore = create<NotificationStore>((set, get) => ({
     }
 
     // Sort: pinned first, then by timestamp (newest first)
-    return filtered.sort((a, b) => {
+    filtered = filtered.sort((a, b) => {
       if (a.isPinned && !b.isPinned) return -1;
       if (!a.isPinned && b.isPinned) return 1;
       return new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime();
     });
+
+    set({ filteredNotifications: filtered });
+  },
+
+  updatePreferences: (newPreferences: Partial<NotificationPreferences>) => {
+    set((state) => ({
+      preferences: { ...state.preferences, ...newPreferences },
+    }));
+  },
+
+  getFilteredNotifications: () => {
+    return get().filteredNotifications;
   },
 
   getUnreadCount: () => {

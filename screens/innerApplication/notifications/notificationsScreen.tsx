@@ -47,6 +47,7 @@ export const NotificationsScreen: React.FC = () => {
     getUnreadCount,
     getNotificationCounts,
     clearError,
+    applyFilters,
   } = useNotificationStore();
 
   const [activeFilter, setActiveFilter] = useState<FilterType>("all");
@@ -88,7 +89,7 @@ export const NotificationsScreen: React.FC = () => {
     }
 
     setFilters(filters);
-  }, [activeFilter]);
+  }, [activeFilter, setFilters]);
 
   const filteredNotifications = getFilteredNotifications();
 
@@ -154,6 +155,10 @@ export const NotificationsScreen: React.FC = () => {
 
   const handleRefresh = () => {
     fetchNotifications();
+  };
+
+  const handleFilterChange = (filter: FilterType) => {
+    setActiveFilter(filter);
   };
 
   const getEmptyStateConfig = () => {
@@ -311,7 +316,7 @@ export const NotificationsScreen: React.FC = () => {
       {/* Filter Bar */}
       <NotificationFilterBar
         activeFilter={activeFilter}
-        onFilterChange={setActiveFilter}
+        onFilterChange={handleFilterChange}
         notificationCounts={getNotificationCountsData()}
       />
 

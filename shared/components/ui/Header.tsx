@@ -166,7 +166,7 @@ export const Header: React.FC<HeaderProps> = ({
     titleContainer: {
       flex: 1,
       alignItems: "flex-start",
-      paddingHorizontal: 16,
+      paddingHorizontal: 30,
     },
     titleRow: {
       flexDirection: "row",
