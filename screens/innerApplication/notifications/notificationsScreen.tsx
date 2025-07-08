@@ -13,7 +13,6 @@ import {
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useTheme } from "../../../contexts/ThemeContext";
 import { Header } from "../../../shared/components/ui/Header";
-import { Input } from "../../../shared/components/ui/Input";
 import { Notification } from "../../../shared/types/notification";
 import { useNotificationStore } from "../../../store/notificationStore";
 import { NotificationCard } from "./components/NotificationCard";
@@ -42,18 +41,16 @@ export const NotificationsScreen: React.FC = () => {
   } = useNotificationStore();
 
   const [activeFilter, setActiveFilter] = useState<FilterType>("all");
-  const [searchQuery, setSearchQuery] = useState("");
   const [selectedNotification, setSelectedNotification] =
     useState<Notification | null>(null);
   const [showDetailModal, setShowDetailModal] = useState(false);
-  const [showSearch, setShowSearch] = useState(false);
 
   useEffect(() => {
     fetchNotifications();
   }, []);
 
   useEffect(() => {
-    // Update filters based on active filter and search
+    // Update filters based on active filter
     const filters: any = {};
 
     if (activeFilter !== "all" && activeFilter !== "history") {
@@ -66,12 +63,8 @@ export const NotificationsScreen: React.FC = () => {
       filters.status = ["unread", "read", "pinned"];
     }
 
-    if (searchQuery.trim()) {
-      filters.searchQuery = searchQuery.trim();
-    }
-
     setFilters(filters);
-  }, [activeFilter, searchQuery]);
+  }, [activeFilter]);
 
   const filteredNotifications = getFilteredNotifications();
 
@@ -156,13 +149,6 @@ export const NotificationsScreen: React.FC = () => {
     fetchNotifications();
   };
 
-  const handleSearchToggle = () => {
-    setShowSearch(!showSearch);
-    if (showSearch) {
-      setSearchQuery("");
-    }
-  };
-
   const renderNotificationItem = ({ item }: { item: Notification }) => (
     <NotificationCard
       notification={item}
@@ -187,15 +173,11 @@ export const NotificationsScreen: React.FC = () => {
       <Text style={[styles.emptyTitle, { color: colors.text }]}>
         {activeFilter === "history"
           ? "Aucune notification archivée"
-          : searchQuery
-          ? "Aucun résultat trouvé"
           : "Aucune notification"}
       </Text>
       <Text style={[styles.emptySubtitle, { color: colors.textSecondary }]}>
         {activeFilter === "history"
           ? "Les notifications archivées apparaîtront ici"
-          : searchQuery
-          ? "Essayez avec d'autres mots-clés"
           : "Vous recevrez vos notifications ici"}
       </Text>
     </View>
@@ -205,13 +187,6 @@ export const NotificationsScreen: React.FC = () => {
     container: {
       flex: 1,
       backgroundColor: colors.backgroundSecondary,
-    },
-    searchContainer: {
-      paddingHorizontal: 16,
-      paddingVertical: 8,
-      backgroundColor: colors.background,
-      borderBottomWidth: 1,
-      borderBottomColor: colors.border,
     },
     content: {
       flex: 1,
@@ -257,7 +232,7 @@ export const NotificationsScreen: React.FC = () => {
 
   return (
     <SafeAreaView style={styles.container}>
-      {/* Header */}
+      {/* Header - Only with settings icon */}
       <Header
         leftIcon={{
           icon: "chevron-left",
@@ -267,10 +242,6 @@ export const NotificationsScreen: React.FC = () => {
         subtitle={`${getUnreadCount()} non lues`}
         rightIcons={[
           {
-            icon: "search",
-            onPress: handleSearchToggle,
-          },
-          {
             icon: "cog",
             onPress: () => {
               router.push("/innerApplication/notifications/settings");
@@ -279,20 +250,7 @@ export const NotificationsScreen: React.FC = () => {
         ]}
       />
 
-      {/* Search Bar */}
-      {showSearch && (
-        <View style={styles.searchContainer}>
-          <Input
-            placeholder="Rechercher dans les notifications..."
-            value={searchQuery}
-            onChangeText={setSearchQuery}
-            rightIcon="search"
-            variant="outlined"
-          />
-        </View>
-      )}
-
-      {/* Filter Bar */}
+      {/* Filter Bar Only */}
       <NotificationFilterBar
         activeFilter={activeFilter}
         onFilterChange={setActiveFilter}

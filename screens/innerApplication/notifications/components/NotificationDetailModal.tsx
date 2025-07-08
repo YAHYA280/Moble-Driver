@@ -2,6 +2,7 @@
 import { FontAwesome } from "@expo/vector-icons";
 import React from "react";
 import {
+  Dimensions,
   Modal,
   Platform,
   ScrollView,
@@ -29,6 +30,8 @@ interface NotificationDetailModalProps {
   onDelete?: () => void;
   onAction?: (actionId: string) => void;
 }
+
+const { height: screenHeight } = Dimensions.get("window");
 
 export const NotificationDetailModal: React.FC<
   NotificationDetailModalProps
@@ -89,9 +92,7 @@ export const NotificationDetailModal: React.FC<
   const styles = StyleSheet.create({
     modal: {
       flex: 1,
-      backgroundColor: colors.isDark
-        ? "rgba(0, 0, 0, 0.8)"
-        : "rgba(0, 0, 0, 0.5)",
+      backgroundColor: colors.background,
     },
     container: {
       flex: 1,
@@ -102,26 +103,39 @@ export const NotificationDetailModal: React.FC<
       alignItems: "center",
       justifyContent: "space-between",
       paddingHorizontal: 16,
-      paddingVertical: 12,
+      paddingVertical: 16,
       borderBottomWidth: 1,
       borderBottomColor: colors.border,
       backgroundColor: colors.surface,
+      minHeight: 64,
       ...Platform.select({
         ios: {
           shadowColor: colors.shadow,
-          shadowOffset: { width: 0, height: 2 },
+          shadowOffset: { width: 0, height: 1 },
           shadowOpacity: colors.isDark ? 0.3 : 0.1,
-          shadowRadius: 4,
+          shadowRadius: 3,
         },
         android: {
           elevation: 4,
         },
       }),
     },
+    headerLeft: {
+      width: 50,
+      alignItems: "flex-start",
+    },
     headerTitle: {
       fontSize: 18,
       fontWeight: "600",
       color: colors.text,
+      textAlign: "center",
+    },
+    headerRight: {
+      width: 100,
+      flexDirection: "row",
+      alignItems: "center",
+      justifyContent: "flex-end",
+      gap: 8,
     },
     closeButton: {
       width: 36,
@@ -148,6 +162,7 @@ export const NotificationDetailModal: React.FC<
     },
     scrollContent: {
       padding: 16,
+      paddingBottom: 100, // Extra padding for footer
     },
     prioritySection: {
       flexDirection: "row",
@@ -200,11 +215,11 @@ export const NotificationDetailModal: React.FC<
       marginBottom: 20,
     },
     title: {
-      fontSize: 24,
+      fontSize: 22,
       fontWeight: "700",
       color: colors.text,
       marginBottom: 8,
-      lineHeight: 30,
+      lineHeight: 28,
     },
     subtitle: {
       fontSize: 16,
@@ -257,11 +272,17 @@ export const NotificationDetailModal: React.FC<
       gap: 12,
     },
     footer: {
-      padding: 16,
+      paddingHorizontal: 16,
+      paddingVertical: 16,
       borderTopWidth: 1,
       borderTopColor: colors.border,
       backgroundColor: colors.surface,
       gap: 12,
+      ...Platform.select({
+        ios: {
+          paddingBottom: 32, // Extra padding for iOS safe area
+        },
+      }),
     },
     footerActions: {
       flexDirection: "row",
@@ -273,209 +294,219 @@ export const NotificationDetailModal: React.FC<
     <Modal
       visible={visible}
       animationType="slide"
-      presentationStyle="fullScreen"
+      presentationStyle="pageSheet"
       onRequestClose={onClose}
     >
-      <SafeAreaView style={styles.container}>
-        {/* Header */}
-        <View style={styles.header}>
-          <Text style={styles.headerTitle}>Détails</Text>
+      <View style={styles.modal}>
+        <SafeAreaView style={styles.container} edges={["top"]}>
+          {/* Header */}
+          <View style={styles.header}>
+            <View style={styles.headerLeft}>
+              <TouchableOpacity style={styles.closeButton} onPress={onClose}>
+                <FontAwesome
+                  name="times"
+                  size={18}
+                  color={colors.textSecondary}
+                />
+              </TouchableOpacity>
+            </View>
 
-          <View style={styles.actionButtons}>
-            {notification.isRead
-              ? onMarkAsUnread && (
-                  <TouchableOpacity
-                    style={styles.actionButton}
-                    onPress={onMarkAsUnread}
-                  >
-                    <FontAwesome
-                      name="envelope"
-                      size={16}
-                      color={colors.textSecondary}
-                    />
-                  </TouchableOpacity>
-                )
-              : onMarkAsRead && (
-                  <TouchableOpacity
-                    style={styles.actionButton}
-                    onPress={onMarkAsRead}
-                  >
-                    <FontAwesome
-                      name="envelope-open"
-                      size={16}
-                      color={colors.textSecondary}
-                    />
-                  </TouchableOpacity>
-                )}
+            <Text style={styles.headerTitle}>Détails</Text>
 
-            {notification.isPinned
-              ? onUnpin && (
-                  <TouchableOpacity
-                    style={styles.actionButton}
-                    onPress={onUnpin}
-                  >
-                    <FontAwesome
-                      name="bookmark"
-                      size={16}
-                      color={colors.primary}
-                    />
-                  </TouchableOpacity>
-                )
-              : onPin && (
-                  <TouchableOpacity style={styles.actionButton} onPress={onPin}>
-                    <FontAwesome
-                      name="bookmark-o"
-                      size={16}
-                      color={colors.textSecondary}
-                    />
-                  </TouchableOpacity>
-                )}
+            <View style={styles.headerRight}>
+              {notification.isRead
+                ? onMarkAsUnread && (
+                    <TouchableOpacity
+                      style={styles.actionButton}
+                      onPress={onMarkAsUnread}
+                    >
+                      <FontAwesome
+                        name="envelope"
+                        size={16}
+                        color={colors.textSecondary}
+                      />
+                    </TouchableOpacity>
+                  )
+                : onMarkAsRead && (
+                    <TouchableOpacity
+                      style={styles.actionButton}
+                      onPress={onMarkAsRead}
+                    >
+                      <FontAwesome
+                        name="envelope-open"
+                        size={16}
+                        color={colors.textSecondary}
+                      />
+                    </TouchableOpacity>
+                  )}
 
-            <TouchableOpacity style={styles.closeButton} onPress={onClose}>
-              <FontAwesome
-                name="times"
-                size={18}
-                color={colors.textSecondary}
-              />
-            </TouchableOpacity>
+              {notification.isPinned
+                ? onUnpin && (
+                    <TouchableOpacity
+                      style={styles.actionButton}
+                      onPress={onUnpin}
+                    >
+                      <FontAwesome
+                        name="bookmark"
+                        size={16}
+                        color={colors.primary}
+                      />
+                    </TouchableOpacity>
+                  )
+                : onPin && (
+                    <TouchableOpacity
+                      style={styles.actionButton}
+                      onPress={onPin}
+                    >
+                      <FontAwesome
+                        name="bookmark-o"
+                        size={16}
+                        color={colors.textSecondary}
+                      />
+                    </TouchableOpacity>
+                  )}
+            </View>
           </View>
-        </View>
 
-        {/* Content */}
-        <ScrollView
-          style={styles.content}
-          contentContainerStyle={styles.scrollContent}
-        >
-          {/* Priority Section */}
-          <View style={styles.prioritySection}>
-            <View style={styles.priorityIcon}>
-              <FontAwesome
-                name={priorityConfig.icon}
-                size={20}
-                color={priorityConfig.color}
-              />
+          {/* Content */}
+          <ScrollView
+            style={styles.content}
+            contentContainerStyle={styles.scrollContent}
+            showsVerticalScrollIndicator={false}
+          >
+            {/* Priority Section */}
+            <View style={styles.prioritySection}>
+              <View style={styles.priorityIcon}>
+                <FontAwesome
+                  name={priorityConfig.icon}
+                  size={20}
+                  color={priorityConfig.color}
+                />
+              </View>
+              <View style={styles.priorityInfo}>
+                <Text style={styles.priorityLabel}>{priorityConfig.label}</Text>
+                <Text style={styles.timestamp}>
+                  {formatFullTimestamp(notification.timestamp)}
+                </Text>
+              </View>
+              {notification.isPinned && (
+                <View style={styles.statusBadge}>
+                  <Text style={styles.statusText}>Épinglée</Text>
+                </View>
+              )}
             </View>
-            <View style={styles.priorityInfo}>
-              <Text style={styles.priorityLabel}>{priorityConfig.label}</Text>
-              <Text style={styles.timestamp}>
-                {formatFullTimestamp(notification.timestamp)}
-              </Text>
+
+            {/* Title Section */}
+            <View style={styles.titleSection}>
+              <Text style={styles.title}>{notification.title}</Text>
+              <Text style={styles.subtitle}>{notification.message}</Text>
             </View>
-            {notification.isPinned && (
-              <View style={styles.statusBadge}>
-                <Text style={styles.statusText}>Épinglée</Text>
+
+            {/* Detailed Message */}
+            {notification.detailedMessage && (
+              <View style={styles.messageSection}>
+                <Text style={styles.sectionTitle}>Message détaillé</Text>
+                <Text style={styles.message}>
+                  {notification.detailedMessage}
+                </Text>
               </View>
             )}
-          </View>
 
-          {/* Title Section */}
-          <View style={styles.titleSection}>
-            <Text style={styles.title}>{notification.title}</Text>
-            <Text style={styles.subtitle}>{notification.message}</Text>
-          </View>
-
-          {/* Detailed Message */}
-          {notification.detailedMessage && (
-            <View style={styles.messageSection}>
-              <Text style={styles.sectionTitle}>Message détaillé</Text>
-              <Text style={styles.message}>{notification.detailedMessage}</Text>
-            </View>
-          )}
-
-          {/* Context Information */}
-          {notification.context && (
-            <View style={styles.contextSection}>
-              <Text style={styles.sectionTitle}>Contexte</Text>
-              <View style={styles.contextGrid}>
-                {notification.context.vehicleId && (
-                  <View style={styles.contextItem}>
-                    <FontAwesome
-                      name="car"
-                      size={16}
-                      color={colors.textTertiary}
-                      style={styles.contextIcon}
-                    />
-                    <Text style={styles.contextText}>Véhicule concerné</Text>
-                  </View>
-                )}
-                {notification.context.routeId && (
-                  <View style={styles.contextItem}>
-                    <FontAwesome
-                      name="road"
-                      size={16}
-                      color={colors.textTertiary}
-                      style={styles.contextIcon}
-                    />
-                    <Text style={styles.contextText}>Trajet</Text>
-                  </View>
-                )}
-                {notification.context.planningId && (
-                  <View style={styles.contextItem}>
-                    <FontAwesome
-                      name="calendar"
-                      size={16}
-                      color={colors.textTertiary}
-                      style={styles.contextIcon}
-                    />
-                    <Text style={styles.contextText}>Planning</Text>
-                  </View>
-                )}
-                {notification.context.location && (
-                  <View style={styles.contextItem}>
-                    <FontAwesome
-                      name="map-marker"
-                      size={16}
-                      color={colors.textTertiary}
-                      style={styles.contextIcon}
-                    />
-                    <Text style={styles.contextText}>
-                      {notification.context.location}
-                    </Text>
-                  </View>
-                )}
+            {/* Context Information */}
+            {notification.context && (
+              <View style={styles.contextSection}>
+                <Text style={styles.sectionTitle}>Contexte</Text>
+                <View style={styles.contextGrid}>
+                  {notification.context.vehicleId && (
+                    <View style={styles.contextItem}>
+                      <FontAwesome
+                        name="car"
+                        size={16}
+                        color={colors.textTertiary}
+                        style={styles.contextIcon}
+                      />
+                      <Text style={styles.contextText}>Véhicule concerné</Text>
+                    </View>
+                  )}
+                  {notification.context.routeId && (
+                    <View style={styles.contextItem}>
+                      <FontAwesome
+                        name="road"
+                        size={16}
+                        color={colors.textTertiary}
+                        style={styles.contextIcon}
+                      />
+                      <Text style={styles.contextText}>Trajet</Text>
+                    </View>
+                  )}
+                  {notification.context.planningId && (
+                    <View style={styles.contextItem}>
+                      <FontAwesome
+                        name="calendar"
+                        size={16}
+                        color={colors.textTertiary}
+                        style={styles.contextIcon}
+                      />
+                      <Text style={styles.contextText}>Planning</Text>
+                    </View>
+                  )}
+                  {notification.context.location && (
+                    <View style={styles.contextItem}>
+                      <FontAwesome
+                        name="map-marker"
+                        size={16}
+                        color={colors.textTertiary}
+                        style={styles.contextIcon}
+                      />
+                      <Text style={styles.contextText}>
+                        {notification.context.location}
+                      </Text>
+                    </View>
+                  )}
+                </View>
               </View>
-            </View>
-          )}
+            )}
 
-          {/* Action Buttons */}
-          {notification.actions && notification.actions.length > 0 && (
-            <View style={styles.actionsSection}>
-              <Text style={styles.sectionTitle}>Actions disponibles</Text>
-              <View style={styles.actionsList}>
-                {notification.actions.map((action) => (
-                  <Button
-                    key={action.id}
-                    title={action.label}
-                    variant={action.variant || "outline"}
-                    onPress={() => onAction?.(action.id)}
-                  />
-                ))}
+            {/* Action Buttons */}
+            {notification.actions && notification.actions.length > 0 && (
+              <View style={styles.actionsSection}>
+                <Text style={styles.sectionTitle}>Actions disponibles</Text>
+                <View style={styles.actionsList}>
+                  {notification.actions.map((action) => (
+                    <Button
+                      key={action.id}
+                      title={action.label}
+                      variant={action.variant || "outline"}
+                      onPress={() => onAction?.(action.id)}
+                    />
+                  ))}
+                </View>
               </View>
-            </View>
-          )}
-        </ScrollView>
+            )}
+          </ScrollView>
 
-        {/* Footer */}
-        <View style={styles.footer}>
-          <View style={styles.footerActions}>
-            {onDelete && (
+          {/* Fixed Footer */}
+          <View style={styles.footer}>
+            <View style={styles.footerActions}>
+              {onDelete && (
+                <Button
+                  title="Supprimer"
+                  variant="outline"
+                  onPress={onDelete}
+                  style={{ flex: 1 }}
+                  textStyle={{ color: colors.error }}
+                />
+              )}
               <Button
-                title="Supprimer"
-                variant="outline"
-                onPress={onDelete}
-                style={{ flex: 1 }}
-                textStyle={{ color: colors.error }}
+                title="Fermer"
+                variant="primary"
+                onPress={onClose}
+                style={{ flex: 2 }}
               />
-            )}
-            <Button
-              title="Fermer"
-              variant="primary"
-              onPress={onClose}
-              style={{ flex: 2 }}
-            />
+            </View>
           </View>
-        </View>
-      </SafeAreaView>
+        </SafeAreaView>
+      </View>
     </Modal>
   );
 };
