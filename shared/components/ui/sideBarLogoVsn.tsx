@@ -1,11 +1,12 @@
 import React from "react";
 import Svg, { Path } from "react-native-svg";
-interface LsideBarLogoVsnProps {
+
+interface LogoVSNProps {
   width?: number;
   height?: number;
 }
 
-export const LogoVSN: React.FC<LsideBarLogoVsnProps> = ({
+export const LogoVSN: React.FC<LogoVSNProps> = ({
   width = 257,
   height = 59,
 }) => {

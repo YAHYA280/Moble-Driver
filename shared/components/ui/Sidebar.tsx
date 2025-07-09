@@ -2,6 +2,7 @@ import ConditionalComponent from "@/shared/components/conditionalComponent/condi
 import { FontAwesome } from "@expo/vector-icons";
 import React from "react";
 import {
+  Dimensions,
   Platform,
   StyleSheet,
   Text,
@@ -10,6 +11,9 @@ import {
   ViewStyle,
 } from "react-native";
 import { useThemeColors } from "../../../hooks/useTheme";
+import { LogoVSN } from "./sideBarLogoVsn";
+
+const { height: screenHeight } = Dimensions.get("window");
 
 type IconType = keyof typeof FontAwesome.glyphMap;
 
@@ -88,6 +92,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
 
   const styles = StyleSheet.create({
     container: {
+      height: screenHeight,
       backgroundColor: colors.surface,
       borderRightWidth: 1,
       borderRightColor: colors.border,
@@ -107,6 +112,14 @@ export const Sidebar: React.FC<SidebarProps> = ({
             : "2px 0 8px rgba(0, 0, 0, 0.1)",
         },
       }),
+    },
+    logoSection: {
+      alignItems: "center",
+      justifyContent: "center",
+      paddingVertical: 24,
+      paddingHorizontal: 16,
+      borderBottomWidth: 1,
+      borderBottomColor: colors.border,
     },
     header: {
       flexDirection: "row",
@@ -177,6 +190,12 @@ export const Sidebar: React.FC<SidebarProps> = ({
 
   return (
     <View style={[styles.container, style]}>
+      {/* Logo Section */}
+      <View style={styles.logoSection}>
+        <LogoVSN width={180} height={42} />
+      </View>
+
+      {/* Header with title and close button */}
       <ConditionalComponent isValid={!!(title || showCloseButton)}>
         <View style={styles.header}>
           <ConditionalComponent isValid={!!title}>

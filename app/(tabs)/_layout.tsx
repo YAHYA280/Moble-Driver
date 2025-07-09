@@ -1,3 +1,7 @@
+// Move all your existing feature routes into the (tabs) directory structure
+// This way they stay within the tab navigation but are hidden from the tab bar
+
+// app/(tabs)/_layout.tsx - Updated to include all routes but hide detail screens
 import { Ionicons } from "@expo/vector-icons";
 import { Tabs } from "expo-router";
 import { Dimensions, Platform, StyleSheet, View } from "react-native";
@@ -181,6 +185,8 @@ export default function TabLayout() {
         },
       }}
     >
+      {/* VISIBLE TAB BAR ITEMS */}
+
       {/* Map - Left side */}
       <Tabs.Screen
         name="map"
@@ -264,6 +270,64 @@ export default function TabLayout() {
               />
             </View>
           ),
+        }}
+      />
+
+      {/* HIDDEN ROUTES - These will not show in the tab bar but keep the tab bar visible */}
+
+      {/* Payslips with nested Stack */}
+      <Tabs.Screen
+        name="payslips"
+        options={{
+          href: null, // This hides it from the tab bar
+        }}
+      />
+
+      {/* Notifications with nested Stack */}
+      <Tabs.Screen
+        name="notifications"
+        options={{
+          href: null,
+        }}
+      />
+
+      {/* Vehicles */}
+      <Tabs.Screen
+        name="vehicles"
+        options={{
+          href: null,
+        }}
+      />
+
+      {/* Documents */}
+      <Tabs.Screen
+        name="documents"
+        options={{
+          href: null,
+        }}
+      />
+
+      {/* Routes */}
+      <Tabs.Screen
+        name="routes"
+        options={{
+          href: null,
+        }}
+      />
+
+      {/* Geolocation */}
+      <Tabs.Screen
+        name="geolocation"
+        options={{
+          href: null,
+        }}
+      />
+
+      {/* Planning */}
+      <Tabs.Screen
+        name="planning"
+        options={{
+          href: null,
         }}
       />
     </Tabs>

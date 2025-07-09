@@ -8,6 +8,7 @@ import {
   RefreshControl,
   StyleSheet,
   Text,
+  TouchableOpacity,
   View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
@@ -108,7 +109,6 @@ export const PayslipsScreen: React.FC = () => {
 
   const handlePayslipPress = (payslip: Payslip) => {
     selectPayslip(payslip);
-    // Fix: Use proper route navigation
     router.push({
       pathname: "/innerApplication/payslips/details/[id]" as any,
       params: { id: payslip.id },
@@ -194,23 +194,6 @@ export const PayslipsScreen: React.FC = () => {
     mainContent: {
       flex: 1,
     },
-    sidebarContainer: {
-      position: "absolute",
-      top: 0,
-      left: 0,
-      bottom: 0,
-      width: 280,
-      zIndex: 1000,
-    },
-    overlay: {
-      position: "absolute",
-      top: 0,
-      left: 0,
-      right: 0,
-      bottom: 0,
-      backgroundColor: "rgba(0, 0, 0, 0.5)",
-      zIndex: 999,
-    },
     listContainer: {
       flex: 1,
     },
@@ -245,27 +228,29 @@ export const PayslipsScreen: React.FC = () => {
       fontSize: 14,
       fontWeight: "500",
     },
+    // Sidebar specific styles
+    sidebarOverlay: {
+      position: "absolute",
+      top: 0,
+      left: 0,
+      right: 0,
+      bottom: 0,
+      backgroundColor: "rgba(0, 0, 0, 0.5)",
+      zIndex: 999,
+    },
+    sidebarContainer: {
+      position: "absolute",
+      top: 0,
+      left: 0,
+      bottom: 0,
+      width: 280,
+      zIndex: 1000,
+    },
   });
 
   return (
     <SafeAreaView style={styles.container}>
-      {/* Sidebar */}
-      {showSidebar && (
-        <>
-          <View
-            style={styles.overlay}
-            onTouchStart={() => setShowSidebar(false)}
-          />
-          <View style={styles.sidebarContainer}>
-            <Sidebar
-              title="Paie"
-              items={sidebarItems}
-              onClose={() => setShowSidebar(false)}
-            />
-          </View>
-        </>
-      )}
-
+      {/* Main Content */}
       <View style={styles.mainContent}>
         {/* Animated Header */}
         <Animated.View
@@ -347,6 +332,24 @@ export const PayslipsScreen: React.FC = () => {
           />
         </Animated.View>
       </View>
+
+      {/* Sidebar Overlay and Container */}
+      {showSidebar && (
+        <>
+          <TouchableOpacity
+            style={styles.sidebarOverlay}
+            onPress={() => setShowSidebar(false)}
+            activeOpacity={1}
+          />
+          <View style={styles.sidebarContainer}>
+            <Sidebar
+              title="Paie"
+              items={sidebarItems}
+              onClose={() => setShowSidebar(false)}
+            />
+          </View>
+        </>
+      )}
     </SafeAreaView>
   );
 };

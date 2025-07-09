@@ -1,4 +1,4 @@
-// screens/innerApplication/home/homeScreen.tsx - With theme applied
+// screens/innerApplication/home/homeScreen.tsx - Updated navigation
 import { router } from "expo-router";
 import React, { useEffect, useRef } from "react";
 import { Animated, ScrollView, StyleSheet, View } from "react-native";
@@ -50,31 +50,31 @@ export const HomeScreen: React.FC = () => {
   }, []);
 
   const handleNotificationPress = () => {
-    router.push("/innerApplication/notifications");
+    router.push("/(tabs)/notifications" as any);
   };
 
   const handlePayslipsPress = () => {
-    router.push("/innerApplication/payslips");
+    router.push("/(tabs)/payslips" as any);
   };
 
   const handleVehiclesPress = () => {
-    router.push("/innerApplication/vehicles");
+    router.push("/(tabs)/vehicles" as any);
   };
 
   const handleDocumentsPress = () => {
-    router.push("/innerApplication/documents");
+    router.push("/(tabs)/documents" as any);
   };
 
   const handleRoutesPress = () => {
-    router.push("/innerApplication/routes");
+    router.push("/(tabs)/routes" as any);
   };
 
   const handleGeolocationPress = () => {
-    router.push("/innerApplication/geolocation");
+    router.push("/(tabs)/geolocation" as any);
   };
 
   const handlePlanningPress = () => {
-    router.push("/innerApplication/planning");
+    router.push("/(tabs)/planning" as any);
   };
 
   const styles = StyleSheet.create({

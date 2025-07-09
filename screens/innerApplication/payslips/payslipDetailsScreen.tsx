@@ -1,4 +1,5 @@
 // screens/innerApplication/payslips/payslipDetailsScreen.tsx
+import { FontAwesome } from "@expo/vector-icons";
 import { router } from "expo-router";
 import React, { useEffect, useRef } from "react";
 import {
@@ -8,11 +9,11 @@ import {
   ScrollView,
   StyleSheet,
   Text,
+  TouchableOpacity,
   View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useTheme } from "../../../contexts/ThemeContext";
-import { Button } from "../../../shared/components/ui/Button";
 import { Header } from "../../../shared/components/ui/Header";
 import { PayslipBonus, PayslipDeduction } from "../../../shared/types/payslip";
 import { usePayslipStore } from "../../../store/payslipStore";
@@ -73,56 +74,43 @@ export const PayslipDetailsScreen: React.FC = () => {
     0
   );
 
-  const totalAdvances = selectedPayslip.advances.reduce(
-    (sum, advance) => sum + advance.amount,
-    0
-  );
-
-  const overtimeAmount =
-    selectedPayslip.overtimeHours * selectedPayslip.overtimeRate;
-
-  const renderSection = (title: string, children: React.ReactNode) => (
-    <View style={styles.section}>
-      <Text style={[styles.sectionTitle, { color: colors.text }]}>{title}</Text>
-      <View style={[styles.sectionContent, { backgroundColor: colors.card }]}>
-        {children}
-      </View>
-    </View>
-  );
-
   const renderInfoRow = (
     label: string,
-    value: string | number,
-    isAmount = false
+    value: string,
+    isHighlighted = false
   ) => (
     <View style={styles.infoRow}>
       <Text style={[styles.infoLabel, { color: colors.textSecondary }]}>
         {label}
       </Text>
-      <Text style={[styles.infoValue, { color: colors.text }]}>
-        {isAmount ? formatAmount(Number(value)) : value}
+      <Text
+        style={[
+          styles.infoValue,
+          {
+            color: isHighlighted ? colors.primary : colors.text,
+            fontWeight: isHighlighted ? "700" : "600",
+          },
+        ]}
+      >
+        {value}
       </Text>
     </View>
   );
 
   const renderDeductionItem = (deduction: PayslipDeduction) => (
-    <View key={deduction.id} style={styles.itemRow}>
-      <Text style={[styles.itemLabel, { color: colors.textSecondary }]}>
-        {deduction.label}
-      </Text>
-      <Text style={[styles.itemAmount, { color: colors.error }]}>
-        -{formatAmount(deduction.amount)}
+    <View key={deduction.id} style={styles.listItem}>
+      <View style={styles.listItemDot} />
+      <Text style={[styles.listItemText, { color: colors.textSecondary }]}>
+        {deduction.label} : {formatAmount(deduction.amount)}
       </Text>
     </View>
   );
 
   const renderBonusItem = (bonus: PayslipBonus) => (
-    <View key={bonus.id} style={styles.itemRow}>
-      <Text style={[styles.itemLabel, { color: colors.textSecondary }]}>
-        {bonus.label}
-      </Text>
-      <Text style={[styles.itemAmount, { color: colors.success }]}>
-        +{formatAmount(bonus.amount)}
+    <View key={bonus.id} style={styles.listItem}>
+      <View style={styles.listItemDot} />
+      <Text style={[styles.listItemText, { color: colors.textSecondary }]}>
+        {bonus.label} : {formatAmount(bonus.amount)}
       </Text>
     </View>
   );
@@ -136,21 +124,20 @@ export const PayslipDetailsScreen: React.FC = () => {
       flex: 1,
     },
     scrollContent: {
-      paddingBottom: 100,
+      padding: 16,
+      paddingBottom: 120, // Extra space for tab bar
+    },
+    subtitle: {
+      fontSize: 16,
+      color: colors.textSecondary,
+      marginBottom: 24,
+      textAlign: "left",
     },
     section: {
-      marginBottom: 20,
-    },
-    sectionTitle: {
-      fontSize: 18,
-      fontWeight: "600",
-      marginBottom: 8,
-      marginHorizontal: 16,
-    },
-    sectionContent: {
-      marginHorizontal: 16,
+      backgroundColor: colors.card,
       borderRadius: 12,
       padding: 16,
+      marginBottom: 16,
       borderWidth: 1,
       borderColor: colors.border,
       ...Platform.select({
@@ -169,32 +156,42 @@ export const PayslipDetailsScreen: React.FC = () => {
       flexDirection: "row",
       justifyContent: "space-between",
       alignItems: "center",
-      paddingVertical: 8,
+      paddingVertical: 12,
       borderBottomWidth: 1,
       borderBottomColor: colors.border + "30",
     },
     infoLabel: {
-      fontSize: 14,
+      fontSize: 16,
       fontWeight: "500",
+      flex: 1,
     },
     infoValue: {
       fontSize: 16,
       fontWeight: "600",
+      textAlign: "right",
     },
-    itemRow: {
-      flexDirection: "row",
-      justifyContent: "space-between",
-      alignItems: "center",
-      paddingVertical: 8,
-    },
-    itemLabel: {
-      fontSize: 14,
-      fontWeight: "500",
-      flex: 1,
-    },
-    itemAmount: {
-      fontSize: 14,
+    sectionTitle: {
+      fontSize: 18,
       fontWeight: "600",
+      color: colors.text,
+      marginBottom: 16,
+    },
+    listItem: {
+      flexDirection: "row",
+      alignItems: "center",
+      paddingVertical: 6,
+    },
+    listItemDot: {
+      width: 6,
+      height: 6,
+      borderRadius: 3,
+      backgroundColor: colors.textTertiary,
+      marginRight: 12,
+    },
+    listItemText: {
+      fontSize: 14,
+      fontWeight: "400",
+      flex: 1,
     },
     totalRow: {
       flexDirection: "row",
@@ -208,78 +205,66 @@ export const PayslipDetailsScreen: React.FC = () => {
     totalLabel: {
       fontSize: 16,
       fontWeight: "600",
+      color: colors.text,
     },
     totalAmount: {
-      fontSize: 18,
+      fontSize: 16,
       fontWeight: "700",
+      color: colors.text,
     },
-    footer: {
+    pdfSection: {
+      backgroundColor: colors.backgroundSecondary,
+      borderRadius: 12,
       padding: 16,
-      backgroundColor: colors.surface,
-      borderTopWidth: 1,
-      borderTopColor: colors.border,
+      alignItems: "center",
+    },
+    pdfContainer: {
+      flexDirection: "row",
+      alignItems: "center",
+      backgroundColor: colors.card,
+      borderRadius: 8,
+      padding: 12,
+      marginBottom: 12,
+      width: "100%",
+    },
+    pdfIcon: {
+      width: 40,
+      height: 40,
+      backgroundColor: colors.primary + "20",
+      borderRadius: 8,
+      alignItems: "center",
+      justifyContent: "center",
+      marginRight: 12,
+    },
+    pdfInfo: {
+      flex: 1,
+    },
+    pdfTitle: {
+      fontSize: 16,
+      fontWeight: "600",
+      color: colors.text,
+      marginBottom: 4,
+    },
+    pdfDetails: {
+      fontSize: 13,
+      color: colors.textSecondary,
     },
     downloadButton: {
-      marginBottom: 8,
-    },
-    statusContainer: {
       flexDirection: "row",
       alignItems: "center",
       justifyContent: "center",
-      paddingVertical: 8,
-      paddingHorizontal: 16,
+      backgroundColor: colors.primary,
       borderRadius: 8,
-      backgroundColor: colors.backgroundSecondary,
+      padding: 12,
+      width: "100%",
     },
-    statusText: {
-      fontSize: 12,
-      fontWeight: "500",
-      marginLeft: 4,
-    },
-    pdfContainer: {
-      backgroundColor: colors.primary + "10",
-      padding: 16,
-      borderRadius: 12,
-      alignItems: "center",
-      marginBottom: 16,
-    },
-    pdfText: {
-      fontSize: 14,
-      fontWeight: "500",
-      color: colors.primary,
-      marginBottom: 8,
-    },
-    pdfSize: {
-      fontSize: 12,
-      color: colors.textTertiary,
+    downloadButtonText: {
+      color: "white",
+      fontSize: 16,
+      fontWeight: "600",
+      marginLeft: 8,
     },
   });
-
-  const getStatusColor = () => {
-    switch (selectedPayslip.status) {
-      case "available":
-        return colors.success;
-      case "pending":
-        return colors.warning;
-      case "processing":
-        return colors.info;
-      default:
-        return colors.textSecondary;
-    }
-  };
-
-  const getStatusLabel = () => {
-    switch (selectedPayslip.status) {
-      case "available":
-        return "Disponible";
-      case "pending":
-        return "En attente";
-      case "processing":
-        return "En cours";
-      default:
-        return "Inconnu";
-    }
-  };
 
   return (
     <SafeAreaView style={styles.container}>
@@ -289,8 +274,7 @@ export const PayslipDetailsScreen: React.FC = () => {
           icon: "chevron-left",
           onPress: () => router.back(),
         }}
-        title="Détails bulletin"
-        subtitle={selectedPayslip.monthYear}
+        title="Détails bulletin de paie"
       />
 
       {/* Content */}
@@ -299,151 +283,78 @@ export const PayslipDetailsScreen: React.FC = () => {
           showsVerticalScrollIndicator={false}
           contentContainerStyle={styles.scrollContent}
         >
+          <Text style={styles.subtitle}>
+            Voici les détails de votre bulletin de paie
+          </Text>
+
           {/* Basic Information */}
-          {renderSection(
-            "Informations générales",
-            <>
-              {renderInfoRow("Mois et Année", selectedPayslip.monthYear)}
-              {renderInfoRow("Salaire Brut", selectedPayslip.grossSalary, true)}
-              {renderInfoRow(
-                "Montant Net à Payer",
-                selectedPayslip.netSalary,
-                true
-              )}
-              {renderInfoRow(
-                "Période de paie",
-                `${selectedPayslip.payPeriodStart} - ${selectedPayslip.payPeriodEnd}`
-              )}
-              {renderInfoRow("Employé", selectedPayslip.employeeName)}
-              {renderInfoRow("Poste", selectedPayslip.employeePosition)}
-            </>
-          )}
+          <View style={styles.section}>
+            {renderInfoRow("Mois et Année", selectedPayslip.monthYear)}
+            {renderInfoRow(
+              "Salaire Brut",
+              formatAmount(selectedPayslip.grossSalary)
+            )}
+            {renderInfoRow(
+              "Montant Net à Payer",
+              formatAmount(selectedPayslip.netSalary),
+              true
+            )}
+          </View>
 
           {/* Deductions */}
-          {selectedPayslip.deductions.length > 0 &&
-            renderSection(
-              "Déductions (cotisations CNSS, AMO, impôts, etc.)",
-              <>
-                {selectedPayslip.deductions.map(renderDeductionItem)}
-                <View style={styles.totalRow}>
-                  <Text style={[styles.totalLabel, { color: colors.text }]}>
-                    Total des déductions
-                  </Text>
-                  <Text style={[styles.totalAmount, { color: colors.error }]}>
-                    -{formatAmount(totalDeductions)}
-                  </Text>
-                </View>
-              </>
-            )}
+          {selectedPayslip.deductions.length > 0 && (
+            <View style={styles.section}>
+              <Text style={styles.sectionTitle}>
+                Déductions (cotisations CNSS, AMO, impôts, etc.)
+              </Text>
+              {selectedPayslip.deductions.map(renderDeductionItem)}
+              <View style={styles.totalRow}>
+                <Text style={styles.totalLabel}>Total des déductions</Text>
+                <Text style={[styles.totalAmount, { color: colors.error }]}>
+                  {formatAmount(totalDeductions)}
+                </Text>
+              </View>
+            </View>
+          )}
 
           {/* Bonuses */}
-          {selectedPayslip.bonuses.length > 0 &&
-            renderSection(
-              "Prime(s) éventuelle(s)",
-              <>
-                {selectedPayslip.bonuses.map(renderBonusItem)}
-                <View style={styles.totalRow}>
-                  <Text style={[styles.totalLabel, { color: colors.text }]}>
-                    Total des primes
-                  </Text>
-                  <Text style={[styles.totalAmount, { color: colors.success }]}>
-                    +{formatAmount(totalBonuses)}
-                  </Text>
-                </View>
-              </>
-            )}
-
-          {/* Overtime */}
-          {selectedPayslip.overtimeHours > 0 &&
-            renderSection(
-              "Heures supplémentaires",
-              <>
-                {renderInfoRow(
-                  "Heures supplémentaires",
-                  `${selectedPayslip.overtimeHours}h`
-                )}
-                {renderInfoRow(
-                  "Taux horaire",
-                  selectedPayslip.overtimeRate,
-                  true
-                )}
-                <View style={styles.totalRow}>
-                  <Text style={[styles.totalLabel, { color: colors.text }]}>
-                    Total heures sup.
-                  </Text>
-                  <Text style={[styles.totalAmount, { color: colors.success }]}>
-                    +{formatAmount(overtimeAmount)}
-                  </Text>
-                </View>
-              </>
-            )}
-
-          {/* Advances */}
-          {selectedPayslip.advances.length > 0 &&
-            renderSection(
-              "Avances sur salaire",
-              <>
-                {selectedPayslip.advances.map((advance) => (
-                  <View key={advance.id} style={styles.itemRow}>
-                    <Text
-                      style={[
-                        styles.itemLabel,
-                        { color: colors.textSecondary },
-                      ]}
-                    >
-                      {advance.label} ({advance.date})
-                    </Text>
-                    <Text style={[styles.itemAmount, { color: colors.error }]}>
-                      -{formatAmount(advance.amount)}
-                    </Text>
-                  </View>
-                ))}
-                <View style={styles.totalRow}>
-                  <Text style={[styles.totalLabel, { color: colors.text }]}>
-                    Total des avances
-                  </Text>
-                  <Text style={[styles.totalAmount, { color: colors.error }]}>
-                    -{formatAmount(totalAdvances)}
-                  </Text>
-                </View>
-              </>
-            )}
+          {selectedPayslip.bonuses.length > 0 && (
+            <View style={styles.section}>
+              <Text style={styles.sectionTitle}>Prime(s) éventuelle(s) :</Text>
+              {selectedPayslip.bonuses.map(renderBonusItem)}
+            </View>
+          )}
 
           {/* PDF Document */}
-          {selectedPayslip.pdfUrl &&
-            renderSection(
-              "Document",
-              <View style={styles.pdfContainer}>
-                <Text style={styles.pdfText}>{selectedPayslip.pdfUrl}</Text>
-                <Text style={styles.pdfSize}>
+          <View style={styles.section}>
+            <View style={styles.pdfContainer}>
+              <View style={styles.pdfIcon}>
+                <FontAwesome
+                  name="file-pdf-o"
+                  size={20}
+                  color={colors.primary}
+                />
+              </View>
+              <View style={styles.pdfInfo}>
+                <Text style={styles.pdfTitle}>{selectedPayslip.id}.pdf</Text>
+                <Text style={styles.pdfDetails}>
                   modifié le {selectedPayslip.createdDate}
                 </Text>
-                <Text style={styles.pdfSize}>Taille: 3,2 Mo</Text>
+                <Text style={styles.pdfDetails}>Taille: 3,2 Mo</Text>
               </View>
-            )}
+            </View>
+
+            <TouchableOpacity
+              style={styles.downloadButton}
+              onPress={handleDownload}
+              disabled={selectedPayslip.status !== "available"}
+            >
+              <FontAwesome name="download" size={16} color="white" />
+              <Text style={styles.downloadButtonText}>Télécharger</Text>
+            </TouchableOpacity>
+          </View>
         </ScrollView>
       </Animated.View>
-
-      {/* Footer */}
-      <View style={styles.footer}>
-        <Button
-          title="Télécharger le bulletin"
-          onPress={handleDownload}
-          disabled={selectedPayslip.status !== "available"}
-          style={styles.downloadButton}
-        />
-
-        <View
-          style={[
-            styles.statusContainer,
-            { backgroundColor: getStatusColor() + "15" },
-          ]}
-        >
-          <Text style={[styles.statusText, { color: getStatusColor() }]}>
-            Statut: {getStatusLabel()}
-          </Text>
-        </View>
-      </View>
     </SafeAreaView>
   );
 };
