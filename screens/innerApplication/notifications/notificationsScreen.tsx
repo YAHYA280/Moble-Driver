@@ -1,9 +1,10 @@
 // screens/innerApplication/notifications/notificationsScreen.tsx
 import { Ionicons } from "@expo/vector-icons";
 import { router } from "expo-router";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import {
   Alert,
+  Animated,
   FlatList,
   RefreshControl,
   StyleSheet,
@@ -27,6 +28,68 @@ type FilterType =
   | "urgent"
   | "important"
   | "informative";
+
+// Animated notification card wrapper component
+const AnimatedNotificationCard: React.FC<{
+  notification: Notification;
+  index: number;
+  onPress: () => void;
+  onMarkAsRead: () => void;
+  onMarkAsUnread: () => void;
+  onPin: () => void;
+  onUnpin: () => void;
+  onDelete: () => void;
+}> = ({
+  notification,
+  index,
+  onPress,
+  onMarkAsRead,
+  onMarkAsUnread,
+  onPin,
+  onUnpin,
+  onDelete,
+}) => {
+  const animValue = useRef(new Animated.Value(0)).current;
+
+  useEffect(() => {
+    const delay = index * 100; // Stagger animation like home screen
+    const timer = setTimeout(() => {
+      Animated.timing(animValue, {
+        toValue: 1,
+        duration: 500,
+        useNativeDriver: true,
+      }).start();
+    }, delay);
+
+    return () => clearTimeout(timer);
+  }, [index]);
+
+  return (
+    <Animated.View
+      style={{
+        opacity: animValue,
+        transform: [
+          {
+            translateY: animValue.interpolate({
+              inputRange: [0, 1],
+              outputRange: [30, 0],
+            }),
+          },
+        ],
+      }}
+    >
+      <NotificationCard
+        notification={notification}
+        onPress={onPress}
+        onMarkAsRead={onMarkAsRead}
+        onMarkAsUnread={onMarkAsUnread}
+        onPin={onPin}
+        onUnpin={onUnpin}
+        onDelete={onDelete}
+      />
+    </Animated.View>
+  );
+};
 
 export const NotificationsScreen: React.FC = () => {
   const { colors } = useTheme();
@@ -54,8 +117,26 @@ export const NotificationsScreen: React.FC = () => {
     useState<Notification | null>(null);
   const [showDetailModal, setShowDetailModal] = useState(false);
 
+  // Animation refs
+  const headerAnim = useRef(new Animated.Value(0)).current;
+  const filterAnim = useRef(new Animated.Value(0)).current;
+
   useEffect(() => {
     fetchNotifications();
+
+    // Start animations
+    Animated.sequence([
+      Animated.timing(headerAnim, {
+        toValue: 1,
+        duration: 600,
+        useNativeDriver: true,
+      }),
+      Animated.timing(filterAnim, {
+        toValue: 1,
+        duration: 400,
+        useNativeDriver: true,
+      }),
+    ]).start();
   }, []);
 
   useEffect(() => {
@@ -67,26 +148,21 @@ export const NotificationsScreen: React.FC = () => {
 
       switch (activeFilter) {
         case "unread":
-          // Show only unread notifications (not pinned)
           filters.status = ["unread"];
           break;
         case "read":
-          // Show only read notifications (not pinned)
           filters.status = ["read"];
           break;
         case "pinned":
-          // Show only pinned notifications
           filters.status = ["pinned"];
           break;
         case "urgent":
         case "important":
         case "informative":
-          // Show notifications by priority
           filters.priority = [activeFilter];
           break;
       }
 
-      // Only set filters if we have any
       if (Object.keys(filters).length > 0) {
         setFilters(filters);
       }
@@ -103,7 +179,6 @@ export const NotificationsScreen: React.FC = () => {
     setSelectedNotification(notification);
     setShowDetailModal(true);
 
-    // Mark as read when opened
     if (!notification.isRead) {
       markAsRead(notification.id);
     }
@@ -146,7 +221,6 @@ export const NotificationsScreen: React.FC = () => {
   };
 
   const handleNotificationAction = (actionId: string) => {
-    // Handle notification actions (accept, refuse, report, etc.)
     console.log("Action triggered:", actionId);
     Alert.alert("Action", `Action ${actionId} déclenchée`);
   };
@@ -206,9 +280,16 @@ export const NotificationsScreen: React.FC = () => {
     }
   };
 
-  const renderNotificationItem = ({ item }: { item: Notification }) => (
-    <NotificationCard
+  const renderNotificationItem = ({
+    item,
+    index,
+  }: {
+    item: Notification;
+    index: number;
+  }) => (
+    <AnimatedNotificationCard
       notification={item}
+      index={index}
       onPress={() => handleNotificationPress(item)}
       onMarkAsRead={() => handleMarkAsRead(item)}
       onMarkAsUnread={() => handleMarkAsUnread(item)}
@@ -286,30 +367,58 @@ export const NotificationsScreen: React.FC = () => {
 
   return (
     <SafeAreaView style={styles.container}>
-      {/* Header */}
-      <Header
-        leftIcon={{
-          icon: "chevron-left",
-          onPress: () => router.back(),
-        }}
-        title="Notifications"
-        subtitle={`${getUnreadCount()} non lues`}
-        rightIcons={[
-          {
-            icon: "cog",
-            onPress: () => {
-              router.push("/innerApplication/notifications/settings");
+      {/* Animated Header */}
+      <Animated.View
+        style={{
+          opacity: headerAnim,
+          transform: [
+            {
+              translateY: headerAnim.interpolate({
+                inputRange: [0, 1],
+                outputRange: [-50, 0],
+              }),
             },
-          },
-        ]}
-      />
+          ],
+        }}
+      >
+        <Header
+          leftIcon={{
+            icon: "chevron-left",
+            onPress: () => router.back(),
+          }}
+          title="Notifications"
+          subtitle={`${getUnreadCount()} non lues`}
+          rightIcons={[
+            {
+              icon: "cog",
+              onPress: () => {
+                router.push("/innerApplication/notifications/settings");
+              },
+            },
+          ]}
+        />
+      </Animated.View>
 
-      {/* Filter Bar */}
-      <NotificationFilterBar
-        activeFilter={activeFilter}
-        onFilterChange={handleFilterChange}
-        notificationCounts={getNotificationCountsData()}
-      />
+      {/* Animated Filter Bar */}
+      <Animated.View
+        style={{
+          opacity: filterAnim,
+          transform: [
+            {
+              translateY: filterAnim.interpolate({
+                inputRange: [0, 1],
+                outputRange: [-30, 0],
+              }),
+            },
+          ],
+        }}
+      >
+        <NotificationFilterBar
+          activeFilter={activeFilter}
+          onFilterChange={handleFilterChange}
+          notificationCounts={getNotificationCountsData()}
+        />
+      </Animated.View>
 
       {/* Error Display */}
       {error && (
