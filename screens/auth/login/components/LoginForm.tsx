@@ -28,12 +28,10 @@ export const LoginForm: React.FC = () => {
 
   const { login, isLoading, error } = useAuthStore();
 
-  // Animation values for form elements
   const formFadeAnim = useRef(new Animated.Value(0)).current;
   const buttonFadeAnim = useRef(new Animated.Value(0)).current;
 
   useEffect(() => {
-    // Stagger the animations for a smooth cascade effect
     const formAnimation = Animated.timing(formFadeAnim, {
       toValue: 1,
       duration: 600,
@@ -85,7 +83,7 @@ export const LoginForm: React.FC = () => {
     },
     formSection: {
       flex: 1,
-      justifyContent: "flex-start", // Keep content at top
+      justifyContent: "flex-start",
     },
     inputsContainer: {
       marginBottom: 24,
@@ -95,7 +93,7 @@ export const LoginForm: React.FC = () => {
       justifyContent: "space-between",
       alignItems: "center",
       marginTop: 20,
-      marginBottom: 32, // More space before button
+      marginBottom: 32,
       paddingHorizontal: 4,
       minHeight: 32,
     },
@@ -134,8 +132,7 @@ export const LoginForm: React.FC = () => {
       lineHeight: 20,
     },
     buttonsSection: {
-      // Button at bottom but within the form section
-      marginTop: "auto", // Push to bottom of form section
+      marginTop: "auto",
       paddingTop: 24,
       paddingBottom: Platform.OS === "android" ? 32 : 16,
     },
