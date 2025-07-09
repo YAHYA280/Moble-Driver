@@ -1,5 +1,13 @@
 import React, { useEffect, useRef } from "react";
-import { Animated, Dimensions, Platform, StyleSheet, View } from "react-native";
+import {
+  Animated,
+  Dimensions,
+  Keyboard,
+  KeyboardAvoidingView,
+  Platform,
+  StyleSheet,
+  View,
+} from "react-native";
 
 import { useTheme } from "../../../contexts/ThemeContext";
 import { Screen } from "../../../shared/components/layout/Screen";
@@ -13,8 +21,10 @@ export const LoginScreen: React.FC = () => {
 
   const cardSlideAnim = useRef(new Animated.Value(50)).current;
   const cardFadeAnim = useRef(new Animated.Value(0)).current;
+  const keyboardOffsetAnim = useRef(new Animated.Value(0)).current;
 
   useEffect(() => {
+    // Initial animation
     Animated.parallel([
       Animated.timing(cardSlideAnim, {
         toValue: 0,
@@ -27,9 +37,48 @@ export const LoginScreen: React.FC = () => {
         useNativeDriver: true,
       }),
     ]).start();
+
+    // Keyboard listeners
+    const keyboardDidShowListener = Keyboard.addListener(
+      "keyboardDidShow",
+      (event) => {
+        const keyboardHeight = event.endCoordinates.height;
+        // Adjust the offset based on screen size and keyboard height
+        const offset =
+          Platform.OS === "ios"
+            ? -keyboardHeight * 0.05
+            : -keyboardHeight * 0.2;
+
+        Animated.timing(keyboardOffsetAnim, {
+          toValue: offset,
+          duration: 250,
+          useNativeDriver: true,
+        }).start();
+      }
+    );
+
+    const keyboardDidHideListener = Keyboard.addListener(
+      "keyboardDidHide",
+      () => {
+        Animated.timing(keyboardOffsetAnim, {
+          toValue: 0,
+          duration: 250,
+          useNativeDriver: true,
+        }).start();
+      }
+    );
+
+    // Cleanup listeners
+    return () => {
+      keyboardDidShowListener?.remove();
+      keyboardDidHideListener?.remove();
+    };
   }, []);
 
   const styles = StyleSheet.create({
+    container: {
+      flex: 1,
+    },
     screenContainer: {
       backgroundColor: "transparent",
       flex: 1,
@@ -61,23 +110,32 @@ export const LoginScreen: React.FC = () => {
   });
 
   return (
-    <Screen style={styles.screenContainer} scrollable={false}>
-      {/* Purple background header */}
-      <View style={styles.header} />
+    <KeyboardAvoidingView
+      style={styles.container}
+      behavior={Platform.OS === "ios" ? "padding" : "height"}
+      keyboardVerticalOffset={Platform.OS === "ios" ? 0 : 20}
+    >
+      <Screen style={styles.screenContainer} scrollable={false}>
+        {/* Purple background header */}
+        <View style={styles.header} />
 
-      {/* Main animated card */}
-      <Animated.View
-        style={[
-          styles.card,
-          {
-            opacity: cardFadeAnim,
-            transform: [{ translateY: cardSlideAnim }],
-          },
-        ]}
-      >
-        <LoginHeader />
-        <LoginForm />
-      </Animated.View>
-    </Screen>
+        {/* Main animated card */}
+        <Animated.View
+          style={[
+            styles.card,
+            {
+              opacity: cardFadeAnim,
+              transform: [
+                { translateY: cardSlideAnim },
+                { translateY: keyboardOffsetAnim },
+              ],
+            },
+          ]}
+        >
+          <LoginHeader />
+          <LoginForm />
+        </Animated.View>
+      </Screen>
+    </KeyboardAvoidingView>
   );
 };
