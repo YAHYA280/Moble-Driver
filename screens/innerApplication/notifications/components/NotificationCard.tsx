@@ -9,6 +9,7 @@ import {
   ViewStyle,
 } from "react-native";
 import { useThemeColors } from "../../../../hooks/useTheme";
+import ConditionalComponent from "../../../../shared/components/conditionalComponent/conditionalComponent";
 import { Notification } from "../../../../shared/types/notification";
 import { NotificationItemMenu } from "../../../innerApplication/notifications/components/NotificationItemMenu";
 
@@ -264,7 +265,9 @@ export const NotificationCard: React.FC<NotificationCardProps> = ({
           <View style={styles.iconContainer}>
             <Ionicons name={typeIcon} size={26} color="white" />
           </View>
-          {!notification.isRead && <View style={styles.unreadDot} />}
+          <ConditionalComponent isValid={!notification.isRead}>
+            <View style={styles.unreadDot} />
+          </ConditionalComponent>
         </View>
 
         {/* Content Section */}
@@ -281,13 +284,13 @@ export const NotificationCard: React.FC<NotificationCardProps> = ({
 
           <View style={styles.bottomRow}>
             <View style={styles.statusRow}>
-              {notification.isPinned && (
+              <ConditionalComponent isValid={notification.isPinned}>
                 <Ionicons
                   name="bookmark"
                   size={12}
                   style={[styles.statusIcon, styles.pinnedIcon]}
                 />
-              )}
+              </ConditionalComponent>
             </View>
 
             <Text style={styles.timestamp}>

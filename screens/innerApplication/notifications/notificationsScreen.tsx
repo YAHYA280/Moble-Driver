@@ -13,6 +13,7 @@ import {
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useTheme } from "../../../contexts/ThemeContext";
+import ConditionalComponent from "../../../shared/components/conditionalComponent/conditionalComponent";
 import { Header } from "../../../shared/components/ui/Header";
 import { Notification } from "../../../shared/types/notification";
 import { useNotificationStore } from "../../../store/notificationStore";
@@ -421,11 +422,11 @@ export const NotificationsScreen: React.FC = () => {
       </Animated.View>
 
       {/* Error Display */}
-      {error && (
+      <ConditionalComponent isValid={!!error}>
         <View style={styles.errorContainer}>
           <Text style={styles.errorText}>{error}</Text>
         </View>
-      )}
+      </ConditionalComponent>
 
       {/* Notifications List */}
       <View style={styles.content}>

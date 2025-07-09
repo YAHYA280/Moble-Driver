@@ -13,6 +13,7 @@ import {
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useThemeColors } from "../../../../hooks/useTheme";
+import ConditionalComponent from "../../../../shared/components/conditionalComponent/conditionalComponent";
 import { Button } from "../../../../shared/components/ui/Button";
 import {
   Notification,
@@ -314,57 +315,57 @@ export const NotificationDetailModal: React.FC<
             <Text style={styles.headerTitle}>Détails</Text>
 
             <View style={styles.headerRight}>
-              {notification.isRead
-                ? onMarkAsUnread && (
-                    <TouchableOpacity
-                      style={styles.actionButton}
-                      onPress={onMarkAsUnread}
-                    >
-                      <FontAwesome
-                        name="envelope"
-                        size={16}
-                        color={colors.textSecondary}
-                      />
-                    </TouchableOpacity>
-                  )
-                : onMarkAsRead && (
-                    <TouchableOpacity
-                      style={styles.actionButton}
-                      onPress={onMarkAsRead}
-                    >
-                      <FontAwesome
-                        name="envelope-open"
-                        size={16}
-                        color={colors.textSecondary}
-                      />
-                    </TouchableOpacity>
-                  )}
+              <ConditionalComponent
+                isValid={notification.isRead && !!onMarkAsUnread}
+              >
+                <TouchableOpacity
+                  style={styles.actionButton}
+                  onPress={onMarkAsUnread}
+                >
+                  <FontAwesome
+                    name="envelope"
+                    size={16}
+                    color={colors.textSecondary}
+                  />
+                </TouchableOpacity>
+              </ConditionalComponent>
 
-              {notification.isPinned
-                ? onUnpin && (
-                    <TouchableOpacity
-                      style={styles.actionButton}
-                      onPress={onUnpin}
-                    >
-                      <FontAwesome
-                        name="bookmark"
-                        size={16}
-                        color={colors.primary}
-                      />
-                    </TouchableOpacity>
-                  )
-                : onPin && (
-                    <TouchableOpacity
-                      style={styles.actionButton}
-                      onPress={onPin}
-                    >
-                      <FontAwesome
-                        name="bookmark-o"
-                        size={16}
-                        color={colors.textSecondary}
-                      />
-                    </TouchableOpacity>
-                  )}
+              <ConditionalComponent
+                isValid={!notification.isRead && !!onMarkAsRead}
+              >
+                <TouchableOpacity
+                  style={styles.actionButton}
+                  onPress={onMarkAsRead}
+                >
+                  <FontAwesome
+                    name="envelope-open"
+                    size={16}
+                    color={colors.textSecondary}
+                  />
+                </TouchableOpacity>
+              </ConditionalComponent>
+
+              <ConditionalComponent
+                isValid={notification.isPinned && !!onUnpin}
+              >
+                <TouchableOpacity style={styles.actionButton} onPress={onUnpin}>
+                  <FontAwesome
+                    name="bookmark"
+                    size={16}
+                    color={colors.primary}
+                  />
+                </TouchableOpacity>
+              </ConditionalComponent>
+
+              <ConditionalComponent isValid={!notification.isPinned && !!onPin}>
+                <TouchableOpacity style={styles.actionButton} onPress={onPin}>
+                  <FontAwesome
+                    name="bookmark-o"
+                    size={16}
+                    color={colors.textSecondary}
+                  />
+                </TouchableOpacity>
+              </ConditionalComponent>
             </View>
           </View>
 
@@ -389,11 +390,11 @@ export const NotificationDetailModal: React.FC<
                   {formatFullTimestamp(notification.timestamp)}
                 </Text>
               </View>
-              {notification.isPinned && (
+              <ConditionalComponent isValid={notification.isPinned}>
                 <View style={styles.statusBadge}>
                   <Text style={styles.statusText}>Épinglée</Text>
                 </View>
-              )}
+              </ConditionalComponent>
             </View>
 
             {/* Title Section */}
@@ -403,21 +404,23 @@ export const NotificationDetailModal: React.FC<
             </View>
 
             {/* Detailed Message */}
-            {notification.detailedMessage && (
+            <ConditionalComponent isValid={!!notification.detailedMessage}>
               <View style={styles.messageSection}>
                 <Text style={styles.sectionTitle}>Message détaillé</Text>
                 <Text style={styles.message}>
                   {notification.detailedMessage}
                 </Text>
               </View>
-            )}
+            </ConditionalComponent>
 
             {/* Context Information */}
-            {notification.context && (
+            <ConditionalComponent isValid={!!notification.context}>
               <View style={styles.contextSection}>
                 <Text style={styles.sectionTitle}>Contexte</Text>
                 <View style={styles.contextGrid}>
-                  {notification.context.vehicleId && (
+                  <ConditionalComponent
+                    isValid={!!notification.context?.vehicleId}
+                  >
                     <View style={styles.contextItem}>
                       <FontAwesome
                         name="car"
@@ -427,8 +430,11 @@ export const NotificationDetailModal: React.FC<
                       />
                       <Text style={styles.contextText}>Véhicule concerné</Text>
                     </View>
-                  )}
-                  {notification.context.routeId && (
+                  </ConditionalComponent>
+
+                  <ConditionalComponent
+                    isValid={!!notification.context?.routeId}
+                  >
                     <View style={styles.contextItem}>
                       <FontAwesome
                         name="road"
@@ -438,8 +444,11 @@ export const NotificationDetailModal: React.FC<
                       />
                       <Text style={styles.contextText}>Trajet</Text>
                     </View>
-                  )}
-                  {notification.context.planningId && (
+                  </ConditionalComponent>
+
+                  <ConditionalComponent
+                    isValid={!!notification.context?.planningId}
+                  >
                     <View style={styles.contextItem}>
                       <FontAwesome
                         name="calendar"
@@ -449,8 +458,11 @@ export const NotificationDetailModal: React.FC<
                       />
                       <Text style={styles.contextText}>Planning</Text>
                     </View>
-                  )}
-                  {notification.context.location && (
+                  </ConditionalComponent>
+
+                  <ConditionalComponent
+                    isValid={!!notification.context?.location}
+                  >
                     <View style={styles.contextItem}>
                       <FontAwesome
                         name="map-marker"
@@ -459,20 +471,24 @@ export const NotificationDetailModal: React.FC<
                         style={styles.contextIcon}
                       />
                       <Text style={styles.contextText}>
-                        {notification.context.location}
+                        {notification.context?.location}
                       </Text>
                     </View>
-                  )}
+                  </ConditionalComponent>
                 </View>
               </View>
-            )}
+            </ConditionalComponent>
 
             {/* Action Buttons */}
-            {notification.actions && notification.actions.length > 0 && (
+            <ConditionalComponent
+              isValid={
+                !!notification.actions && notification.actions.length > 0
+              }
+            >
               <View style={styles.actionsSection}>
                 <Text style={styles.sectionTitle}>Actions disponibles</Text>
                 <View style={styles.actionsList}>
-                  {notification.actions.map((action) => (
+                  {notification.actions?.map((action) => (
                     <Button
                       key={action.id}
                       title={action.label}
@@ -482,21 +498,21 @@ export const NotificationDetailModal: React.FC<
                   ))}
                 </View>
               </View>
-            )}
+            </ConditionalComponent>
           </ScrollView>
 
           {/* Fixed Footer */}
           <View style={styles.footer}>
             <View style={styles.footerActions}>
-              {onDelete && (
+              <ConditionalComponent isValid={!!onDelete}>
                 <Button
                   title="Supprimer"
                   variant="outline"
-                  onPress={onDelete}
+                  onPress={onDelete!}
                   style={{ flex: 1 }}
                   textStyle={{ color: colors.error }}
                 />
-              )}
+              </ConditionalComponent>
               <Button
                 title="Fermer"
                 variant="primary"

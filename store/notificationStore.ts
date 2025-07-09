@@ -1,4 +1,3 @@
-// store/notificationStore.ts
 import { create } from "zustand";
 import {
   Notification,
@@ -49,11 +48,9 @@ const applyFiltersToNotifications = (
 
   // Sort: pinned first, then by timestamp (newest first)
   return filtered.sort((a, b) => {
-    // Pinned notifications always come first
     if (a.isPinned && !b.isPinned) return -1;
     if (!a.isPinned && b.isPinned) return 1;
 
-    // If both are pinned or both are not pinned, sort by timestamp
     return new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime();
   });
 };

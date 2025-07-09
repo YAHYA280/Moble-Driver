@@ -1,4 +1,4 @@
-// screens/innerApplication/notifications/notificationSettingsScreen.tsx
+import ConditionalComponent from "@/shared/components/conditionalComponent/conditionalComponent";
 import { FontAwesome } from "@expo/vector-icons";
 import { router } from "expo-router";
 import React, { useState } from "react";
@@ -188,11 +188,13 @@ const SettingItem: React.FC<SettingItemProps> = ({
 
       <View style={itemStyles.contentContainer}>
         <Text style={itemStyles.itemTitle}>{title}</Text>
-        {subtitle && <Text style={itemStyles.itemSubtitle}>{subtitle}</Text>}
+        <ConditionalComponent isValid={!!subtitle}>
+          <Text style={itemStyles.itemSubtitle}>{subtitle}</Text>
+        </ConditionalComponent>
       </View>
 
       <View style={itemStyles.rightContainer}>
-        {showToggle && (
+        <ConditionalComponent isValid={!!showToggle}>
           <View
             style={[
               itemStyles.toggle,
@@ -208,16 +210,15 @@ const SettingItem: React.FC<SettingItemProps> = ({
               ]}
             />
           </View>
-        )}
-
-        {showChevron && (
+        </ConditionalComponent>
+        <ConditionalComponent isValid={!!showChevron}>
           <FontAwesome
             name="chevron-right"
             size={14}
             color={colors.textTertiary}
             style={itemStyles.chevron}
           />
-        )}
+        </ConditionalComponent>
       </View>
     </TouchableOpacity>
   );
@@ -285,7 +286,6 @@ export const NotificationSettingsScreen: React.FC = () => {
     );
   };
 
-  // ✅ Styles définis dans le composant principal
   const styles = StyleSheet.create({
     container: {
       flex: 1,

@@ -9,6 +9,7 @@ import {
   ViewStyle,
 } from "react-native";
 import { useThemeColors } from "../../../../hooks/useTheme";
+import ConditionalComponent from "../../../../shared/components/conditionalComponent/conditionalComponent";
 import { NotificationPriority } from "../../../../shared/types";
 
 type FilterType = "all" | "unread" | "read" | "pinned" | NotificationPriority;
@@ -245,7 +246,7 @@ export const NotificationFilterBar: React.FC<NotificationFilterBarProps> = ({
                 {option.label}
               </Text>
 
-              {hasCount && (
+              <ConditionalComponent isValid={hasCount}>
                 <View
                   style={[
                     styles.countContainer,
@@ -264,7 +265,7 @@ export const NotificationFilterBar: React.FC<NotificationFilterBarProps> = ({
                     {option.count! > 99 ? "99+" : option.count!.toString()}
                   </Text>
                 </View>
-              )}
+              </ConditionalComponent>
             </TouchableOpacity>
           );
         })}
