@@ -4,7 +4,6 @@ import React, { useEffect, useRef, useState } from "react";
 import {
   Alert,
   Animated,
-  Platform,
   StyleSheet,
   Text,
   TouchableOpacity,
@@ -28,10 +27,12 @@ export const LoginForm: React.FC = () => {
 
   const { login, isLoading, error } = useAuthStore();
 
+  // Animation values for form elements
   const formFadeAnim = useRef(new Animated.Value(0)).current;
   const buttonFadeAnim = useRef(new Animated.Value(0)).current;
 
   useEffect(() => {
+    // Stagger the animations for a smooth cascade effect
     const formAnimation = Animated.timing(formFadeAnim, {
       toValue: 1,
       duration: 600,
@@ -82,132 +83,108 @@ export const LoginForm: React.FC = () => {
       flex: 1,
     },
     formSection: {
-      flex: 1,
-      justifyContent: "flex-start",
-    },
-    inputsContainer: {
-      marginBottom: 24,
+      marginBottom: 20,
     },
     optionsContainer: {
       flexDirection: "row",
       justifyContent: "space-between",
-      alignItems: "center",
-      marginTop: 20,
-      marginBottom: 32,
+      alignItems: "flex-start",
+      marginTop: 16,
       paddingHorizontal: 4,
-      minHeight: 32,
     },
-    checkboxWrapper: {
+    checkboxContainer: {
       flex: 1,
       marginRight: 12,
-      justifyContent: "center",
-      alignItems: "flex-start",
     },
-    forgotPasswordWrapper: {
+    forgotPasswordContainer: {
+      alignItems: "flex-end", // Align to the right
       justifyContent: "center",
-      alignItems: "flex-end",
-      paddingVertical: 8,
-      paddingHorizontal: 4,
+      minHeight: 24, // Ensure minimum height for touch target
     },
     forgotPassword: {
       fontSize: 12,
       color: colors.primary,
       fontWeight: "600",
-      textAlign: "right",
-      ...Platform.select({
-        android: {
-          includeFontPadding: false,
-          textAlignVertical: "center",
-        },
-      }),
+      textAlign: "right", // Ensure text is right-aligned
+      lineHeight: 16, // Set line height for better spacing
     },
     errorContainer: {
-      marginVertical: 16,
-      paddingHorizontal: 4,
+      marginBottom: 20,
     },
     errorText: {
       fontSize: 14,
       color: colors.error,
       textAlign: "center",
-      lineHeight: 20,
     },
     buttonsSection: {
-      marginTop: "auto",
-      paddingTop: 24,
-      paddingBottom: Platform.OS === "android" ? 32 : 16,
+      marginTop: 20,
     },
   });
 
   return (
     <View style={styles.container}>
-      {/* Form Section - All content including button */}
-      <View style={styles.formSection}>
-        {/* Form Inputs */}
-        <Animated.View
-          style={[styles.inputsContainer, { opacity: formFadeAnim }]}
-        >
-          <Input
-            label="Adresse e-mail ou Nom d'utilisateur"
-            value={email}
-            onChangeText={setEmail}
-            keyboardType="email-address"
-            autoCapitalize="none"
-            error={errors.email}
-          />
+      {/* Animated Form Section */}
+      <Animated.View style={[styles.formSection, { opacity: formFadeAnim }]}>
+        <Input
+          label="Adresse e-mail ou Nom d'utilisateur"
+          value={email}
+          onChangeText={setEmail}
+          keyboardType="email-address"
+          autoCapitalize="none"
+          error={errors.email}
+        />
 
-          <Input
-            label="Mot de passe"
-            value={password}
-            onChangeText={setPassword}
-            isPassword
-            showPasswordToggle
-            error={errors.password}
-          />
-        </Animated.View>
+        <Input
+          label="Mot de passe"
+          value={password}
+          onChangeText={setPassword}
+          isPassword
+          showPasswordToggle
+          error={errors.password}
+        />
 
-        {/* Options Row - Above button */}
-        <Animated.View
-          style={[styles.optionsContainer, { opacity: formFadeAnim }]}
-        >
-          <View style={styles.checkboxWrapper}>
+        <View style={styles.optionsContainer}>
+          <View style={styles.checkboxContainer}>
             <Checkbox
               checked={rememberMe}
               onPress={() => setRememberMe(!rememberMe)}
               label="Se souvenir de moi"
-              size="medium"
             />
           </View>
 
           <TouchableOpacity
-            style={styles.forgotPasswordWrapper}
+            style={styles.forgotPasswordContainer}
             onPress={() => router.push("/auth/forgot-password")}
             activeOpacity={0.7}
           >
             <Text style={styles.forgotPassword}>Mot de passe oublié ?</Text>
           </TouchableOpacity>
-        </Animated.View>
+        </View>
+      </Animated.View>
 
-        {/* Error Message */}
-        <ConditionalComponent isValid={Boolean(error)}>
-          <Animated.View
-            style={[styles.errorContainer, { opacity: formFadeAnim }]}
-          >
-            <Text style={styles.errorText}>{error}</Text>
-          </Animated.View>
-        </ConditionalComponent>
+      {/* Error Message */}
 
-        {/* Button Section - Within form section, at bottom */}
+      <ConditionalComponent isValid={Boolean(error)}>
+        (
         <Animated.View
-          style={[styles.buttonsSection, { opacity: buttonFadeAnim }]}
+          style={[styles.errorContainer, { opacity: formFadeAnim }]}
         >
-          <Button
-            title="Se connecter"
-            onPress={handleLogin}
-            loading={isLoading}
-            disabled={isLoading}
-          />
+          <Text style={styles.errorText}>{error}</Text>
         </Animated.View>
-      </View>
+        )
+      </ConditionalComponent>
+
+      {/* Animated Buttons Section */}
+      <Animated.View
+        style={[styles.buttonsSection, { opacity: buttonFadeAnim }]}
+      >
+        <Button
+          title="Se connecter"
+          onPress={handleLogin}
+          loading={isLoading}
+          disabled={isLoading}
+        />
+      </Animated.View>
     </View>
   );
 };

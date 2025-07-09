@@ -1,5 +1,5 @@
 import React, { useEffect, useRef } from "react";
-import { Animated, Dimensions, StyleSheet, View } from "react-native";
+import { Animated, Dimensions, Platform, StyleSheet, View } from "react-native";
 
 import { useTheme } from "../../../contexts/ThemeContext";
 import { Screen } from "../../../shared/components/layout/Screen";
@@ -56,7 +56,7 @@ export const LoginScreen: React.FC = () => {
       elevation: 15,
       borderWidth: 1,
       borderColor: colors.isDark ? colors.border : "rgba(116, 108, 212, 0.05)",
-      minHeight: height * 0.7,
+      minHeight: Platform.OS === "ios" ? height * 0.7 : height * 0.8,
     },
   });
 
