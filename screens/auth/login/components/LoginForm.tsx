@@ -97,16 +97,16 @@ export const LoginForm: React.FC = () => {
       marginRight: 12,
     },
     forgotPasswordContainer: {
-      alignItems: "flex-end", // Align to the right
+      alignItems: "flex-end",
       justifyContent: "center",
-      minHeight: 24, // Ensure minimum height for touch target
+      minHeight: 24,
     },
     forgotPassword: {
       fontSize: 12,
       color: colors.primary,
       fontWeight: "600",
-      textAlign: "right", // Ensure text is right-aligned
-      lineHeight: 16, // Set line height for better spacing
+      textAlign: "right",
+      lineHeight: 16,
     },
     errorContainer: {
       marginBottom: 20,

@@ -24,7 +24,6 @@ export const LoginScreen: React.FC = () => {
   const keyboardOffsetAnim = useRef(new Animated.Value(0)).current;
 
   useEffect(() => {
-    // Initial animation
     Animated.parallel([
       Animated.timing(cardSlideAnim, {
         toValue: 0,
@@ -38,12 +37,10 @@ export const LoginScreen: React.FC = () => {
       }),
     ]).start();
 
-    // Keyboard listeners
     const keyboardDidShowListener = Keyboard.addListener(
       "keyboardDidShow",
       (event) => {
         const keyboardHeight = event.endCoordinates.height;
-        // Adjust the offset based on screen size and keyboard height
         const offset =
           Platform.OS === "ios"
             ? -keyboardHeight * 0.05
@@ -68,7 +65,6 @@ export const LoginScreen: React.FC = () => {
       }
     );
 
-    // Cleanup listeners
     return () => {
       keyboardDidShowListener?.remove();
       keyboardDidHideListener?.remove();

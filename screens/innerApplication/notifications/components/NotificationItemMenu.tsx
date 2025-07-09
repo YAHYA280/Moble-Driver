@@ -84,7 +84,6 @@ export const NotificationItemMenu: React.FC<NotificationItemMenuProps> = ({
   const styles = StyleSheet.create({
     modalOverlay: {
       flex: 1,
-      backgroundColor: "rgba(0,0,0,0.3)",
     },
     menuContainer: {
       position: "absolute",
