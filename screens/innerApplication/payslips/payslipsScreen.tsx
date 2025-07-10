@@ -109,6 +109,7 @@ export const PayslipsScreen: React.FC = () => {
 
   const handlePayslipPress = (payslip: Payslip) => {
     selectPayslip(payslip);
+    // Fixed: Use the correct route format matching the file structure
     router.push(`/payslips/details/${payslip.id}`);
   };
 
@@ -149,7 +150,8 @@ export const PayslipsScreen: React.FC = () => {
       icon: "history" as const,
       onPress: () => {
         setShowSidebar(false);
-        router.push("/payslips/history");
+        // Fixed: Use the correct route
+        router.push("/(tabs)/payslips/history");
       },
       isActive: false,
     },

@@ -16,8 +16,8 @@ import { Sidebar } from "../../../shared/components/ui/Sidebar";
 import { Payslip } from "../../../shared/types/payslip";
 import { useAuthStore } from "../../../store/authStore";
 import { usePayslipStore } from "../../../store/payslipStore";
-import { PayslipFilterBar } from "./components/payslipFilterBar";
 import { PayslipHistoriqueCard } from "./components/PayslipHistoriqueCard";
+import { PayslipFilterBar } from "./components/payslipFilterBar";
 
 interface YearGroup {
   year: number;
@@ -151,7 +151,7 @@ export const PayslipHistoryScreen: React.FC = () => {
       icon: "credit-card" as const,
       onPress: () => {
         setShowSidebar(false);
-        router.push("/innerApplication/payslips");
+        router.push("/(tabs)/payslips");
       },
       isActive: false,
     },
@@ -361,12 +361,6 @@ export const PayslipHistoryScreen: React.FC = () => {
             subtitle={`${filteredPayslips.length} document${
               filteredPayslips.length > 1 ? "s" : ""
             } archivé${filteredPayslips.length > 1 ? "s" : ""}`}
-            rightIcons={[
-              {
-                icon: "home",
-                onPress: () => router.push("/(tabs)"),
-              },
-            ]}
           />
         </Animated.View>
 

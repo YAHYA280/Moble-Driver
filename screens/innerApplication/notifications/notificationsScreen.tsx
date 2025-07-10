@@ -385,7 +385,7 @@ export const NotificationsScreen: React.FC = () => {
         <Header
           leftIcon={{
             icon: "chevron-left",
-            onPress: () => router.back(),
+            onPress: () => router.push("/"),
           }}
           title="Notifications"
           subtitle={`${getUnreadCount()} non lues`}
@@ -396,10 +396,6 @@ export const NotificationsScreen: React.FC = () => {
                 // 🎯 Updated navigation to use tab route
                 router.push("/notifications/settings");
               },
-            },
-            {
-              icon: "home",
-              onPress: () => router.push("/"),
             },
           ]}
         />
