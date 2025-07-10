@@ -1,3 +1,4 @@
+// screens/innerApplication/payslips/payslipHistoryScreen.tsx - Updated with search modal
 import { router } from "expo-router";
 import React, { useEffect, useRef, useState } from "react";
 import {
@@ -12,6 +13,7 @@ import {
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useTheme } from "../../../contexts/ThemeContext";
 import { Header } from "../../../shared/components/ui/Header";
+import { SearchModal } from "../../../shared/components/ui/SearchModal";
 import { Sidebar } from "../../../shared/components/ui/Sidebar";
 import { Payslip } from "../../../shared/types/payslip";
 import { useAuthStore } from "../../../store/authStore";
@@ -72,6 +74,7 @@ const AnimatedPayslipHistoriqueCard: React.FC<{
 export const PayslipHistoryScreen: React.FC = () => {
   const { colors } = useTheme();
   const [showSidebar, setShowSidebar] = useState(false);
+  const [showSearchModal, setShowSearchModal] = useState(false);
   const headerAnim = useRef(new Animated.Value(0)).current;
   const listAnim = useRef(new Animated.Value(0)).current;
 
@@ -149,8 +152,11 @@ export const PayslipHistoryScreen: React.FC = () => {
   };
 
   const handleSearchPress = () => {
-    // This could open a search modal or navigate to a search screen
-    Alert.alert("Recherche", "Fonctionnalité de recherche à venir");
+    setShowSearchModal(true);
+  };
+
+  const handleSearch = (query: string) => {
+    setFilters({ searchQuery: query });
   };
 
   const sidebarItems = [
@@ -376,6 +382,16 @@ export const PayslipHistoryScreen: React.FC = () => {
           }
         />
       </Animated.View>
+
+      {/* Search Modal */}
+      <SearchModal
+        visible={showSearchModal}
+        onClose={() => setShowSearchModal(false)}
+        onSearch={handleSearch}
+        placeholder="Rechercher par mois, montant..."
+        initialQuery={filters.searchQuery || ""}
+        title="Rechercher historique"
+      />
 
       {/* Modal-based Sidebar */}
       <Sidebar

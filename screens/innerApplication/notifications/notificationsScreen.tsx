@@ -1,4 +1,4 @@
-// screens/innerApplication/notifications/notificationsScreen.tsx - Updated navigation
+// screens/innerApplication/notifications/notificationsScreen.tsx - Updated navigation fixed
 import { Ionicons } from "@expo/vector-icons";
 import { router } from "expo-router";
 import React, { useEffect, useRef, useState } from "react";
@@ -15,6 +15,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { useTheme } from "../../../contexts/ThemeContext";
 import ConditionalComponent from "../../../shared/components/conditionalComponent/conditionalComponent";
 import { Header } from "../../../shared/components/ui/Header";
+import { SearchModal } from "../../../shared/components/ui/SearchModal";
 import { Notification } from "../../../shared/types/notification";
 import { useNotificationStore } from "../../../store/notificationStore";
 import { NotificationCard } from "./components/NotificationCard";
@@ -94,6 +95,7 @@ const AnimatedNotificationCard: React.FC<{
 
 export const NotificationsScreen: React.FC = () => {
   const { colors } = useTheme();
+  const [showSearchModal, setShowSearchModal] = useState(false);
   const {
     notifications,
     isLoading,
@@ -232,6 +234,14 @@ export const NotificationsScreen: React.FC = () => {
 
   const handleFilterChange = (filter: FilterType) => {
     setActiveFilter(filter);
+  };
+
+  const handleSearchPress = () => {
+    setShowSearchModal(true);
+  };
+
+  const handleSearch = (query: string) => {
+    setFilters({ searchQuery: query });
   };
 
   const getEmptyStateConfig = () => {
@@ -385,15 +395,18 @@ export const NotificationsScreen: React.FC = () => {
         <Header
           leftIcon={{
             icon: "chevron-left",
-            onPress: () => router.push("/"),
+            onPress: () => router.back(),
           }}
           title="Notifications"
           subtitle={`${getUnreadCount()} non lues`}
           rightIcons={[
             {
+              icon: "search",
+              onPress: handleSearchPress,
+            },
+            {
               icon: "cog",
               onPress: () => {
-                // 🎯 Updated navigation to use tab route
                 router.push("/notifications/settings");
               },
             },
@@ -454,6 +467,15 @@ export const NotificationsScreen: React.FC = () => {
           ItemSeparatorComponent={() => <View style={{ height: 4 }} />}
         />
       </View>
+
+      {/* Search Modal */}
+      <SearchModal
+        visible={showSearchModal}
+        onClose={() => setShowSearchModal(false)}
+        onSearch={handleSearch}
+        placeholder="Rechercher notifications..."
+        title="Rechercher notifications"
+      />
 
       {/* Detail Modal */}
       <NotificationDetailModal
