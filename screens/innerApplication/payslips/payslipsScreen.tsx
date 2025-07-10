@@ -7,7 +7,6 @@ import {
   RefreshControl,
   StyleSheet,
   Text,
-  TouchableOpacity,
   View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
@@ -15,6 +14,7 @@ import { useTheme } from "../../../contexts/ThemeContext";
 import { Header } from "../../../shared/components/ui/Header";
 import { Sidebar } from "../../../shared/components/ui/Sidebar";
 import { Payslip } from "../../../shared/types/payslip";
+import { useAuthStore } from "../../../store/authStore"; // Import useAuthStore
 import { usePayslipStore } from "../../../store/payslipStore";
 import { PayslipCard } from "./components/payslipCard";
 import { PayslipFilterBar } from "./components/payslipFilterBar";
@@ -87,6 +87,9 @@ export const PayslipsScreen: React.FC = () => {
     clearError,
   } = usePayslipStore();
 
+  // Add useAuthStore to get logout function
+  const { logout } = useAuthStore();
+
   useEffect(() => {
     fetchPayslips();
 
@@ -131,6 +134,22 @@ export const PayslipsScreen: React.FC = () => {
 
   const handleRefresh = () => {
     fetchPayslips();
+  };
+
+  // Add handleLogout function
+  const handleLogout = () => {
+    Alert.alert("Déconnexion", "Êtes-vous sûr de vouloir vous déconnecter ?", [
+      { text: "Annuler", style: "cancel" },
+      {
+        text: "Déconnecter",
+        style: "destructive",
+        onPress: () => {
+          setShowSidebar(false);
+          logout();
+          router.replace("/auth/login");
+        },
+      },
+    ]);
   };
 
   const sidebarItems = [
@@ -189,9 +208,6 @@ export const PayslipsScreen: React.FC = () => {
       flex: 1,
       backgroundColor: colors.backgroundSecondary,
     },
-    mainContent: {
-      flex: 1,
-    },
     listContainer: {
       flex: 1,
     },
@@ -226,123 +242,96 @@ export const PayslipsScreen: React.FC = () => {
       fontSize: 14,
       fontWeight: "500",
     },
-    sidebarOverlay: {
-      ...StyleSheet.absoluteFillObject,
-      backgroundColor: "rgba(0, 0, 0, 0.5)",
-      zIndex: 10000,
-    },
-    sidebarContainer: {
-      position: "absolute",
-      top: 0,
-      left: 0,
-      bottom: 0,
-      width: 280,
-      zIndex: 10001,
-    },
   });
 
   return (
     <SafeAreaView style={styles.container}>
-      {/* Main Content */}
-      <View style={styles.mainContent}>
-        {/* Animated Header */}
-        <Animated.View
-          style={{
-            opacity: headerAnim,
+      {/* Animated Header */}
+      <Animated.View
+        style={{
+          opacity: headerAnim,
+          transform: [
+            {
+              translateY: headerAnim.interpolate({
+                inputRange: [0, 1],
+                outputRange: [-50, 0],
+              }),
+            },
+          ],
+        }}
+      >
+        <Header
+          leftIcon={{
+            icon: "bars",
+            onPress: () => setShowSidebar(true),
+          }}
+          title="Bulletins de paie"
+          subtitle={`${filteredPayslips.length} bulletin${
+            filteredPayslips.length > 1 ? "s" : ""
+          }`}
+        />
+      </Animated.View>
+
+      {/* Filter Bar */}
+      <PayslipFilterBar
+        filters={filters}
+        onFiltersChange={setFilters}
+        onClearFilters={clearFilters}
+      />
+
+      {/* Error Display */}
+      {error && (
+        <View style={styles.errorContainer}>
+          <Text style={styles.errorText}>{error}</Text>
+        </View>
+      )}
+
+      {/* Payslips List */}
+      <Animated.View
+        style={[
+          styles.listContainer,
+          {
+            opacity: listAnim,
             transform: [
               {
-                translateY: headerAnim.interpolate({
+                translateY: listAnim.interpolate({
                   inputRange: [0, 1],
-                  outputRange: [-50, 0],
+                  outputRange: [30, 0],
                 }),
               },
             ],
-          }}
-        >
-          <Header
-            leftIcon={{
-              icon: "bars",
-              onPress: () => setShowSidebar(true),
-            }}
-            title="Bulletins de paie"
-            subtitle={`${filteredPayslips.length} bulletin${
-              filteredPayslips.length > 1 ? "s" : ""
-            }`}
-          />
-        </Animated.View>
-
-        {/* Filter Bar */}
-        <PayslipFilterBar
-          filters={filters}
-          onFiltersChange={setFilters}
-          onClearFilters={clearFilters}
-        />
-
-        {/* Error Display */}
-        {error && (
-          <View style={styles.errorContainer}>
-            <Text style={styles.errorText}>{error}</Text>
-          </View>
-        )}
-
-        {/* Payslips List */}
-        <Animated.View
-          style={[
-            styles.listContainer,
-            {
-              opacity: listAnim,
-              transform: [
-                {
-                  translateY: listAnim.interpolate({
-                    inputRange: [0, 1],
-                    outputRange: [30, 0],
-                  }),
-                },
-              ],
-            },
-          ]}
-        >
-          <FlatList
-            data={filteredPayslips}
-            renderItem={renderPayslipItem}
-            keyExtractor={(item) => item.id}
-            showsVerticalScrollIndicator={false}
-            contentContainerStyle={
-              filteredPayslips.length === 0
-                ? { flex: 1 }
-                : { paddingBottom: 100 }
-            }
-            ListEmptyComponent={renderEmptyState}
-            refreshControl={
-              <RefreshControl
-                refreshing={isLoading}
-                onRefresh={handleRefresh}
-                colors={[colors.primary]}
-                tintColor={colors.primary}
-              />
-            }
-            ItemSeparatorComponent={() => <View style={{ height: 4 }} />}
-          />
-        </Animated.View>
-      </View>
-
-      {/* FIXED SIDEBAR - Proper z-index handling */}
-      {showSidebar && (
-        <>
-          <TouchableOpacity
-            style={styles.sidebarOverlay}
-            onPress={() => setShowSidebar(false)}
-            activeOpacity={1}
-          />
-          <View style={styles.sidebarContainer}>
-            <Sidebar
-              title="Paie"
-              items={sidebarItems}
-              onClose={() => setShowSidebar(false)}
+          },
+        ]}
+      >
+        <FlatList
+          data={filteredPayslips}
+          renderItem={renderPayslipItem}
+          keyExtractor={(item) => item.id}
+          showsVerticalScrollIndicator={false}
+          contentContainerStyle={
+            filteredPayslips.length === 0 ? { flex: 1 } : { paddingBottom: 100 }
+          }
+          ListEmptyComponent={renderEmptyState}
+          refreshControl={
+            <RefreshControl
+              refreshing={isLoading}
+              onRefresh={handleRefresh}
+              colors={[colors.primary]}
+              tintColor={colors.primary}
             />
-          </View>
-        </>
-      )}
+          }
+          ItemSeparatorComponent={() => <View style={{ height: 4 }} />}
+        />
+      </Animated.View>
+
+      {/* Modal-based Sidebar - This will appear above everything */}
+      <Sidebar
+        title="Bulletin de paie"
+        items={sidebarItems}
+        visible={showSidebar}
+        onClose={() => setShowSidebar(false)}
+        onLogout={handleLogout}
+      />
     </SafeAreaView>
   );
 };

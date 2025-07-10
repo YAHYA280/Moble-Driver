@@ -2,12 +2,15 @@ import ConditionalComponent from "@/shared/components/conditionalComponent/condi
 import { FontAwesome } from "@expo/vector-icons";
 import React from "react";
 import {
+  Animated,
   Dimensions,
+  Modal,
   Platform,
   ScrollView,
   StyleSheet,
   Text,
   TouchableOpacity,
+  TouchableWithoutFeedback,
   View,
   ViewStyle,
 } from "react-native";
@@ -32,6 +35,7 @@ interface SidebarProps {
   items: SidebarItem[];
   title?: string;
   style?: ViewStyle;
+  visible: boolean;
   onClose?: () => void;
   onLogout?: () => void;
   showCloseButton?: boolean;
@@ -41,11 +45,29 @@ export const Sidebar: React.FC<SidebarProps> = ({
   items,
   title,
   style,
+  visible,
   onClose,
   onLogout,
   showCloseButton = true,
 }) => {
   const colors = useThemeColors();
+  const slideAnim = React.useRef(new Animated.Value(-280)).current;
+
+  React.useEffect(() => {
+    if (visible) {
+      Animated.timing(slideAnim, {
+        toValue: 0,
+        duration: 300,
+        useNativeDriver: true,
+      }).start();
+    } else {
+      Animated.timing(slideAnim, {
+        toValue: -280,
+        duration: 250,
+        useNativeDriver: true,
+      }).start();
+    }
+  }, [visible]);
 
   const renderItem = (item: SidebarItem) => (
     <TouchableOpacity
@@ -95,13 +117,16 @@ export const Sidebar: React.FC<SidebarProps> = ({
   );
 
   const styles = StyleSheet.create({
+    modalOverlay: {
+      flex: 1,
+      backgroundColor: "rgba(0, 0, 0, 0.5)",
+    },
     container: {
       height: screenHeight,
-      width: Math.min(280, screenWidth * 0.8), // Responsive width
+      width: Math.min(280, screenWidth * 0.8),
       backgroundColor: colors.surface,
       borderRightWidth: 1,
       borderRightColor: colors.border,
-      zIndex: 10100,
       ...Platform.select({
         ios: {
           shadowColor: colors.shadow,
@@ -224,53 +249,77 @@ export const Sidebar: React.FC<SidebarProps> = ({
   });
 
   return (
-    <View style={[styles.container, style]}>
-      <SafeAreaView style={styles.safeArea} edges={["top"]}>
-        {/* Logo Section */}
-        <View style={styles.logoSection}>
-          <LogoVSN width={160} height={38} />
-        </View>
+    <Modal
+      visible={visible}
+      transparent
+      animationType="none"
+      onRequestClose={onClose}
+    >
+      <TouchableWithoutFeedback onPress={onClose}>
+        <View style={styles.modalOverlay} />
+      </TouchableWithoutFeedback>
 
-        {/* Header with title and close button */}
-        <ConditionalComponent isValid={!!(title || showCloseButton)}>
-          <View style={styles.header}>
-            <ConditionalComponent isValid={!!title}>
-              <Text style={styles.title}>{title}</Text>
-            </ConditionalComponent>
-
-            <ConditionalComponent isValid={showCloseButton && !!onClose}>
-              <TouchableOpacity style={styles.closeButton} onPress={onClose}>
-                <FontAwesome
-                  name="times"
-                  size={16}
-                  color={colors.textSecondary}
-                />
-              </TouchableOpacity>
-            </ConditionalComponent>
+      <Animated.View
+        style={[
+          styles.container,
+          {
+            position: "absolute",
+            left: 0,
+            top: 0,
+            transform: [{ translateX: slideAnim }],
+          },
+          style,
+        ]}
+      >
+        <SafeAreaView style={styles.safeArea} edges={["top"]}>
+          {/* Logo Section */}
+          <View style={styles.logoSection}>
+            <LogoVSN width={160} height={38} />
           </View>
-        </ConditionalComponent>
 
-        {/* Scrollable Content */}
-        <ScrollView
-          style={styles.scrollContent}
-          showsVerticalScrollIndicator={false}
-          bounces={false}
-        >
-          {items.map(renderItem)}
-        </ScrollView>
+          {/* Header with title and close button */}
+          <ConditionalComponent isValid={!!(title || showCloseButton)}>
+            <View style={styles.header}>
+              <ConditionalComponent isValid={!!title}>
+                <Text style={styles.title}>{title}</Text>
+              </ConditionalComponent>
 
-        {/* Footer with Logout Button */}
-        <View style={styles.footer}>
-          <TouchableOpacity
-            style={styles.logoutButton}
-            onPress={onLogout}
-            activeOpacity={0.7}
+              <ConditionalComponent isValid={showCloseButton && !!onClose}>
+                <TouchableOpacity style={styles.closeButton} onPress={onClose}>
+                  <FontAwesome
+                    name="times"
+                    size={16}
+                    color={colors.textSecondary}
+                  />
+                </TouchableOpacity>
+              </ConditionalComponent>
+            </View>
+          </ConditionalComponent>
+
+          {/* Scrollable Content */}
+          <ScrollView
+            style={styles.scrollContent}
+            showsVerticalScrollIndicator={false}
+            bounces={false}
           >
-            <FontAwesome name="sign-out" size={18} color={colors.error} />
-            <Text style={styles.logoutText}>Déconnecté</Text>
-          </TouchableOpacity>
-        </View>
-      </SafeAreaView>
-    </View>
+            {items.map(renderItem)}
+          </ScrollView>
+
+          {/* Footer with Logout Button */}
+          {onLogout && (
+            <View style={styles.footer}>
+              <TouchableOpacity
+                style={styles.logoutButton}
+                onPress={onLogout}
+                activeOpacity={0.7}
+              >
+                <FontAwesome name="sign-out" size={18} color={colors.error} />
+                <Text style={styles.logoutText}>Déconnecté</Text>
+              </TouchableOpacity>
+            </View>
+          )}
+        </SafeAreaView>
+      </Animated.View>
+    </Modal>
   );
 };

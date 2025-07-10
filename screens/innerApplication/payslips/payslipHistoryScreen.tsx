@@ -217,26 +217,6 @@ export const PayslipHistoryScreen: React.FC = () => {
       flex: 1,
       backgroundColor: colors.backgroundSecondary,
     },
-    mainContent: {
-      flex: 1,
-    },
-    sidebarContainer: {
-      position: "absolute",
-      top: 0,
-      left: 0,
-      bottom: 0,
-      width: 280,
-      zIndex: 1000,
-    },
-    overlay: {
-      position: "absolute",
-      top: 0,
-      left: 0,
-      right: 0,
-      bottom: 0,
-      backgroundColor: "rgba(0, 0, 0, 0.5)",
-      zIndex: 999,
-    },
     listContainer: {
       flex: 1,
     },
@@ -319,104 +299,91 @@ export const PayslipHistoryScreen: React.FC = () => {
 
   return (
     <SafeAreaView style={styles.container}>
-      {/* Sidebar */}
-      {showSidebar && (
-        <>
-          <View
-            style={styles.overlay}
-            onTouchStart={() => setShowSidebar(false)}
-          />
-          <View style={styles.sidebarContainer}>
-            <Sidebar
-              title="Paie"
-              items={sidebarItems}
-              onClose={() => setShowSidebar(false)}
-              onLogout={handleLogout}
-            />
-          </View>
-        </>
+      {/* Animated Header */}
+      <Animated.View
+        style={{
+          opacity: headerAnim,
+          transform: [
+            {
+              translateY: headerAnim.interpolate({
+                inputRange: [0, 1],
+                outputRange: [-50, 0],
+              }),
+            },
+          ],
+        }}
+      >
+        <Header
+          leftIcon={{
+            icon: "bars",
+            onPress: () => setShowSidebar(true),
+          }}
+          title="Historique bulletins"
+          subtitle={`${filteredPayslips.length} document${
+            filteredPayslips.length > 1 ? "s" : ""
+          } archivé${filteredPayslips.length > 1 ? "s" : ""}`}
+        />
+      </Animated.View>
+
+      {/* Filter Bar */}
+      <PayslipFilterBar
+        filters={filters}
+        onFiltersChange={setFilters}
+        onClearFilters={clearFilters}
+      />
+
+      {/* Error Display */}
+      {error && (
+        <View style={styles.errorContainer}>
+          <Text style={styles.errorText}>{error}</Text>
+        </View>
       )}
 
-      <View style={styles.mainContent}>
-        {/* Animated Header */}
-        <Animated.View
-          style={{
-            opacity: headerAnim,
+      {/* History List */}
+      <Animated.View
+        style={[
+          styles.listContainer,
+          {
+            opacity: listAnim,
             transform: [
               {
-                translateY: headerAnim.interpolate({
+                translateY: listAnim.interpolate({
                   inputRange: [0, 1],
-                  outputRange: [-50, 0],
+                  outputRange: [30, 0],
                 }),
               },
             ],
-          }}
-        >
-          <Header
-            leftIcon={{
-              icon: "bars",
-              onPress: () => setShowSidebar(true),
-            }}
-            title="Historique bulletins"
-            subtitle={`${filteredPayslips.length} document${
-              filteredPayslips.length > 1 ? "s" : ""
-            } archivé${filteredPayslips.length > 1 ? "s" : ""}`}
-          />
-        </Animated.View>
-
-        {/* Filter Bar */}
-        <PayslipFilterBar
-          filters={filters}
-          onFiltersChange={setFilters}
-          onClearFilters={clearFilters}
+          },
+        ]}
+      >
+        <FlatList
+          data={groupedPayslips}
+          renderItem={renderGroupItem}
+          keyExtractor={(item) => item.year.toString()}
+          showsVerticalScrollIndicator={false}
+          contentContainerStyle={
+            groupedPayslips.length === 0 ? { flex: 1 } : { paddingBottom: 100 }
+          }
+          ListEmptyComponent={renderEmptyState}
+          refreshControl={
+            <RefreshControl
+              refreshing={isLoading}
+              onRefresh={handleRefresh}
+              colors={[colors.primary]}
+              tintColor={colors.primary}
+            />
+          }
         />
+      </Animated.View>
 
-        {/* Error Display */}
-        {error && (
-          <View style={styles.errorContainer}>
-            <Text style={styles.errorText}>{error}</Text>
-          </View>
-        )}
-
-        {/* History List */}
-        <Animated.View
-          style={[
-            styles.listContainer,
-            {
-              opacity: listAnim,
-              transform: [
-                {
-                  translateY: listAnim.interpolate({
-                    inputRange: [0, 1],
-                    outputRange: [30, 0],
-                  }),
-                },
-              ],
-            },
-          ]}
-        >
-          <FlatList
-            data={groupedPayslips}
-            renderItem={renderGroupItem}
-            keyExtractor={(item) => item.year.toString()}
-            showsVerticalScrollIndicator={false}
-            contentContainerStyle={
-              groupedPayslips.length === 0
-                ? { flex: 1 }
-                : { paddingBottom: 100 }
-            }
-            ListEmptyComponent={renderEmptyState}
-            refreshControl={
-              <RefreshControl
-                refreshing={isLoading}
-                onRefresh={handleRefresh}
-                colors={[colors.primary]}
-                tintColor={colors.primary}
-              />
-            }
-          />
-        </Animated.View>
-      </View>
+      {/* Modal-based Sidebar - This will appear above everything including the tab bar! */}
+      <Sidebar
+        title="Bulletin de paie"
+        items={sidebarItems}
+        visible={showSidebar}
+        onClose={() => setShowSidebar(false)}
+        onLogout={handleLogout}
+      />
     </SafeAreaView>
   );
 };

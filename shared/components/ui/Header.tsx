@@ -59,7 +59,6 @@ export const Header: React.FC<HeaderProps> = ({
 }) => {
   const colors = useThemeColors();
 
-  // Rendu d'un bouton d'icône avec badge optionnel
   const renderIconButton = (iconButton: IconButton, index: number) => (
     <TouchableOpacity
       key={index}
@@ -84,7 +83,6 @@ export const Header: React.FC<HeaderProps> = ({
     </TouchableOpacity>
   );
 
-  // Rendu du contenu principal (titre aligné à gauche)
   const renderTitle = () => {
     if (!title && !subtitle) return <View style={styles.titleContainer} />;
 
@@ -128,7 +126,6 @@ export const Header: React.FC<HeaderProps> = ({
       paddingVertical: 16,
       minHeight: 60,
       backgroundColor: backgroundColor || colors.headerBackground,
-      // Ombre de séparation plus visible
       ...Platform.select({
         ios: {
           shadowColor: colors.shadow,
