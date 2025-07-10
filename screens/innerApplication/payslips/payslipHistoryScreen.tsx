@@ -144,6 +144,15 @@ export const PayslipHistoryScreen: React.FC = () => {
     ]);
   };
 
+  const handleNotificationPress = () => {
+    router.push("/notifications");
+  };
+
+  const handleSearchPress = () => {
+    // This could open a search modal or navigate to a search screen
+    Alert.alert("Recherche", "Fonctionnalité de recherche à venir");
+  };
+
   const sidebarItems = [
     {
       id: "payslips",
@@ -167,27 +176,8 @@ export const PayslipHistoryScreen: React.FC = () => {
     },
   ];
 
-  const renderYearHeader = (year: number, count: number) => (
-    <View style={[styles.yearHeader, { backgroundColor: colors.surface }]}>
-      <View style={styles.yearHeaderContent}>
-        <View style={styles.yearIconContainer}>
-          <Text style={[styles.yearIcon, { color: colors.primary }]}>📁</Text>
-        </View>
-        <View style={styles.yearInfo}>
-          <Text style={[styles.yearText, { color: colors.text }]}>
-            Année {year}
-          </Text>
-          <Text style={[styles.yearCount, { color: colors.textSecondary }]}>
-            {count} document{count > 1 ? "s" : ""} archivé{count > 1 ? "s" : ""}
-          </Text>
-        </View>
-      </View>
-    </View>
-  );
-
   const renderGroupItem = ({ item }: { item: YearGroup }) => (
     <View style={styles.groupContainer}>
-      {renderYearHeader(item.year, item.payslips.length)}
       {item.payslips.map((payslip, index) => (
         <View key={payslip.id} style={styles.payslipItem}>
           <AnimatedPayslipHistoriqueCard item={payslip} index={index} />
@@ -299,7 +289,7 @@ export const PayslipHistoryScreen: React.FC = () => {
 
   return (
     <SafeAreaView style={styles.container}>
-      {/* Animated Header */}
+      {/* Animated Header with Search and Notification Icons */}
       <Animated.View
         style={{
           opacity: headerAnim,
@@ -322,6 +312,17 @@ export const PayslipHistoryScreen: React.FC = () => {
           subtitle={`${filteredPayslips.length} document${
             filteredPayslips.length > 1 ? "s" : ""
           } archivé${filteredPayslips.length > 1 ? "s" : ""}`}
+          rightIcons={[
+            {
+              icon: "search",
+              onPress: handleSearchPress,
+            },
+            {
+              icon: "bell",
+              onPress: handleNotificationPress,
+              badge: 3,
+            },
+          ]}
         />
       </Animated.View>
 
@@ -376,7 +377,7 @@ export const PayslipHistoryScreen: React.FC = () => {
         />
       </Animated.View>
 
-      {/* Modal-based Sidebar - This will appear above everything including the tab bar! */}
+      {/* Modal-based Sidebar */}
       <Sidebar
         title="Bulletin de paie"
         items={sidebarItems}

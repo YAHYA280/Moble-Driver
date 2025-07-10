@@ -14,7 +14,7 @@ import { useTheme } from "../../../contexts/ThemeContext";
 import { Header } from "../../../shared/components/ui/Header";
 import { Sidebar } from "../../../shared/components/ui/Sidebar";
 import { Payslip } from "../../../shared/types/payslip";
-import { useAuthStore } from "../../../store/authStore"; // Import useAuthStore
+import { useAuthStore } from "../../../store/authStore";
 import { usePayslipStore } from "../../../store/payslipStore";
 import { PayslipCard } from "./components/payslipCard";
 import { PayslipFilterBar } from "./components/payslipFilterBar";
@@ -87,7 +87,6 @@ export const PayslipsScreen: React.FC = () => {
     clearError,
   } = usePayslipStore();
 
-  // Add useAuthStore to get logout function
   const { logout } = useAuthStore();
 
   useEffect(() => {
@@ -110,7 +109,6 @@ export const PayslipsScreen: React.FC = () => {
 
   const handlePayslipPress = (payslip: Payslip) => {
     selectPayslip(payslip);
-
     const encodedId = encodeURIComponent(payslip.id);
     router.push(`/payslips/details/${encodedId}`);
   };
@@ -136,7 +134,6 @@ export const PayslipsScreen: React.FC = () => {
     fetchPayslips();
   };
 
-  // Add handleLogout function
   const handleLogout = () => {
     Alert.alert("Déconnexion", "Êtes-vous sûr de vouloir vous déconnecter ?", [
       { text: "Annuler", style: "cancel" },
@@ -150,6 +147,15 @@ export const PayslipsScreen: React.FC = () => {
         },
       },
     ]);
+  };
+
+  const handleNotificationPress = () => {
+    router.push("/notifications");
+  };
+
+  const handleSearchPress = () => {
+    // This could open a search modal or navigate to a search screen
+    Alert.alert("Recherche", "Fonctionnalité de recherche à venir");
   };
 
   const sidebarItems = [
@@ -168,7 +174,6 @@ export const PayslipsScreen: React.FC = () => {
       icon: "history" as const,
       onPress: () => {
         setShowSidebar(false);
-        // Navigate to history within the payslips stack
         router.push("/payslips/history");
       },
       isActive: false,
@@ -246,7 +251,7 @@ export const PayslipsScreen: React.FC = () => {
 
   return (
     <SafeAreaView style={styles.container}>
-      {/* Animated Header */}
+      {/* Animated Header with Search and Notification Icons */}
       <Animated.View
         style={{
           opacity: headerAnim,
@@ -269,6 +274,17 @@ export const PayslipsScreen: React.FC = () => {
           subtitle={`${filteredPayslips.length} bulletin${
             filteredPayslips.length > 1 ? "s" : ""
           }`}
+          rightIcons={[
+            {
+              icon: "search",
+              onPress: handleSearchPress,
+            },
+            {
+              icon: "bell",
+              onPress: handleNotificationPress,
+              badge: 3,
+            },
+          ]}
         />
       </Animated.View>
 
@@ -324,7 +340,7 @@ export const PayslipsScreen: React.FC = () => {
         />
       </Animated.View>
 
-      {/* Modal-based Sidebar - This will appear above everything */}
+      {/* Modal-based Sidebar */}
       <Sidebar
         title="Bulletin de paie"
         items={sidebarItems}

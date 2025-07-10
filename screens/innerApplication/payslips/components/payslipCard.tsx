@@ -69,21 +69,48 @@ export const PayslipCard: React.FC<PayslipCardProps> = ({
     }).format(amount);
   };
 
+  // Format the date to show "08/2025 → 14/08/2025" format
+  const formatDateRange = (availableDate: string) => {
+    // Extract month and year from availableDate (assuming format like "14/08/2025")
+    const dateParts = availableDate.split("/");
+    if (dateParts.length === 3) {
+      const [day, month, year] = dateParts;
+      return `${month}/${year} → ${availableDate}`;
+    }
+    return availableDate;
+  };
+
   const statusConfig = getStatusConfig(status);
+
+  const getIconBackgroundColor = () => {
+    switch (status) {
+      case "available":
+        return "#22c55e"; // Green for available
+      case "pending":
+        return "#ef4444"; // Red for pending/en attente
+      case "processing":
+        return "#f59e0b"; // Orange for processing
+      default:
+        return "#6366f1";
+    }
+  };
 
   const styles = StyleSheet.create({
     container: {
-      backgroundColor: colors.card,
-      borderRadius: 12,
+      flexDirection: "row",
+      alignItems: "center",
       padding: 16,
       marginHorizontal: 16,
-      marginVertical: 8,
-      borderWidth: 1,
-      borderColor: colors.border,
+      marginVertical: 6,
+      borderRadius: 12,
+      backgroundColor: colors.card,
       ...Platform.select({
         ios: {
           shadowColor: colors.shadow,
-          shadowOffset: { width: 0, height: 2 },
+          shadowOffset: {
+            width: 0,
+            height: 2,
+          },
           shadowOpacity: colors.isDark ? 0.3 : 0.08,
           shadowRadius: 8,
         },
@@ -97,95 +124,54 @@ export const PayslipCard: React.FC<PayslipCardProps> = ({
         },
       }),
     },
-    header: {
-      flexDirection: "row",
-      justifyContent: "space-between",
-      alignItems: "flex-start",
-      marginBottom: 12,
+    iconContainer: {
+      width: 48,
+      height: 48,
+      borderRadius: 12,
+      alignItems: "center",
+      justifyContent: "center",
+      marginRight: 12,
+      backgroundColor: getIconBackgroundColor(),
     },
-    monthYear: {
-      fontSize: 18,
+    contentContainer: {
+      flex: 1,
+      justifyContent: "center",
+    },
+    payslipId: {
+      fontSize: 16,
       fontWeight: "600",
       color: colors.text,
+      marginBottom: 4,
     },
-    statusContainer: {
+    dateRow: {
       flexDirection: "row",
       alignItems: "center",
-      paddingHorizontal: 8,
-      paddingVertical: 4,
-      borderRadius: 12,
-      backgroundColor: statusConfig.backgroundColor,
+      marginBottom: 4,
     },
-    statusIcon: {
-      marginRight: 4,
+    dateText: {
+      fontSize: 14,
+      color: colors.textSecondary,
+      fontWeight: "400",
     },
     statusLabel: {
-      fontSize: 12,
+      fontSize: 14,
       fontWeight: "600",
       color: statusConfig.color,
     },
-    content: {
-      marginBottom: 16,
-    },
-    amountContainer: {
-      flexDirection: "row",
-      justifyContent: "space-between",
-      alignItems: "center",
-      marginBottom: 8,
-    },
-    amountLabel: {
-      fontSize: 14,
-      color: colors.textSecondary,
-      fontWeight: "500",
-    },
-    amount: {
-      fontSize: 20,
-      fontWeight: "700",
-      color: colors.primary,
-    },
-    dateContainer: {
-      flexDirection: "row",
-      alignItems: "center",
-    },
-    dateIcon: {
-      marginRight: 6,
-    },
-    dateLabel: {
-      fontSize: 13,
-      color: colors.textTertiary,
-      fontWeight: "400",
-    },
-    actions: {
-      flexDirection: "row",
-      gap: 12,
-    },
-    actionButton: {
-      flex: 1,
-      flexDirection: "row",
+    rightSection: {
       alignItems: "center",
       justifyContent: "center",
-      paddingVertical: 10,
-      paddingHorizontal: 16,
-      borderRadius: 8,
-      gap: 6,
+      marginLeft: 12,
     },
-    primaryAction: {
-      backgroundColor: colors.primary,
-    },
-    secondaryAction: {
-      backgroundColor: colors.backgroundSecondary,
-      borderWidth: 1,
-      borderColor: colors.border,
-    },
-    primaryActionText: {
-      color: "white",
-      fontSize: 14,
-      fontWeight: "600",
-    },
-    secondaryActionText: {
-      color: colors.textSecondary,
-      fontSize: 14,
-      fontWeight: "600",
+    downloadButton: {
+      width: 40,
+      height: 40,
+      borderRadius: 20,
+      alignItems: "center",
+      justifyContent: "center",
+      backgroundColor: colors.isDark
+        ? colors.surfaceSecondary
+        : "rgba(0, 0, 0, 0.05)",
     },
     disabledAction: {
       opacity: 0.5,
@@ -195,54 +181,34 @@ export const PayslipCard: React.FC<PayslipCardProps> = ({
   const isDownloadDisabled = status !== "available";
 
   return (
-    <View style={[styles.container, style]}>
-      {/* Header */}
-      <View style={styles.header}>
-        <Text style={styles.monthYear}>{monthYear}</Text>
-        <View style={styles.statusContainer}>
-          <FontAwesome
-            name={statusConfig.icon}
-            size={12}
-            color={statusConfig.color}
-            style={styles.statusIcon}
-          />
-          <Text style={styles.statusLabel}>{statusConfig.label}</Text>
-        </View>
+    <TouchableOpacity
+      style={[styles.container, style]}
+      onPress={onViewDetails}
+      activeOpacity={0.7}
+    >
+      {/* Left Icon */}
+      <View style={styles.iconContainer}>
+        <FontAwesome name="credit-card" size={20} color="white" />
       </View>
 
       {/* Content */}
-      <View style={styles.content}>
-        <View style={styles.amountContainer}>
-          <Text style={styles.amountLabel}>Montant net à payer</Text>
-          <Text style={styles.amount}>{formatAmount(netAmount)}</Text>
+      <View style={styles.contentContainer}>
+        <Text style={styles.payslipId} numberOfLines={1}>
+          {id}
+        </Text>
+
+        <View style={styles.dateRow}>
+          <Text style={styles.dateText}>{formatDateRange(availableDate)}</Text>
         </View>
 
-        <View style={styles.dateContainer}>
-          <FontAwesome
-            name="calendar-o"
-            size={12}
-            color={colors.textTertiary}
-            style={styles.dateIcon}
-          />
-          <Text style={styles.dateLabel}>Disponible le {availableDate}</Text>
-        </View>
+        <Text style={styles.statusLabel}>{statusConfig.label}</Text>
       </View>
 
-      {/* Actions */}
-      <View style={styles.actions}>
-        <TouchableOpacity
-          style={[styles.actionButton, styles.primaryAction]}
-          onPress={onViewDetails}
-          activeOpacity={0.7}
-        >
-          <FontAwesome name="eye" size={14} color="white" />
-          <Text style={styles.primaryActionText}>Voir détails</Text>
-        </TouchableOpacity>
-
+      {/* Right Download Button */}
+      <View style={styles.rightSection}>
         <TouchableOpacity
           style={[
-            styles.actionButton,
-            styles.secondaryAction,
+            styles.downloadButton,
             isDownloadDisabled && styles.disabledAction,
           ]}
           onPress={onDownload}
@@ -251,23 +217,11 @@ export const PayslipCard: React.FC<PayslipCardProps> = ({
         >
           <FontAwesome
             name="download"
-            size={14}
+            size={18}
             color={isDownloadDisabled ? colors.textMuted : colors.textSecondary}
           />
-          <Text
-            style={[
-              styles.secondaryActionText,
-              {
-                color: isDownloadDisabled
-                  ? colors.textMuted
-                  : colors.textSecondary,
-              },
-            ]}
-          >
-            Télécharger
-          </Text>
         </TouchableOpacity>
       </View>
-    </View>
+    </TouchableOpacity>
   );
 };
