@@ -62,7 +62,7 @@ export const PayslipHistoriqueCard: React.FC<PayslipHistoriqueCardProps> = ({
       marginVertical: 4,
       borderRadius: 12,
       backgroundColor: colors.card,
-      minHeight: 80, // Added minimum height
+      minHeight: 80,
       ...Platform.select({
         ios: {
           shadowColor: colors.shadow,

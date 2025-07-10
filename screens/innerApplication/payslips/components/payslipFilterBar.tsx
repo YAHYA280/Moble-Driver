@@ -1,4 +1,3 @@
-// screens/innerApplication/payslips/components/payslipFilterBar.tsx - Updated without search
 import { FontAwesome } from "@expo/vector-icons";
 import React, { useState } from "react";
 import {
@@ -15,15 +14,6 @@ import {
 import { useThemeColors } from "../../../../hooks/useTheme";
 import { Button } from "../../../../shared/components/ui/Button";
 import { PayslipFilters } from "../../../../shared/types/payslip";
-
-type IconType = keyof typeof FontAwesome.glyphMap;
-
-interface FilterOption {
-  id: string;
-  label: string;
-  icon: IconType;
-  value?: any;
-}
 
 interface PayslipFilterBarProps {
   filters: PayslipFilters;
@@ -65,7 +55,6 @@ export const PayslipFilterBar: React.FC<PayslipFilterBarProps> = ({
     { value: "processing", label: "En cours" },
   ];
 
-  // Count active filters (excluding searchQuery)
   const activeFiltersCount = Object.keys(filters).filter(
     (key) =>
       key !== "searchQuery" &&

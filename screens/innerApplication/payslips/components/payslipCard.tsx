@@ -62,16 +62,7 @@ export const PayslipCard: React.FC<PayslipCardProps> = ({
     }
   };
 
-  const formatAmount = (amount: number) => {
-    return new Intl.NumberFormat("fr-FR", {
-      style: "currency",
-      currency: "EUR",
-    }).format(amount);
-  };
-
-  // Format the date to show "08/2025 → 14/08/2025" format
   const formatDateRange = (availableDate: string) => {
-    // Extract month and year from availableDate (assuming format like "14/08/2025")
     const dateParts = availableDate.split("/");
     if (dateParts.length === 3) {
       const [day, month, year] = dateParts;
@@ -85,11 +76,11 @@ export const PayslipCard: React.FC<PayslipCardProps> = ({
   const getIconBackgroundColor = () => {
     switch (status) {
       case "available":
-        return "#22c55e"; // Green for available
+        return "#22c55e";
       case "pending":
-        return "#ef4444"; // Red for pending/en attente
+        return "#ef4444";
       case "processing":
-        return "#f59e0b"; // Orange for processing
+        return "#f59e0b";
       default:
         return "#6366f1";
     }

@@ -1,4 +1,3 @@
-// screens/innerApplication/notifications/notificationsScreen.tsx - Fixed back navigation
 import { Ionicons } from "@expo/vector-icons";
 import { router, useLocalSearchParams } from "expo-router";
 import React, { useEffect, useRef, useState } from "react";
@@ -31,7 +30,6 @@ type FilterType =
   | "important"
   | "informative";
 
-// Animated notification card wrapper component
 const AnimatedNotificationCard: React.FC<{
   notification: Notification;
   index: number;
@@ -54,7 +52,7 @@ const AnimatedNotificationCard: React.FC<{
   const animValue = useRef(new Animated.Value(0)).current;
 
   useEffect(() => {
-    const delay = index * 100; // Stagger animation like home screen
+    const delay = index * 100;
     const timer = setTimeout(() => {
       Animated.timing(animValue, {
         toValue: 1,
@@ -122,14 +120,12 @@ export const NotificationsScreen: React.FC = () => {
     useState<Notification | null>(null);
   const [showDetailModal, setShowDetailModal] = useState(false);
 
-  // Animation refs
   const headerAnim = useRef(new Animated.Value(0)).current;
   const filterAnim = useRef(new Animated.Value(0)).current;
 
   useEffect(() => {
     fetchNotifications();
 
-    // Start animations
     Animated.sequence([
       Animated.timing(headerAnim, {
         toValue: 1,
@@ -145,7 +141,6 @@ export const NotificationsScreen: React.FC = () => {
   }, []);
 
   useEffect(() => {
-    // Always clear filters first, then apply new ones
     clearFilters();
 
     if (activeFilter !== "all") {
@@ -245,21 +240,15 @@ export const NotificationsScreen: React.FC = () => {
   const handleSearch = (query: string) => {
     setFilters({ searchQuery: query });
   };
-
-  // Enhanced back navigation handler
   const handleBackPress = () => {
-    // Check if there's a returnTo parameter
     const returnTo = params.returnTo as string;
 
     if (returnTo) {
-      // Navigate to specific route if provided
       router.push(returnTo as any);
     } else {
-      // Try to go back, or fallback to home
       if (router.canGoBack()) {
         router.back();
       } else {
-        // Fallback to home tab if can't go back
         router.push("/(tabs)");
       }
     }

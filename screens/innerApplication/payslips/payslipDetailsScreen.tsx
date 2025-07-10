@@ -1,4 +1,3 @@
-// screens/innerApplication/payslips/payslipDetailsScreen.tsx
 import { FontAwesome } from "@expo/vector-icons";
 import { router } from "expo-router";
 import React, { useEffect, useRef } from "react";
@@ -69,11 +68,6 @@ export const PayslipDetailsScreen: React.FC = () => {
     0
   );
 
-  const totalBonuses = selectedPayslip.bonuses.reduce(
-    (sum, bonus) => sum + bonus.amount,
-    0
-  );
-
   const renderInfoRow = (
     label: string,
     value: string,
@@ -125,7 +119,7 @@ export const PayslipDetailsScreen: React.FC = () => {
     },
     scrollContent: {
       padding: 16,
-      paddingBottom: 120, // Extra space for tab bar
+      paddingBottom: 120,
     },
     subtitle: {
       fontSize: 16,

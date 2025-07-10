@@ -1,4 +1,3 @@
-// screens/innerApplication/payslips/payslipsScreen.tsx - Updated with search modal
 import { router } from "expo-router";
 import React, { useEffect, useRef, useState } from "react";
 import {

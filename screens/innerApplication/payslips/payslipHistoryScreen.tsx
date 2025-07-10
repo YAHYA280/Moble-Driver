@@ -1,4 +1,3 @@
-// screens/innerApplication/payslips/payslipHistoryScreen.tsx - Updated with search modal
 import { router } from "expo-router";
 import React, { useEffect, useRef, useState } from "react";
 import {
@@ -26,7 +25,6 @@ interface YearGroup {
   payslips: Payslip[];
 }
 
-// Animated Payslip Historique Card Component
 const AnimatedPayslipHistoriqueCard: React.FC<{
   item: Payslip;
   index: number;
@@ -34,7 +32,7 @@ const AnimatedPayslipHistoriqueCard: React.FC<{
   const animValue = useRef(new Animated.Value(0)).current;
 
   useEffect(() => {
-    const delay = index * 80; // Slightly faster animation for archive view
+    const delay = index * 80;
     const timer = setTimeout(() => {
       Animated.timing(animValue, {
         toValue: 1,
@@ -94,7 +92,6 @@ export const PayslipHistoryScreen: React.FC = () => {
   useEffect(() => {
     fetchPayslips();
 
-    // Start animations
     Animated.sequence([
       Animated.timing(headerAnim, {
         toValue: 1,
@@ -109,7 +106,6 @@ export const PayslipHistoryScreen: React.FC = () => {
     ]).start();
   }, []);
 
-  // Group payslips by year
   const groupedPayslips: YearGroup[] = React.useMemo(() => {
     const groups: { [key: number]: Payslip[] } = {};
 
@@ -176,7 +172,6 @@ export const PayslipHistoryScreen: React.FC = () => {
       icon: "history" as const,
       onPress: () => {
         setShowSidebar(false);
-        // Already on this screen
       },
       isActive: true,
     },
@@ -295,7 +290,6 @@ export const PayslipHistoryScreen: React.FC = () => {
 
   return (
     <SafeAreaView style={styles.container}>
-      {/* Animated Header with Search and Notification Icons */}
       <Animated.View
         style={{
           opacity: headerAnim,
