@@ -1,4 +1,4 @@
-// shared/components/ui/PayslipFilterBar.tsx
+// screens/innerApplication/payslips/components/payslipFilterBar.tsx - Updated without search
 import { FontAwesome } from "@expo/vector-icons";
 import React, { useState } from "react";
 import {
@@ -14,7 +14,6 @@ import {
 } from "react-native";
 import { useThemeColors } from "../../../../hooks/useTheme";
 import { Button } from "../../../../shared/components/ui/Button";
-import { Input } from "../../../../shared/components/ui/Input";
 import { PayslipFilters } from "../../../../shared/types/payslip";
 
 type IconType = keyof typeof FontAwesome.glyphMap;
@@ -66,8 +65,11 @@ export const PayslipFilterBar: React.FC<PayslipFilterBarProps> = ({
     { value: "processing", label: "En cours" },
   ];
 
+  // Count active filters (excluding searchQuery)
   const activeFiltersCount = Object.keys(filters).filter(
-    (key) => filters[key as keyof PayslipFilters] !== undefined
+    (key) =>
+      key !== "searchQuery" &&
+      filters[key as keyof PayslipFilters] !== undefined
   ).length;
 
   const handleApplyFilters = () => {
@@ -89,29 +91,6 @@ export const PayslipFilterBar: React.FC<PayslipFilterBarProps> = ({
     }));
   };
 
-  const renderFilterChip = (label: string, isActive: boolean) => (
-    <View
-      style={[
-        styles.filterChip,
-        {
-          backgroundColor: isActive
-            ? colors.primary + "15"
-            : colors.backgroundSecondary,
-          borderColor: isActive ? colors.primary : colors.border,
-        },
-      ]}
-    >
-      <Text
-        style={[
-          styles.filterChipText,
-          { color: isActive ? colors.primary : colors.textSecondary },
-        ]}
-      >
-        {label}
-      </Text>
-    </View>
-  );
-
   const getActiveFiltersDisplay = () => {
     const displays = [];
 
@@ -124,7 +103,6 @@ export const PayslipFilterBar: React.FC<PayslipFilterBarProps> = ({
       const status = statusOptions.find((s) => s.value === filters.status);
       if (status) displays.push(status.label);
     }
-    if (filters.searchQuery) displays.push(`"${filters.searchQuery}"`);
 
     return displays.join(", ");
   };
@@ -283,17 +261,6 @@ export const PayslipFilterBar: React.FC<PayslipFilterBarProps> = ({
       flexDirection: "row",
       gap: 12,
       marginTop: 20,
-    },
-    filterChip: {
-      paddingHorizontal: 8,
-      paddingVertical: 4,
-      borderRadius: 12,
-      borderWidth: 1,
-      marginRight: 6,
-    },
-    filterChipText: {
-      fontSize: 12,
-      fontWeight: "500",
     },
   });
 
@@ -462,18 +429,6 @@ export const PayslipFilterBar: React.FC<PayslipFilterBarProps> = ({
                         </TouchableOpacity>
                       ))}
                     </View>
-                  </View>
-
-                  {/* Search Filter */}
-                  <View style={styles.filterSection}>
-                    <Text style={styles.sectionTitle}>Recherche</Text>
-                    <Input
-                      placeholder="Rechercher par mois, montant..."
-                      value={localFilters.searchQuery || ""}
-                      onChangeText={(text) =>
-                        handleFilterChange("searchQuery", text)
-                      }
-                    />
                   </View>
                 </ScrollView>
 
