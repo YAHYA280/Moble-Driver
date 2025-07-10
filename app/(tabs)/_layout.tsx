@@ -1,7 +1,3 @@
-// Move all your existing feature routes into the (tabs) directory structure
-// This way they stay within the tab navigation but are hidden from the tab bar
-
-// app/(tabs)/_layout.tsx - Updated to include all routes but hide detail screens
 import { Ionicons } from "@expo/vector-icons";
 import { Tabs } from "expo-router";
 import { Dimensions, Platform, StyleSheet, View } from "react-native";
@@ -279,7 +275,7 @@ export default function TabLayout() {
       <Tabs.Screen
         name="payslips"
         options={{
-          href: null, // This hides it from the tab bar
+          href: null,
         }}
       />
 

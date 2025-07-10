@@ -110,7 +110,7 @@ export const PayslipsScreen: React.FC = () => {
   const handlePayslipPress = (payslip: Payslip) => {
     selectPayslip(payslip);
     router.push({
-      pathname: "/innerApplication/payslips/details/[id]" as any,
+      pathname: "/(tabs)/payslips/details/[id]" as any,
       params: { id: payslip.id },
     });
   };
@@ -152,7 +152,7 @@ export const PayslipsScreen: React.FC = () => {
       icon: "history" as const,
       onPress: () => {
         setShowSidebar(false);
-        router.push("/innerApplication/payslips/history" as any);
+        router.push("/(tabs)/payslips/history" as any);
       },
       isActive: false,
     },
