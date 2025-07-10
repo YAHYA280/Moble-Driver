@@ -50,31 +50,30 @@ export const HomeScreen: React.FC = () => {
   }, []);
 
   const handleNotificationPress = () => {
-    router.push("/(tabs)/notifications" as any);
+    router.push("/notifications");
   };
-
   const handlePayslipsPress = () => {
-    router.push("/(tabs)/payslips" as any);
+    router.push("/payslips"); // Direct to tab route
   };
 
   const handleVehiclesPress = () => {
-    router.push("/(tabs)/vehicles" as any);
+    router.push("/vehicles"); // Direct to tab route
   };
 
   const handleDocumentsPress = () => {
-    router.push("/(tabs)/documents" as any);
+    router.push("/documents"); // Direct to tab route
   };
 
   const handleRoutesPress = () => {
-    router.push("/(tabs)/routes" as any);
+    router.push("/routes"); // Direct to tab route
   };
 
   const handleGeolocationPress = () => {
-    router.push("/(tabs)/geolocation" as any);
+    router.push("/geolocation"); // Direct to tab route
   };
 
   const handlePlanningPress = () => {
-    router.push("/(tabs)/planning" as any);
+    router.push("/planning"); // Direct to tab route
   };
 
   const styles = StyleSheet.create({

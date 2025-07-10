@@ -1,4 +1,4 @@
-// screens/innerApplication/notifications/notificationsScreen.tsx
+// screens/innerApplication/notifications/notificationsScreen.tsx - Updated navigation
 import { Ionicons } from "@expo/vector-icons";
 import { router } from "expo-router";
 import React, { useEffect, useRef, useState } from "react";
@@ -393,8 +393,13 @@ export const NotificationsScreen: React.FC = () => {
             {
               icon: "cog",
               onPress: () => {
-                router.push("/innerApplication/notifications/settings");
+                // 🎯 Updated navigation to use tab route
+                router.push("/notifications/settings");
               },
+            },
+            {
+              icon: "home",
+              onPress: () => router.push("/"),
             },
           ]}
         />

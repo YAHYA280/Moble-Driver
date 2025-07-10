@@ -1,10 +1,9 @@
 import { Stack } from "expo-router";
 
-export default function NotificationsLayout() {
+export default function GeolocationLayout() {
   return (
-    <Stack>
+    <Stack screenOptions={{ headerShown: false }}>
       <Stack.Screen name="index" options={{ headerShown: false }} />
-      <Stack.Screen name="settings" options={{ headerShown: false }} />
     </Stack>
   );
 }

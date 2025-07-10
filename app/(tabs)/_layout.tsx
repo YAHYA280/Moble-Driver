@@ -1,3 +1,4 @@
+// app/(tabs)/_layout.tsx - Fixed curved tab bar visibility
 import { Ionicons } from "@expo/vector-icons";
 import { Tabs } from "expo-router";
 import { Dimensions, Platform, StyleSheet, View } from "react-native";
@@ -269,61 +270,61 @@ export default function TabLayout() {
         }}
       />
 
-      {/* HIDDEN ROUTES - These will not show in the tab bar but keep the tab bar visible */}
+      {/* HIDDEN ROUTES - Keep tab bar visible but don't show in tab bar */}
 
-      {/* Payslips with nested Stack */}
+      {/* Payslips with nested Stack - HIDDEN FROM TAB BAR */}
       <Tabs.Screen
         name="payslips"
         options={{
-          href: null,
+          href: null, // 🎯 Use href: null instead of tabBarButton
         }}
       />
 
-      {/* Notifications with nested Stack */}
+      {/* Notifications with nested Stack - HIDDEN FROM TAB BAR */}
       <Tabs.Screen
         name="notifications"
         options={{
-          href: null,
+          href: null, // 🎯 Use href: null instead of tabBarButton
         }}
       />
 
-      {/* Vehicles */}
+      {/* Vehicles - HIDDEN FROM TAB BAR */}
       <Tabs.Screen
         name="vehicles"
         options={{
-          href: null,
+          href: null, // 🎯 Use href: null instead of tabBarButton
         }}
       />
 
-      {/* Documents */}
+      {/* Documents - HIDDEN FROM TAB BAR */}
       <Tabs.Screen
         name="documents"
         options={{
-          href: null,
+          href: null, // 🎯 Use href: null instead of tabBarButton
         }}
       />
 
-      {/* Routes */}
+      {/* Routes - HIDDEN FROM TAB BAR */}
       <Tabs.Screen
         name="routes"
         options={{
-          href: null,
+          href: null, // 🎯 Use href: null instead of tabBarButton
         }}
       />
 
-      {/* Geolocation */}
+      {/* Geolocation - HIDDEN FROM TAB BAR */}
       <Tabs.Screen
         name="geolocation"
         options={{
-          href: null,
+          href: null, // 🎯 Use href: null instead of tabBarButton
         }}
       />
 
-      {/* Planning */}
+      {/* Planning - HIDDEN FROM TAB BAR */}
       <Tabs.Screen
         name="planning"
         options={{
-          href: null,
+          href: null, // 🎯 Use href: null instead of tabBarButton
         }}
       />
     </Tabs>
