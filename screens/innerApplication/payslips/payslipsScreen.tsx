@@ -153,7 +153,7 @@ export const PayslipsScreen: React.FC = () => {
   };
 
   const handleNotificationPress = () => {
-    router.push("/notifications");
+    router.push("/notifications?returnTo=/payslips");
   };
 
   const handleSearchPress = () => {

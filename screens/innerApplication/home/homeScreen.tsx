@@ -1,4 +1,4 @@
-// screens/innerApplication/home/homeScreen.tsx - Updated navigation
+// screens/innerApplication/home/homeScreen.tsx - Updated notification navigation
 import { router } from "expo-router";
 import React, { useEffect, useRef } from "react";
 import { Animated, ScrollView, StyleSheet, View } from "react-native";
@@ -50,8 +50,10 @@ export const HomeScreen: React.FC = () => {
   }, []);
 
   const handleNotificationPress = () => {
-    router.push("/notifications");
+    // Pass the return route to notifications
+    router.push("/notifications?returnTo=/(tabs)");
   };
+
   const handlePayslipsPress = () => {
     router.push("/payslips"); // Direct to tab route
   };

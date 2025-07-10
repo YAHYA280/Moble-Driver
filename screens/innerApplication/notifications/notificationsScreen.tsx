@@ -1,6 +1,6 @@
-// screens/innerApplication/notifications/notificationsScreen.tsx - Updated navigation fixed
+// screens/innerApplication/notifications/notificationsScreen.tsx - Fixed back navigation
 import { Ionicons } from "@expo/vector-icons";
-import { router } from "expo-router";
+import { router, useLocalSearchParams } from "expo-router";
 import React, { useEffect, useRef, useState } from "react";
 import {
   Alert,
@@ -96,6 +96,8 @@ const AnimatedNotificationCard: React.FC<{
 export const NotificationsScreen: React.FC = () => {
   const { colors } = useTheme();
   const [showSearchModal, setShowSearchModal] = useState(false);
+  const params = useLocalSearchParams();
+
   const {
     notifications,
     isLoading,
@@ -242,6 +244,25 @@ export const NotificationsScreen: React.FC = () => {
 
   const handleSearch = (query: string) => {
     setFilters({ searchQuery: query });
+  };
+
+  // Enhanced back navigation handler
+  const handleBackPress = () => {
+    // Check if there's a returnTo parameter
+    const returnTo = params.returnTo as string;
+
+    if (returnTo) {
+      // Navigate to specific route if provided
+      router.push(returnTo as any);
+    } else {
+      // Try to go back, or fallback to home
+      if (router.canGoBack()) {
+        router.back();
+      } else {
+        // Fallback to home tab if can't go back
+        router.push("/(tabs)");
+      }
+    }
   };
 
   const getEmptyStateConfig = () => {
@@ -395,7 +416,7 @@ export const NotificationsScreen: React.FC = () => {
         <Header
           leftIcon={{
             icon: "chevron-left",
-            onPress: () => router.back(),
+            onPress: handleBackPress,
           }}
           title="Notifications"
           subtitle={`${getUnreadCount()} non lues`}

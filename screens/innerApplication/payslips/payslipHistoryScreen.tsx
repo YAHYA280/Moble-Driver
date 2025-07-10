@@ -148,7 +148,7 @@ export const PayslipHistoryScreen: React.FC = () => {
   };
 
   const handleNotificationPress = () => {
-    router.push("/notifications");
+    router.push("/notifications?returnTo=/payslips/history");
   };
 
   const handleSearchPress = () => {
