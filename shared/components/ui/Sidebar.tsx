@@ -6,10 +6,11 @@ import {
   Dimensions,
   Modal,
   Platform,
+  Pressable,
   ScrollView,
+  StatusBar,
   StyleSheet,
   Text,
-  TouchableOpacity,
   TouchableWithoutFeedback,
   View,
   ViewStyle,
@@ -51,44 +52,79 @@ export const Sidebar: React.FC<SidebarProps> = ({
   showCloseButton = true,
 }) => {
   const colors = useThemeColors();
-  const slideAnim = React.useRef(new Animated.Value(-280)).current;
+  const slideAnim = React.useRef(new Animated.Value(-300)).current;
+  const overlayAnim = React.useRef(new Animated.Value(0)).current;
+
+  // Calculate proper sidebar width for different screen sizes
+  const sidebarWidth = React.useMemo(() => {
+    if (Platform.OS === "android") {
+      // Android optimization: responsive width based on screen size
+      if (screenWidth < 360) return Math.min(260, screenWidth * 0.85); // Small phones
+      if (screenWidth < 400) return Math.min(280, screenWidth * 0.8); // Medium phones
+      return Math.min(320, screenWidth * 0.75); // Large phones/tablets
+    }
+    return Math.min(280, screenWidth * 0.8); // iOS default
+  }, []);
 
   React.useEffect(() => {
     if (visible) {
-      Animated.timing(slideAnim, {
-        toValue: 0,
-        duration: 300,
-        useNativeDriver: true,
-      }).start();
+      Animated.parallel([
+        Animated.timing(slideAnim, {
+          toValue: 0,
+          duration: Platform.OS === "android" ? 250 : 300, // Faster on Android
+          useNativeDriver: true,
+        }),
+        Animated.timing(overlayAnim, {
+          toValue: 1,
+          duration: Platform.OS === "android" ? 200 : 250,
+          useNativeDriver: true,
+        }),
+      ]).start();
     } else {
-      Animated.timing(slideAnim, {
-        toValue: -280,
-        duration: 250,
-        useNativeDriver: true,
-      }).start();
+      Animated.parallel([
+        Animated.timing(slideAnim, {
+          toValue: -sidebarWidth,
+          duration: Platform.OS === "android" ? 200 : 250, // Faster on Android
+          useNativeDriver: true,
+        }),
+        Animated.timing(overlayAnim, {
+          toValue: 0,
+          duration: Platform.OS === "android" ? 150 : 200,
+          useNativeDriver: true,
+        }),
+      ]).start();
     }
-  }, [visible]);
+  }, [visible, sidebarWidth]);
 
   const renderItem = (item: SidebarItem) => (
-    <TouchableOpacity
+    <Pressable
       key={item.id}
-      style={[
+      style={({ pressed }) => [
         styles.item,
         {
           backgroundColor: item.isActive
             ? colors.primary + "15"
+            : pressed && Platform.OS === "ios"
+            ? colors.backgroundSecondary
             : "transparent",
           borderLeftColor: item.isActive ? colors.primary : "transparent",
         },
       ]}
       onPress={item.onPress}
-      activeOpacity={0.7}
+      android_ripple={
+        Platform.OS === "android"
+          ? {
+              color: colors.primary + "20",
+              borderless: false,
+            }
+          : undefined
+      }
     >
       <View style={styles.itemContent}>
         <View style={styles.itemLeft}>
           <FontAwesome
             name={item.icon}
-            size={18}
+            size={Platform.OS === "android" ? 16 : 18}
             color={item.isActive ? colors.primary : colors.iconSecondary}
             style={styles.itemIcon}
           />
@@ -98,6 +134,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
               {
                 color: item.isActive ? colors.primary : colors.textSecondary,
                 fontWeight: item.isActive ? "600" : "500",
+                fontSize: Platform.OS === "android" ? 15 : 16,
               },
             ]}
           >
@@ -113,7 +150,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
           </View>
         </ConditionalComponent>
       </View>
-    </TouchableOpacity>
+    </Pressable>
   );
 
   const styles = StyleSheet.create({
@@ -123,21 +160,24 @@ export const Sidebar: React.FC<SidebarProps> = ({
     },
     container: {
       height: screenHeight,
-      width: Math.min(280, screenWidth * 0.8),
+      width: sidebarWidth,
       backgroundColor: colors.surface,
-      borderRightWidth: 1,
-      borderRightColor: colors.border,
       ...Platform.select({
         ios: {
+          borderRightWidth: 1,
+          borderRightColor: colors.border,
           shadowColor: colors.shadow,
           shadowOffset: { width: 2, height: 0 },
           shadowOpacity: colors.isDark ? 0.3 : 0.1,
           shadowRadius: 8,
         },
         android: {
-          elevation: 4,
+          elevation: 16,
+          borderRightWidth: 0,
         },
         web: {
+          borderRightWidth: 1,
+          borderRightColor: colors.border,
           boxShadow: colors.isDark
             ? "2px 0 8px rgba(0, 0, 0, 0.3)"
             : "2px 0 8px rgba(0, 0, 0, 0.1)",
@@ -147,34 +187,35 @@ export const Sidebar: React.FC<SidebarProps> = ({
     safeArea: {
       flex: 1,
       backgroundColor: colors.surface,
+      paddingTop: Platform.OS === "android" ? StatusBar.currentHeight || 0 : 0,
     },
     logoSection: {
       alignItems: "center",
       justifyContent: "center",
-      paddingVertical: 32,
+      paddingVertical: Platform.OS === "android" ? 24 : 32,
       paddingHorizontal: 16,
       borderBottomWidth: 1,
       borderBottomColor: colors.border,
-      minHeight: 120,
+      minHeight: Platform.OS === "android" ? 100 : 120,
     },
     header: {
       flexDirection: "row",
       alignItems: "center",
       justifyContent: "space-between",
       paddingHorizontal: 16,
-      paddingVertical: 20,
+      paddingVertical: Platform.OS === "android" ? 16 : 20,
       borderBottomWidth: 1,
       borderBottomColor: colors.border,
     },
     title: {
-      fontSize: 18,
+      fontSize: Platform.OS === "android" ? 16 : 18,
       fontWeight: "600",
       color: colors.text,
     },
     closeButton: {
-      width: 32,
-      height: 32,
-      borderRadius: 16,
+      width: Platform.OS === "android" ? 28 : 32,
+      height: Platform.OS === "android" ? 28 : 32,
+      borderRadius: Platform.OS === "android" ? 14 : 16,
       alignItems: "center",
       justifyContent: "center",
       backgroundColor: colors.backgroundSecondary,
@@ -185,17 +226,18 @@ export const Sidebar: React.FC<SidebarProps> = ({
     },
     item: {
       marginHorizontal: 8,
-      marginVertical: 2,
-      borderRadius: 8,
+      marginVertical: 1,
+      borderRadius: Platform.OS === "android" ? 6 : 8,
       borderLeftWidth: 3,
       borderLeftColor: "transparent",
+      overflow: Platform.OS === "android" ? "hidden" : "visible",
     },
     itemContent: {
       flexDirection: "row",
       alignItems: "center",
       justifyContent: "space-between",
       paddingHorizontal: 16,
-      paddingVertical: 12,
+      paddingVertical: Platform.OS === "android" ? 10 : 12,
     },
     itemLeft: {
       flexDirection: "row",
@@ -203,46 +245,51 @@ export const Sidebar: React.FC<SidebarProps> = ({
       flex: 1,
     },
     itemIcon: {
-      marginRight: 12,
+      marginRight: Platform.OS === "android" ? 10 : 12,
     },
     itemLabel: {
-      fontSize: 16,
       flex: 1,
+      lineHeight: Platform.OS === "android" ? 18 : 20,
     },
     badge: {
-      minWidth: 20,
-      height: 20,
-      borderRadius: 10,
+      minWidth: Platform.OS === "android" ? 18 : 20,
+      height: Platform.OS === "android" ? 18 : 20,
+      borderRadius: Platform.OS === "android" ? 9 : 10,
       alignItems: "center",
       justifyContent: "center",
-      paddingHorizontal: 6,
+      paddingHorizontal: Platform.OS === "android" ? 4 : 6,
     },
     badgeText: {
       color: "white",
-      fontSize: 12,
+      fontSize: Platform.OS === "android" ? 10 : 12,
       fontWeight: "600",
     },
     footer: {
       borderTopWidth: 1,
       borderTopColor: colors.border,
       paddingHorizontal: 16,
-      paddingVertical: 20,
-      paddingBottom: Platform.OS === "ios" ? 34 : 20,
+      paddingVertical: Platform.OS === "android" ? 16 : 20,
+      paddingBottom: Platform.select({
+        ios: 34,
+        android: 16,
+        default: 20,
+      }),
     },
     logoutButton: {
       flexDirection: "row",
       alignItems: "center",
       justifyContent: "center",
-      paddingVertical: 12,
+      paddingVertical: Platform.OS === "android" ? 10 : 12,
       paddingHorizontal: 16,
-      borderRadius: 8,
+      borderRadius: Platform.OS === "android" ? 6 : 8,
       backgroundColor: colors.error + "15",
       borderWidth: 1,
       borderColor: colors.error + "30",
+      overflow: Platform.OS === "android" ? "hidden" : "visible",
     },
     logoutText: {
       color: colors.error,
-      fontSize: 16,
+      fontSize: Platform.OS === "android" ? 14 : 16,
       fontWeight: "600",
       marginLeft: 8,
     },
@@ -254,10 +301,20 @@ export const Sidebar: React.FC<SidebarProps> = ({
       transparent
       animationType="none"
       onRequestClose={onClose}
+      statusBarTranslucent={Platform.OS === "android"}
     >
-      <TouchableWithoutFeedback onPress={onClose}>
-        <View style={styles.modalOverlay} />
-      </TouchableWithoutFeedback>
+      <Animated.View
+        style={[
+          styles.modalOverlay,
+          {
+            opacity: overlayAnim,
+          },
+        ]}
+      >
+        <TouchableWithoutFeedback onPress={onClose}>
+          <View style={{ flex: 1 }} />
+        </TouchableWithoutFeedback>
+      </Animated.View>
 
       <Animated.View
         style={[
@@ -271,10 +328,16 @@ export const Sidebar: React.FC<SidebarProps> = ({
           style,
         ]}
       >
-        <SafeAreaView style={styles.safeArea} edges={["top"]}>
+        <SafeAreaView
+          style={styles.safeArea}
+          edges={Platform.OS === "android" ? [] : ["top"]}
+        >
           {/* Logo Section */}
           <View style={styles.logoSection}>
-            <LogoVSN width={160} height={38} />
+            <LogoVSN
+              width={Platform.OS === "android" ? 140 : 160}
+              height={Platform.OS === "android" ? 32 : 38}
+            />
           </View>
 
           {/* Header with title and close button */}
@@ -285,13 +348,27 @@ export const Sidebar: React.FC<SidebarProps> = ({
               </ConditionalComponent>
 
               <ConditionalComponent isValid={showCloseButton && !!onClose}>
-                <TouchableOpacity style={styles.closeButton} onPress={onClose}>
+                <Pressable
+                  style={({ pressed }) => [
+                    styles.closeButton,
+                    pressed && Platform.OS === "ios" && { opacity: 0.7 },
+                  ]}
+                  onPress={onClose}
+                  android_ripple={
+                    Platform.OS === "android"
+                      ? {
+                          color: colors.textSecondary + "20",
+                          borderless: true,
+                        }
+                      : undefined
+                  }
+                >
                   <FontAwesome
                     name="times"
-                    size={16}
+                    size={Platform.OS === "android" ? 14 : 16}
                     color={colors.textSecondary}
                   />
-                </TouchableOpacity>
+                </Pressable>
               </ConditionalComponent>
             </View>
           </ConditionalComponent>
@@ -300,7 +377,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
           <ScrollView
             style={styles.scrollContent}
             showsVerticalScrollIndicator={false}
-            bounces={false}
+            bounces={Platform.OS !== "android"}
           >
             {items.map(renderItem)}
           </ScrollView>
@@ -308,14 +385,28 @@ export const Sidebar: React.FC<SidebarProps> = ({
           {/* Footer with Logout Button */}
           {onLogout && (
             <View style={styles.footer}>
-              <TouchableOpacity
-                style={styles.logoutButton}
+              <Pressable
+                style={({ pressed }) => [
+                  styles.logoutButton,
+                  pressed && Platform.OS === "ios" && { opacity: 0.7 },
+                ]}
                 onPress={onLogout}
-                activeOpacity={0.7}
+                android_ripple={
+                  Platform.OS === "android"
+                    ? {
+                        color: colors.error + "20",
+                        borderless: false,
+                      }
+                    : undefined
+                }
               >
-                <FontAwesome name="sign-out" size={18} color={colors.error} />
+                <FontAwesome
+                  name="sign-out"
+                  size={Platform.OS === "android" ? 16 : 18}
+                  color={colors.error}
+                />
                 <Text style={styles.logoutText}>Déconnecté</Text>
-              </TouchableOpacity>
+              </Pressable>
             </View>
           )}
         </SafeAreaView>
