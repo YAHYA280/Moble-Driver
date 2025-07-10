@@ -1,6 +1,7 @@
 import { router } from "expo-router";
 import React, { useEffect, useRef, useState } from "react";
 import {
+  Alert,
   Animated,
   FlatList,
   RefreshControl,
@@ -13,30 +14,29 @@ import { useTheme } from "../../../contexts/ThemeContext";
 import { Header } from "../../../shared/components/ui/Header";
 import { Sidebar } from "../../../shared/components/ui/Sidebar";
 import { Payslip } from "../../../shared/types/payslip";
+import { useAuthStore } from "../../../store/authStore";
 import { usePayslipStore } from "../../../store/payslipStore";
-import { PayslipCard } from "./components/payslipCard";
 import { PayslipFilterBar } from "./components/payslipFilterBar";
+import { PayslipHistoriqueCard } from "./components/PayslipHistoriqueCard";
 
 interface YearGroup {
   year: number;
   payslips: Payslip[];
 }
 
-// Animated Payslip Card Component
-const AnimatedPayslipCard: React.FC<{
+// Animated Payslip Historique Card Component
+const AnimatedPayslipHistoriqueCard: React.FC<{
   item: Payslip;
   index: number;
-  onViewDetails: () => void;
-  onDownload: () => void;
-}> = ({ item, index, onViewDetails, onDownload }) => {
+}> = ({ item, index }) => {
   const animValue = useRef(new Animated.Value(0)).current;
 
   useEffect(() => {
-    const delay = index * 100;
+    const delay = index * 80; // Slightly faster animation for archive view
     const timer = setTimeout(() => {
       Animated.timing(animValue, {
         toValue: 1,
-        duration: 500,
+        duration: 400,
         useNativeDriver: true,
       }).start();
     }, delay);
@@ -52,20 +52,18 @@ const AnimatedPayslipCard: React.FC<{
           {
             translateY: animValue.interpolate({
               inputRange: [0, 1],
-              outputRange: [20, 0],
+              outputRange: [15, 0],
             }),
           },
         ],
       }}
     >
-      <PayslipCard
+      <PayslipHistoriqueCard
         id={item.id}
         monthYear={item.monthYear}
         netAmount={item.netSalary}
         status={item.status}
         availableDate={item.availableDate}
-        onViewDetails={onViewDetails}
-        onDownload={onDownload}
       />
     </Animated.View>
   );
@@ -86,9 +84,9 @@ export const PayslipHistoryScreen: React.FC = () => {
     fetchPayslips,
     setFilters,
     clearFilters,
-    selectPayslip,
-    downloadPayslip,
   } = usePayslipStore();
+
+  const { logout } = useAuthStore();
 
   useEffect(() => {
     fetchPayslips();
@@ -127,24 +125,23 @@ export const PayslipHistoryScreen: React.FC = () => {
       .sort((a, b) => b.year - a.year);
   }, [filteredPayslips]);
 
-  const handlePayslipPress = (payslip: Payslip) => {
-    selectPayslip(payslip);
-    router.push({
-      pathname: "/innerApplication/payslips/details/[id]" as any,
-      params: { id: payslip.id },
-    });
-  };
-
-  const handleDownloadPayslip = async (payslip: Payslip) => {
-    try {
-      await downloadPayslip(payslip.id);
-    } catch (error) {
-      // Error handling is done in the store
-    }
-  };
-
   const handleRefresh = () => {
     fetchPayslips();
+  };
+
+  const handleLogout = () => {
+    Alert.alert("Déconnexion", "Êtes-vous sûr de vouloir vous déconnecter ?", [
+      { text: "Annuler", style: "cancel" },
+      {
+        text: "Déconnecter",
+        style: "destructive",
+        onPress: () => {
+          setShowSidebar(false);
+          logout();
+          router.replace("/auth/login");
+        },
+      },
+    ]);
   };
 
   const sidebarItems = [
@@ -172,26 +169,20 @@ export const PayslipHistoryScreen: React.FC = () => {
 
   const renderYearHeader = (year: number, count: number) => (
     <View style={[styles.yearHeader, { backgroundColor: colors.surface }]}>
-      <Text style={[styles.yearText, { color: colors.text }]}>{year}</Text>
-      <Text style={[styles.yearCount, { color: colors.textSecondary }]}>
-        {count} bulletin{count > 1 ? "s" : ""}
-      </Text>
+      <View style={styles.yearHeaderContent}>
+        <View style={styles.yearIconContainer}>
+          <Text style={[styles.yearIcon, { color: colors.primary }]}>📁</Text>
+        </View>
+        <View style={styles.yearInfo}>
+          <Text style={[styles.yearText, { color: colors.text }]}>
+            Année {year}
+          </Text>
+          <Text style={[styles.yearCount, { color: colors.textSecondary }]}>
+            {count} document{count > 1 ? "s" : ""} archivé{count > 1 ? "s" : ""}
+          </Text>
+        </View>
+      </View>
     </View>
-  );
-
-  const renderPayslipItem = ({
-    item,
-    index,
-  }: {
-    item: Payslip;
-    index: number;
-  }) => (
-    <AnimatedPayslipCard
-      item={item}
-      index={index}
-      onViewDetails={() => handlePayslipPress(item)}
-      onDownload={() => handleDownloadPayslip(item)}
-    />
   );
 
   const renderGroupItem = ({ item }: { item: YearGroup }) => (
@@ -199,7 +190,7 @@ export const PayslipHistoryScreen: React.FC = () => {
       {renderYearHeader(item.year, item.payslips.length)}
       {item.payslips.map((payslip, index) => (
         <View key={payslip.id} style={styles.payslipItem}>
-          {renderPayslipItem({ item: payslip, index })}
+          <AnimatedPayslipHistoriqueCard item={payslip} index={index} />
         </View>
       ))}
     </View>
@@ -207,6 +198,9 @@ export const PayslipHistoryScreen: React.FC = () => {
 
   const renderEmptyState = () => (
     <View style={styles.emptyState}>
+      <View style={styles.emptyIcon}>
+        <Text style={styles.emptyIconText}>📂</Text>
+      </View>
       <Text style={[styles.emptyTitle, { color: colors.text }]}>
         Aucun historique trouvé
       </Text>
@@ -247,30 +241,41 @@ export const PayslipHistoryScreen: React.FC = () => {
       flex: 1,
     },
     groupContainer: {
-      marginBottom: 16,
+      marginBottom: 20,
     },
     yearHeader: {
-      flexDirection: "row",
-      justifyContent: "space-between",
-      alignItems: "center",
-      paddingHorizontal: 16,
-      paddingVertical: 12,
       marginHorizontal: 16,
-      marginBottom: 8,
-      borderRadius: 8,
+      marginBottom: 12,
+      borderRadius: 10,
       borderWidth: 1,
       borderColor: colors.border,
+      overflow: "hidden",
+    },
+    yearHeaderContent: {
+      flexDirection: "row",
+      alignItems: "center",
+      padding: 16,
+    },
+    yearIconContainer: {
+      marginRight: 12,
+    },
+    yearIcon: {
+      fontSize: 24,
+    },
+    yearInfo: {
+      flex: 1,
     },
     yearText: {
       fontSize: 18,
       fontWeight: "600",
+      marginBottom: 2,
     },
     yearCount: {
-      fontSize: 14,
+      fontSize: 13,
       fontWeight: "500",
     },
     payslipItem: {
-      marginBottom: 4,
+      marginBottom: 2,
     },
     emptyState: {
       flex: 1,
@@ -278,6 +283,13 @@ export const PayslipHistoryScreen: React.FC = () => {
       justifyContent: "center",
       paddingHorizontal: 32,
       paddingTop: 100,
+    },
+    emptyIcon: {
+      marginBottom: 16,
+    },
+    emptyIconText: {
+      fontSize: 48,
+      opacity: 0.5,
     },
     emptyTitle: {
       fontSize: 20,
@@ -319,6 +331,7 @@ export const PayslipHistoryScreen: React.FC = () => {
               title="Paie"
               items={sidebarItems}
               onClose={() => setShowSidebar(false)}
+              onLogout={handleLogout}
             />
           </View>
         </>
@@ -345,9 +358,15 @@ export const PayslipHistoryScreen: React.FC = () => {
               onPress: () => setShowSidebar(true),
             }}
             title="Historique bulletins"
-            subtitle={`${filteredPayslips.length} bulletin${
+            subtitle={`${filteredPayslips.length} document${
               filteredPayslips.length > 1 ? "s" : ""
-            }`}
+            } archivé${filteredPayslips.length > 1 ? "s" : ""}`}
+            rightIcons={[
+              {
+                icon: "home",
+                onPress: () => router.push("/(tabs)"),
+              },
+            ]}
           />
         </Animated.View>
 

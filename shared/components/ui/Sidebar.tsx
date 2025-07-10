@@ -4,16 +4,18 @@ import React from "react";
 import {
   Dimensions,
   Platform,
+  ScrollView,
   StyleSheet,
   Text,
   TouchableOpacity,
   View,
   ViewStyle,
 } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 import { useThemeColors } from "../../../hooks/useTheme";
 import { LogoVSN } from "./sideBarLogoVsn";
 
-const { height: screenHeight } = Dimensions.get("window");
+const { height: screenHeight, width: screenWidth } = Dimensions.get("window");
 
 type IconType = keyof typeof FontAwesome.glyphMap;
 
@@ -31,6 +33,7 @@ interface SidebarProps {
   title?: string;
   style?: ViewStyle;
   onClose?: () => void;
+  onLogout?: () => void;
   showCloseButton?: boolean;
 }
 
@@ -39,6 +42,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
   title,
   style,
   onClose,
+  onLogout,
   showCloseButton = true,
 }) => {
   const colors = useThemeColors();
@@ -93,6 +97,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
   const styles = StyleSheet.create({
     container: {
       height: screenHeight,
+      width: Math.min(280, screenWidth * 0.8), // Responsive width
       backgroundColor: colors.surface,
       borderRightWidth: 1,
       borderRightColor: colors.border,
@@ -113,13 +118,18 @@ export const Sidebar: React.FC<SidebarProps> = ({
         },
       }),
     },
+    safeArea: {
+      flex: 1,
+      backgroundColor: colors.surface,
+    },
     logoSection: {
       alignItems: "center",
       justifyContent: "center",
-      paddingVertical: 24,
+      paddingVertical: 32,
       paddingHorizontal: 16,
       borderBottomWidth: 1,
       borderBottomColor: colors.border,
+      minHeight: 120,
     },
     header: {
       flexDirection: "row",
@@ -143,7 +153,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
       justifyContent: "center",
       backgroundColor: colors.backgroundSecondary,
     },
-    content: {
+    scrollContent: {
       flex: 1,
       paddingTop: 8,
     },
@@ -186,35 +196,80 @@ export const Sidebar: React.FC<SidebarProps> = ({
       fontSize: 12,
       fontWeight: "600",
     },
+    footer: {
+      borderTopWidth: 1,
+      borderTopColor: colors.border,
+      paddingHorizontal: 16,
+      paddingVertical: 20,
+      paddingBottom: Platform.OS === "ios" ? 34 : 20,
+    },
+    logoutButton: {
+      flexDirection: "row",
+      alignItems: "center",
+      justifyContent: "center",
+      paddingVertical: 12,
+      paddingHorizontal: 16,
+      borderRadius: 8,
+      backgroundColor: colors.error + "15",
+      borderWidth: 1,
+      borderColor: colors.error + "30",
+    },
+    logoutText: {
+      color: colors.error,
+      fontSize: 16,
+      fontWeight: "600",
+      marginLeft: 8,
+    },
   });
 
   return (
     <View style={[styles.container, style]}>
-      {/* Logo Section */}
-      <View style={styles.logoSection}>
-        <LogoVSN width={180} height={42} />
-      </View>
-
-      {/* Header with title and close button */}
-      <ConditionalComponent isValid={!!(title || showCloseButton)}>
-        <View style={styles.header}>
-          <ConditionalComponent isValid={!!title}>
-            <Text style={styles.title}>{title}</Text>
-          </ConditionalComponent>
-
-          <ConditionalComponent isValid={showCloseButton && !!onClose}>
-            <TouchableOpacity style={styles.closeButton} onPress={onClose}>
-              <FontAwesome
-                name="times"
-                size={16}
-                color={colors.textSecondary}
-              />
-            </TouchableOpacity>
-          </ConditionalComponent>
+      <SafeAreaView style={styles.safeArea} edges={["top"]}>
+        {/* Logo Section */}
+        <View style={styles.logoSection}>
+          <LogoVSN width={160} height={38} />
         </View>
-      </ConditionalComponent>
 
-      <View style={styles.content}>{items.map(renderItem)}</View>
+        {/* Header with title and close button */}
+        <ConditionalComponent isValid={!!(title || showCloseButton)}>
+          <View style={styles.header}>
+            <ConditionalComponent isValid={!!title}>
+              <Text style={styles.title}>{title}</Text>
+            </ConditionalComponent>
+
+            <ConditionalComponent isValid={showCloseButton && !!onClose}>
+              <TouchableOpacity style={styles.closeButton} onPress={onClose}>
+                <FontAwesome
+                  name="times"
+                  size={16}
+                  color={colors.textSecondary}
+                />
+              </TouchableOpacity>
+            </ConditionalComponent>
+          </View>
+        </ConditionalComponent>
+
+        {/* Scrollable Content */}
+        <ScrollView
+          style={styles.scrollContent}
+          showsVerticalScrollIndicator={false}
+          bounces={false}
+        >
+          {items.map(renderItem)}
+        </ScrollView>
+
+        {/* Footer with Logout Button */}
+        <View style={styles.footer}>
+          <TouchableOpacity
+            style={styles.logoutButton}
+            onPress={onLogout}
+            activeOpacity={0.7}
+          >
+            <FontAwesome name="sign-out" size={18} color={colors.error} />
+            <Text style={styles.logoutText}>Déconnecté</Text>
+          </TouchableOpacity>
+        </View>
+      </SafeAreaView>
     </View>
   );
 };
