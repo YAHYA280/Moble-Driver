@@ -101,6 +101,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
       backgroundColor: colors.surface,
       borderRightWidth: 1,
       borderRightColor: colors.border,
+      zIndex: 10100,
       ...Platform.select({
         ios: {
           shadowColor: colors.shadow,

@@ -1,4 +1,3 @@
-// screens/innerApplication/payslips/payslipsScreen.tsx
 import { router } from "expo-router";
 import React, { useEffect, useRef, useState } from "react";
 import {
@@ -20,7 +19,6 @@ import { usePayslipStore } from "../../../store/payslipStore";
 import { PayslipCard } from "./components/payslipCard";
 import { PayslipFilterBar } from "./components/payslipFilterBar";
 
-// Animated Payslip Card Component
 const AnimatedPayslipCard: React.FC<{
   item: Payslip;
   index: number;
@@ -109,8 +107,9 @@ export const PayslipsScreen: React.FC = () => {
 
   const handlePayslipPress = (payslip: Payslip) => {
     selectPayslip(payslip);
-    // Fixed: Use the correct route format matching the file structure
-    router.push(`/payslips/details/${payslip.id}`);
+
+    const encodedId = encodeURIComponent(payslip.id);
+    router.push(`/payslips/details/${encodedId}`);
   };
 
   const handleDownloadPayslip = async (payslip: Payslip) => {
@@ -150,8 +149,8 @@ export const PayslipsScreen: React.FC = () => {
       icon: "history" as const,
       onPress: () => {
         setShowSidebar(false);
-        // Fixed: Use the correct route
-        router.push("/(tabs)/payslips/history");
+        // Navigate to history within the payslips stack
+        router.push("/payslips/history");
       },
       isActive: false,
     },
@@ -227,15 +226,10 @@ export const PayslipsScreen: React.FC = () => {
       fontSize: 14,
       fontWeight: "500",
     },
-    // Sidebar specific styles
     sidebarOverlay: {
-      position: "absolute",
-      top: 0,
-      left: 0,
-      right: 0,
-      bottom: 0,
+      ...StyleSheet.absoluteFillObject,
       backgroundColor: "rgba(0, 0, 0, 0.5)",
-      zIndex: 999,
+      zIndex: 10000,
     },
     sidebarContainer: {
       position: "absolute",
@@ -243,7 +237,7 @@ export const PayslipsScreen: React.FC = () => {
       left: 0,
       bottom: 0,
       width: 280,
-      zIndex: 1000,
+      zIndex: 10001,
     },
   });
 
@@ -332,7 +326,7 @@ export const PayslipsScreen: React.FC = () => {
         </Animated.View>
       </View>
 
-      {/* Sidebar Overlay and Container */}
+      {/* FIXED SIDEBAR - Proper z-index handling */}
       {showSidebar && (
         <>
           <TouchableOpacity
