@@ -1,4 +1,4 @@
-// screens/innerApplication/vehicles/vehiclesScreen.tsx (Replace existing content)
+// screens/innerApplication/vehicles/vehiclesScreen.tsx (Updated to add incidents in sidebar)
 import { router } from "expo-router";
 import React, { useEffect, useRef, useState } from "react";
 import {
@@ -175,6 +175,20 @@ export const VehiclesScreen: React.FC = () => {
         setShowSidebar(false);
       },
       isActive: true,
+    },
+    {
+      id: "incidents",
+      label: "Incidents",
+      icon: "exclamation-triangle" as const,
+      onPress: () => {
+        setShowSidebar(false);
+        // Select the first vehicle for incident reporting if available
+        if (vehicles.length > 0) {
+          selectVehicle(vehicles[0]);
+        }
+        router.push("./incidents");
+      },
+      isActive: false,
     },
   ];
 

@@ -310,6 +310,13 @@ export default function TabLayout() {
           href: null,
         }}
       />
+
+      <Tabs.Screen
+        name="incidents"
+        options={{
+          href: null,
+        }}
+      />
     </Tabs>
   );
 }
