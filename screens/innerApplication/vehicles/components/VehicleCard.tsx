@@ -1,7 +1,6 @@
 import { FontAwesome } from "@expo/vector-icons";
 import React from "react";
 import {
-  Image,
   Platform,
   StyleSheet,
   Text,
@@ -57,17 +56,28 @@ export const VehicleCard: React.FC<VehicleCardProps> = ({
     return "car"; // Regular car
   };
 
+  const getIconBackgroundColor = () => {
+    switch (vehicle.status) {
+      case "En service":
+        return "#22c55e";
+      case "En maintenance":
+        return "#f59e0b";
+      case "Hors service":
+        return "#ef4444";
+      default:
+        return "#6366f1";
+    }
+  };
+
   const styles = StyleSheet.create({
     container: {
       flexDirection: "row",
       alignItems: "center",
       padding: 16,
       marginHorizontal: 16,
-      marginVertical: 8,
+      marginVertical: 6,
       borderRadius: 12,
       backgroundColor: colors.card,
-      borderWidth: 1,
-      borderColor: colors.border,
       ...Platform.select({
         ios: {
           shadowColor: colors.shadow,
@@ -79,7 +89,7 @@ export const VehicleCard: React.FC<VehicleCardProps> = ({
           shadowRadius: 8,
         },
         android: {
-          elevation: 3,
+          elevation: 4,
         },
         web: {
           boxShadow: colors.isDark
@@ -88,96 +98,64 @@ export const VehicleCard: React.FC<VehicleCardProps> = ({
         },
       }),
     },
-    leftSection: {
-      marginRight: 16,
-    },
-    vehicleImageContainer: {
-      width: 60,
-      height: 60,
-      borderRadius: 8,
-      backgroundColor: colors.backgroundSecondary,
+    iconContainer: {
+      width: 48,
+      height: 48,
+      borderRadius: 12,
       alignItems: "center",
       justifyContent: "center",
-      position: "relative",
-    },
-    vehicleImage: {
-      width: 60,
-      height: 60,
-      borderRadius: 8,
-    },
-    vehicleIcon: {
-      fontSize: 30,
-      color: colors.primary,
-    },
-    statusBadge: {
-      position: "absolute",
-      top: -4,
-      right: -4,
-      width: 20,
-      height: 20,
-      borderRadius: 10,
-      backgroundColor: statusConfig.backgroundColor,
-      borderWidth: 2,
-      borderColor: colors.card,
-      alignItems: "center",
-      justifyContent: "center",
+      marginRight: 12,
+      backgroundColor: getIconBackgroundColor(),
     },
     contentContainer: {
       flex: 1,
-    },
-    headerRow: {
-      flexDirection: "row",
-      alignItems: "center",
-      justifyContent: "space-between",
-      marginBottom: 4,
+      justifyContent: "center",
     },
     plateNumber: {
       fontSize: 16,
-      fontWeight: "700",
+      fontWeight: "600",
       color: colors.text,
+      marginBottom: 4,
+    },
+    brandModelRow: {
+      flexDirection: "row",
+      alignItems: "center",
+      marginBottom: 4,
     },
     brandModel: {
       fontSize: 14,
-      fontWeight: "500",
       color: colors.textSecondary,
-      marginBottom: 8,
+      fontWeight: "400",
     },
     infoRow: {
       flexDirection: "row",
       alignItems: "center",
-      marginBottom: 4,
-    },
-    infoIcon: {
-      width: 16,
-      textAlign: "center",
-      marginRight: 8,
+      marginBottom: 2,
     },
     infoText: {
-      fontSize: 12,
-      color: colors.textTertiary,
-      flex: 1,
+      fontSize: 14,
+      color: colors.textSecondary,
+      fontWeight: "400",
     },
-    statusContainer: {
-      flexDirection: "row",
-      alignItems: "center",
-      backgroundColor: statusConfig.backgroundColor,
-      paddingHorizontal: 8,
-      paddingVertical: 4,
-      borderRadius: 12,
-    },
-    statusText: {
-      fontSize: 11,
+    statusLabel: {
+      fontSize: 14,
       fontWeight: "600",
       color: statusConfig.color,
-      marginLeft: 4,
     },
     rightSection: {
       alignItems: "center",
       justifyContent: "center",
-      marginLeft: 8,
+      marginLeft: 12,
     },
-    chevronIcon: {
-      padding: 4,
+    statusButton: {
+      width: 40,
+      height: 40,
+      borderRadius: 20,
+      alignItems: "center",
+      justifyContent: "center",
+      backgroundColor: colors.isDark
+        ? colors.surfaceSecondary
+        : "rgba(0, 0, 0, 0.05)",
     },
   });
 
@@ -187,82 +165,39 @@ export const VehicleCard: React.FC<VehicleCardProps> = ({
       onPress={onPress}
       activeOpacity={0.7}
     >
-      {/* Left Section - Vehicle Image/Icon */}
-      <View style={styles.leftSection}>
-        <View style={styles.vehicleImageContainer}>
-          {vehicle.imageUrl ? (
-            <Image
-              source={{ uri: vehicle.imageUrl }}
-              style={styles.vehicleImage}
-            />
-          ) : (
-            <FontAwesome
-              name={getVehicleIcon()}
-              size={24}
-              color={colors.primary}
-            />
-          )}
-          <View style={styles.statusBadge}>
-            <FontAwesome
-              name={statusConfig.icon}
-              size={8}
-              color={statusConfig.color}
-            />
-          </View>
-        </View>
+      {/* Left Icon */}
+      <View style={styles.iconContainer}>
+        <FontAwesome name={getVehicleIcon()} size={20} color="white" />
       </View>
 
       {/* Content */}
       <View style={styles.contentContainer}>
-        <View style={styles.headerRow}>
-          <Text style={styles.plateNumber}>{vehicle.plateNumber}</Text>
-          <View style={styles.statusContainer}>
-            <FontAwesome
-              name={statusConfig.icon}
-              size={10}
-              color={statusConfig.color}
-            />
-            <Text style={styles.statusText}>{vehicle.status}</Text>
-          </View>
-        </View>
-
-        <Text style={styles.brandModel}>
-          {vehicle.brand} {vehicle.model}
+        <Text style={styles.plateNumber} numberOfLines={1}>
+          {vehicle.plateNumber}
         </Text>
 
-        <View style={styles.infoRow}>
-          <FontAwesome
-            name="calendar"
-            size={10}
-            color={colors.textTertiary}
-            style={styles.infoIcon}
-          />
-          <Text style={styles.infoText}>
-            Prochain entretien: {vehicle.nextMaintenanceDate}
+        <View style={styles.brandModelRow}>
+          <Text style={styles.brandModel}>
+            {vehicle.brand} {vehicle.model}
           </Text>
         </View>
 
-        <View style={styles.infoRow}>
-          <FontAwesome
-            name="road"
-            size={10}
-            color={colors.textTertiary}
-            style={styles.infoIcon}
-          />
-          <Text style={styles.infoText}>
-            {vehicle.mileage.toLocaleString()} km
-          </Text>
-        </View>
+        <Text style={styles.statusLabel}>{vehicle.status}</Text>
       </View>
 
-      {/* Right Arrow */}
+      {/* Right Section */}
       <View style={styles.rightSection}>
-        <FontAwesome
-          name="chevron-right"
-          size={14}
-          color={colors.textTertiary}
-          style={styles.chevronIcon}
-        />
+        <TouchableOpacity
+          style={styles.statusButton}
+          onPress={onPress}
+          activeOpacity={0.7}
+        >
+          <FontAwesome
+            name="chevron-right"
+            size={18}
+            color={colors.textSecondary}
+          />
+        </TouchableOpacity>
       </View>
     </TouchableOpacity>
   );

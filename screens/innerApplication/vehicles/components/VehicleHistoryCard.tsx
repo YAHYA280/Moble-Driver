@@ -29,20 +29,23 @@ const VehicleHistoryCard: React.FC<VehicleHistoryCardProps> = ({
     switch (vehicle.status) {
       case "En service":
         return {
+          label: "En service",
           color: colors.success,
-          backgroundColor: colors.success + "20",
+          backgroundColor: colors.success + "15",
           icon: "check" as const,
         };
       case "En maintenance":
         return {
-          color: colors.error,
-          backgroundColor: colors.error + "20",
-          icon: "times" as const,
+          label: "En maintenance",
+          color: colors.warning,
+          backgroundColor: colors.warning + "15",
+          icon: "wrench" as const,
         };
       case "Hors service":
         return {
+          label: "Hors service",
           color: colors.error,
-          backgroundColor: colors.error + "20",
+          backgroundColor: colors.error + "15",
           icon: "times" as const,
         };
     }
@@ -50,17 +53,32 @@ const VehicleHistoryCard: React.FC<VehicleHistoryCardProps> = ({
 
   const statusConfig = getStatusConfig();
 
+  const getIconBackgroundColor = () => {
+    switch (vehicle.status) {
+      case "En service":
+        return "#22c55e";
+      case "En maintenance":
+        return "#f59e0b";
+      case "Hors service":
+        return "#ef4444";
+      default:
+        return "#6366f1";
+    }
+  };
+
+  const formatVehicleId = () => {
+    return `957H15/${vehicle.brand}-CV56`;
+  };
+
   const styles = StyleSheet.create({
     container: {
       flexDirection: "row",
       alignItems: "center",
       padding: 16,
       marginHorizontal: 16,
-      marginVertical: 4,
+      marginVertical: 6,
       borderRadius: 12,
       backgroundColor: colors.card,
-      borderWidth: 1,
-      borderColor: colors.border,
       ...Platform.select({
         ios: {
           shadowColor: colors.shadow,
@@ -72,7 +90,7 @@ const VehicleHistoryCard: React.FC<VehicleHistoryCardProps> = ({
           shadowRadius: 8,
         },
         android: {
-          elevation: 3,
+          elevation: 4,
         },
         web: {
           boxShadow: colors.isDark
@@ -81,17 +99,14 @@ const VehicleHistoryCard: React.FC<VehicleHistoryCardProps> = ({
         },
       }),
     },
-    leftSection: {
-      marginRight: 16,
-    },
-    statusIcon: {
+    iconContainer: {
       width: 48,
       height: 48,
       borderRadius: 12,
       alignItems: "center",
       justifyContent: "center",
-      backgroundColor: statusConfig.backgroundColor,
-      position: "relative",
+      marginRight: 12,
+      backgroundColor: getIconBackgroundColor(),
     },
     contentContainer: {
       flex: 1,
@@ -99,11 +114,22 @@ const VehicleHistoryCard: React.FC<VehicleHistoryCardProps> = ({
     },
     vehicleId: {
       fontSize: 16,
-      fontWeight: "700",
+      fontWeight: "600",
       color: colors.text,
       marginBottom: 4,
     },
-    statusText: {
+    distanceRow: {
+      flexDirection: "row",
+      alignItems: "center",
+      marginBottom: 4,
+    },
+    distanceText: {
+      fontSize: 12,
+      color: colors.textSecondary,
+      fontWeight: "500",
+      marginBottom: 4,
+    },
+    statusLabel: {
       fontSize: 14,
       fontWeight: "600",
       color: statusConfig.color,
@@ -111,13 +137,7 @@ const VehicleHistoryCard: React.FC<VehicleHistoryCardProps> = ({
     rightSection: {
       alignItems: "flex-end",
       justifyContent: "center",
-      minWidth: 60,
-    },
-    distanceText: {
-      fontSize: 12,
-      color: colors.textTertiary,
-      fontWeight: "500",
-      marginBottom: 4,
+      marginLeft: 12,
     },
     dateText: {
       fontSize: 12,
@@ -132,36 +152,18 @@ const VehicleHistoryCard: React.FC<VehicleHistoryCardProps> = ({
       onPress={onPress}
       activeOpacity={0.7}
     >
-      {/* Left Status Icon */}
-      <View style={styles.leftSection}>
-        <View style={styles.statusIcon}>
-          <FontAwesome
-            name="shopping-bag"
-            size={18}
-            color={statusConfig.color}
-          />
-          <View
-            style={{
-              position: "absolute",
-              top: 12,
-              right: 12,
-              width: 16,
-              height: 16,
-              borderRadius: 8,
-              backgroundColor: statusConfig.color,
-              alignItems: "center",
-              justifyContent: "center",
-            }}
-          >
-            <FontAwesome name={statusConfig.icon} size={8} color="white" />
-          </View>
-        </View>
+      {/* Left Icon */}
+      <View style={styles.iconContainer}>
+        <FontAwesome name="car" size={20} color="white" />
       </View>
 
       {/* Content */}
       <View style={styles.contentContainer}>
-        <Text style={styles.vehicleId}>957H15/{vehicle.brand}-CV56</Text>
-        <Text style={styles.statusText}>{vehicle.status}</Text>
+        <Text style={styles.vehicleId} numberOfLines={1}>
+          {formatVehicleId()}
+        </Text>
+
+        <Text style={styles.statusLabel}>{statusConfig.label}</Text>
       </View>
 
       {/* Right Section */}

@@ -43,20 +43,23 @@ const AnimatedIncidentCard: React.FC<{
     switch (item.status) {
       case "En Cours":
         return {
+          label: "En Cours",
           color: colors.warning,
-          backgroundColor: colors.warning + "20",
+          backgroundColor: colors.warning + "15",
           icon: "clock-o" as const,
         };
       case "Résolu":
         return {
+          label: "Résolu",
           color: colors.success,
-          backgroundColor: colors.success + "20",
+          backgroundColor: colors.success + "15",
           icon: "check" as const,
         };
       case "En attente":
         return {
+          label: "En attente",
           color: colors.error,
-          backgroundColor: colors.error + "20",
+          backgroundColor: colors.error + "15",
           icon: "times" as const,
         };
     }
@@ -64,26 +67,40 @@ const AnimatedIncidentCard: React.FC<{
 
   const statusConfig = getStatusConfig();
 
+  const getIconBackgroundColor = () => {
+    switch (item.status) {
+      case "En Cours":
+        return "#f59e0b";
+      case "Résolu":
+        return "#22c55e";
+      case "En attente":
+        return "#ef4444";
+      default:
+        return "#6366f1";
+    }
+  };
+
   const styles = StyleSheet.create({
     container: {
       flexDirection: "row",
       alignItems: "center",
       padding: 16,
       marginHorizontal: 16,
-      marginVertical: 4,
+      marginVertical: 6,
       borderRadius: 12,
       backgroundColor: colors.card,
-      borderWidth: 1,
-      borderColor: colors.border,
       ...Platform.select({
         ios: {
           shadowColor: colors.shadow,
-          shadowOffset: { width: 0, height: 2 },
+          shadowOffset: {
+            width: 0,
+            height: 2,
+          },
           shadowOpacity: colors.isDark ? 0.3 : 0.08,
           shadowRadius: 8,
         },
         android: {
-          elevation: 3,
+          elevation: 4,
         },
         web: {
           boxShadow: colors.isDark
@@ -92,17 +109,14 @@ const AnimatedIncidentCard: React.FC<{
         },
       }),
     },
-    leftSection: {
-      marginRight: 16,
-    },
-    statusIcon: {
+    iconContainer: {
       width: 48,
       height: 48,
       borderRadius: 12,
       alignItems: "center",
       justifyContent: "center",
-      backgroundColor: statusConfig.backgroundColor,
-      position: "relative",
+      marginRight: 12,
+      backgroundColor: getIconBackgroundColor(),
     },
     contentContainer: {
       flex: 1,
@@ -110,11 +124,21 @@ const AnimatedIncidentCard: React.FC<{
     },
     incidentTitle: {
       fontSize: 16,
-      fontWeight: "700",
+      fontWeight: "600",
       color: colors.text,
       marginBottom: 4,
     },
-    statusText: {
+    vehicleRow: {
+      flexDirection: "row",
+      alignItems: "center",
+      marginBottom: 4,
+    },
+    vehicleText: {
+      fontSize: 14,
+      color: colors.textSecondary,
+      fontWeight: "400",
+    },
+    statusLabel: {
       fontSize: 14,
       fontWeight: "600",
       color: statusConfig.color,
@@ -122,18 +146,17 @@ const AnimatedIncidentCard: React.FC<{
     rightSection: {
       alignItems: "flex-end",
       justifyContent: "center",
-      minWidth: 60,
+      marginLeft: 12,
     },
-    dateText: {
-      fontSize: 12,
-      color: colors.textTertiary,
-      fontWeight: "500",
-      marginBottom: 4,
-    },
-    vehicleText: {
-      fontSize: 12,
-      color: colors.textTertiary,
-      fontWeight: "400",
+    actionButton: {
+      width: 40,
+      height: 40,
+      borderRadius: 20,
+      alignItems: "center",
+      justifyContent: "center",
+      backgroundColor: colors.isDark
+        ? colors.surfaceSecondary
+        : "rgba(0, 0, 0, 0.05)",
     },
   });
 
@@ -156,42 +179,27 @@ const AnimatedIncidentCard: React.FC<{
         onPress={onPress}
         activeOpacity={0.7}
       >
-        {/* Left Status Icon */}
-        <View style={styles.leftSection}>
-          <View style={styles.statusIcon}>
-            <FontAwesome
-              name="exclamation-triangle"
-              size={18}
-              color={statusConfig.color}
-            />
-            <View
-              style={{
-                position: "absolute",
-                top: 8,
-                right: 8,
-                width: 16,
-                height: 16,
-                borderRadius: 8,
-                backgroundColor: statusConfig.color,
-                alignItems: "center",
-                justifyContent: "center",
-              }}
-            >
-              <FontAwesome name={statusConfig.icon} size={8} color="white" />
-            </View>
-          </View>
+        {/* Left Icon */}
+        <View style={styles.iconContainer}>
+          <FontAwesome name="exclamation-triangle" size={20} color="white" />
         </View>
 
         {/* Content */}
         <View style={styles.contentContainer}>
-          <Text style={styles.incidentTitle}>{item.type}</Text>
-          <Text style={styles.statusText}>{item.status}</Text>
+          <Text style={styles.incidentTitle} numberOfLines={1}>
+            {item.type}
+          </Text>
+
+          <View style={styles.vehicleRow}>
+            <Text style={styles.vehicleText}>
+              {item.reportDate} • {item.vehiclePlateNumber}
+            </Text>
+          </View>
         </View>
 
         {/* Right Section */}
         <View style={styles.rightSection}>
-          <Text style={styles.dateText}>{item.reportDate}</Text>
-          <Text style={styles.vehicleText}>{item.vehiclePlateNumber}</Text>
+          <Text style={styles.statusLabel}>{statusConfig.label}</Text>
         </View>
       </TouchableOpacity>
     </Animated.View>

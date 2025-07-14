@@ -169,7 +169,7 @@ export const VehiclesScreen: React.FC = () => {
   const sidebarItems = [
     {
       id: "vehicles",
-      label: "Mon parc",
+      label: "Liste véhicule",
       icon: "car" as const,
       onPress: () => {
         setShowSidebar(false);
