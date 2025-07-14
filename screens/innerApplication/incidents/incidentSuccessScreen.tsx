@@ -75,25 +75,26 @@ export const IncidentSuccessScreen: React.FC = () => {
   const styles = StyleSheet.create({
     container: {
       flex: 1,
-      backgroundColor: colors.backgroundSecondary,
+      backgroundColor: colors.background,
     },
     content: {
       flex: 1,
       justifyContent: "center",
       alignItems: "center",
       paddingHorizontal: 32,
+      position: "relative",
     },
     checkIconContainer: {
       width: 80,
       height: 80,
       borderRadius: 40,
-      backgroundColor: colors.success,
+      backgroundColor: colors.primary,
       alignItems: "center",
       justifyContent: "center",
-      marginBottom: 24,
+      marginBottom: 40,
       ...Platform.select({
         ios: {
-          shadowColor: colors.success,
+          shadowColor: colors.primary,
           shadowOffset: { width: 0, height: 8 },
           shadowOpacity: 0.3,
           shadowRadius: 16,
@@ -102,7 +103,7 @@ export const IncidentSuccessScreen: React.FC = () => {
           elevation: 12,
         },
         web: {
-          boxShadow: `0 8px 16px ${colors.success}40`,
+          boxShadow: `0 8px 16px ${colors.primary}40`,
         },
       }),
     },
@@ -111,7 +112,7 @@ export const IncidentSuccessScreen: React.FC = () => {
       fontWeight: "700",
       color: colors.text,
       textAlign: "center",
-      marginBottom: 12,
+      marginBottom: 16,
       letterSpacing: 0.3,
     },
     subtitle: {
@@ -119,38 +120,7 @@ export const IncidentSuccessScreen: React.FC = () => {
       color: colors.textSecondary,
       textAlign: "center",
       lineHeight: 24,
-      marginBottom: 32,
-    },
-    infoCard: {
-      backgroundColor: colors.surface,
-      borderRadius: 12,
-      padding: 20,
-      width: "100%",
-      marginBottom: 32,
-      borderWidth: 1,
-      borderColor: colors.border,
-      ...Platform.select({
-        ios: {
-          shadowColor: colors.shadow,
-          shadowOffset: { width: 0, height: 4 },
-          shadowOpacity: colors.isDark ? 0.3 : 0.08,
-          shadowRadius: 12,
-        },
-        android: {
-          elevation: 4,
-        },
-        web: {
-          boxShadow: colors.isDark
-            ? "0 4px 12px rgba(0, 0, 0, 0.3)"
-            : "0 4px 12px rgba(0, 0, 0, 0.08)",
-        },
-      }),
-    },
-    infoText: {
-      fontSize: 14,
-      color: colors.textSecondary,
-      textAlign: "center",
-      lineHeight: 20,
+      marginBottom: 48,
     },
     buttonsContainer: {
       width: "100%",
@@ -158,14 +128,98 @@ export const IncidentSuccessScreen: React.FC = () => {
     },
     primaryButton: {
       marginBottom: 0,
+      backgroundColor: colors.primary,
     },
     secondaryButton: {
-      backgroundColor: colors.surface,
+      backgroundColor: "transparent",
       borderWidth: 1,
       borderColor: colors.border,
     },
     secondaryButtonText: {
       color: colors.text,
+    },
+    floatingShapes: {
+      position: "absolute",
+      top: 0,
+      left: 0,
+      right: 0,
+      bottom: 0,
+      zIndex: -1,
+    },
+    shape: {
+      position: "absolute",
+      borderRadius: 50,
+      opacity: 0.1,
+    },
+    shape1: {
+      width: 20,
+      height: 20,
+      backgroundColor: colors.primary,
+      top: "15%",
+      left: "20%",
+    },
+    shape2: {
+      width: 15,
+      height: 15,
+      backgroundColor: colors.success,
+      top: "25%",
+      right: "15%",
+    },
+    shape3: {
+      width: 25,
+      height: 25,
+      backgroundColor: colors.warning,
+      top: "60%",
+      left: "10%",
+    },
+    shape4: {
+      width: 18,
+      height: 18,
+      backgroundColor: colors.primary,
+      top: "70%",
+      right: "25%",
+    },
+    shape5: {
+      width: 12,
+      height: 12,
+      backgroundColor: colors.error,
+      top: "35%",
+      left: "80%",
+    },
+    shape6: {
+      width: 22,
+      height: 22,
+      backgroundColor: colors.info,
+      top: "80%",
+      left: "60%",
+    },
+    triangle: {
+      position: "absolute",
+      width: 0,
+      height: 0,
+      backgroundColor: "transparent",
+      borderStyle: "solid",
+      opacity: 0.08,
+    },
+    triangle1: {
+      borderLeftWidth: 8,
+      borderRightWidth: 8,
+      borderBottomWidth: 14,
+      borderLeftColor: "transparent",
+      borderRightColor: "transparent",
+      borderBottomColor: colors.primary,
+      top: "20%",
+      right: "30%",
+    },
+    triangle2: {
+      borderLeftWidth: 6,
+      borderRightWidth: 6,
+      borderBottomWidth: 10,
+      borderLeftColor: "transparent",
+      borderRightColor: "transparent",
+      borderBottomColor: colors.success,
+      top: "75%",
+      left: "25%",
     },
   });
 
@@ -179,6 +233,18 @@ export const IncidentSuccessScreen: React.FC = () => {
           },
         ]}
       >
+        {/* Floating Background Shapes */}
+        <View style={styles.floatingShapes}>
+          <View style={[styles.shape, styles.shape1]} />
+          <View style={[styles.shape, styles.shape2]} />
+          <View style={[styles.shape, styles.shape3]} />
+          <View style={[styles.shape, styles.shape4]} />
+          <View style={[styles.shape, styles.shape5]} />
+          <View style={[styles.shape, styles.shape6]} />
+          <View style={[styles.triangle, styles.triangle1]} />
+          <View style={[styles.triangle, styles.triangle2]} />
+        </View>
+
         {/* Success Icon */}
         <AnimatedSuccessContent delay={200}>
           <View style={styles.checkIconContainer}>
@@ -196,18 +262,8 @@ export const IncidentSuccessScreen: React.FC = () => {
           </Text>
         </AnimatedSuccessContent>
 
-        {/* Info Card */}
-        <AnimatedSuccessContent delay={600}>
-          <View style={styles.infoCard}>
-            <Text style={styles.infoText}>
-              Vous recevrez une notification dès que votre signalement sera pris
-              en charge par notre équipe technique.
-            </Text>
-          </View>
-        </AnimatedSuccessContent>
-
         {/* Action Buttons */}
-        <AnimatedSuccessContent delay={800}>
+        <AnimatedSuccessContent delay={600}>
           <View style={styles.buttonsContainer}>
             <Button
               title="Consulter mes signalements"

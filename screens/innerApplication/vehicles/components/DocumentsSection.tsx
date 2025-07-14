@@ -87,25 +87,23 @@ const DocumentsSection: React.FC<DocumentsSectionProps> = ({
       padding: 16,
       marginHorizontal: 16,
       marginBottom: 20,
-      borderWidth: 1,
-      borderColor: colors.border,
       ...Platform.select({
         ios: {
           shadowColor: colors.shadow,
           shadowOffset: {
             width: 0,
-            height: 4,
+            height: 2,
           },
-          shadowOpacity: colors.isDark ? 0.3 : 0.12,
-          shadowRadius: 16,
+          shadowOpacity: colors.isDark ? 0.3 : 0.08,
+          shadowRadius: 8,
         },
         android: {
-          elevation: 8,
+          elevation: 4,
         },
         web: {
           boxShadow: colors.isDark
-            ? "0 4px 16px rgba(0, 0, 0, 0.3)"
-            : "0 4px 16px rgba(0, 0, 0, 0.12)",
+            ? "0 2px 8px rgba(0, 0, 0, 0.3)"
+            : "0 2px 8px rgba(0, 0, 0, 0.08)",
         },
       }),
     },

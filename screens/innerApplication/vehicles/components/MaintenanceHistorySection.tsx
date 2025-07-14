@@ -42,61 +42,72 @@ const AnimatedMaintenanceItem: React.FC<{
     return () => clearTimeout(timer);
   }, [index, animValue]);
 
+  const getIconBackgroundColor = () => {
+    return colors.primary;
+  };
+
   const styles = StyleSheet.create({
     maintenanceItem: {
       flexDirection: "row",
       alignItems: "center",
-      paddingVertical: 16,
-      paddingHorizontal: 4,
-      borderBottomWidth: 1,
-      borderBottomColor: colors.border + "20",
-    },
-    maintenanceIconContainer: {
-      width: 40,
-      height: 40,
+      padding: 16,
+      marginHorizontal: 16,
+      marginVertical: 6,
       borderRadius: 12,
-      backgroundColor: colors.primary + "15",
-      alignItems: "center",
-      justifyContent: "center",
-      marginRight: 16,
+      backgroundColor: colors.card,
       ...Platform.select({
         ios: {
-          shadowColor: colors.primary,
+          shadowColor: colors.shadow,
           shadowOffset: {
             width: 0,
             height: 2,
           },
-          shadowOpacity: 0.1,
-          shadowRadius: 4,
+          shadowOpacity: colors.isDark ? 0.3 : 0.08,
+          shadowRadius: 8,
         },
         android: {
-          elevation: 2,
+          elevation: 4,
+        },
+        web: {
+          boxShadow: colors.isDark
+            ? "0 2px 8px rgba(0, 0, 0, 0.3)"
+            : "0 2px 8px rgba(0, 0, 0, 0.08)",
         },
       }),
     },
-    maintenanceContent: {
+    iconContainer: {
+      width: 48,
+      height: 48,
+      borderRadius: 12,
+      alignItems: "center",
+      justifyContent: "center",
+      marginRight: 12,
+      backgroundColor: getIconBackgroundColor(),
+    },
+    contentContainer: {
       flex: 1,
+      justifyContent: "center",
     },
     maintenanceTitle: {
       fontSize: 16,
       fontWeight: "600",
       color: colors.text,
       marginBottom: 4,
-      letterSpacing: 0.2,
     },
     maintenanceDescription: {
       fontSize: 14,
       color: colors.textSecondary,
-      lineHeight: 18,
+      fontWeight: "400",
+    },
+    rightSection: {
+      alignItems: "flex-end",
+      justifyContent: "center",
+      marginLeft: 12,
     },
     maintenanceDate: {
-      fontSize: 14,
-      fontWeight: "500",
-      color: colors.primary,
-      letterSpacing: 0.2,
-    },
-    chevron: {
-      marginLeft: 8,
+      fontSize: 12,
+      color: colors.textTertiary,
+      fontWeight: "400",
     },
   });
 
@@ -119,18 +130,25 @@ const AnimatedMaintenanceItem: React.FC<{
         onPress={() => onPress?.(maintenance)}
         activeOpacity={0.7}
       >
-        <View style={styles.maintenanceIconContainer}>
-          <FontAwesome name="wrench" size={16} color={colors.primary} />
+        {/* Left Icon */}
+        <View style={styles.iconContainer}>
+          <FontAwesome name="wrench" size={20} color="white" />
         </View>
-        <View style={styles.maintenanceContent}>
-          <Text style={styles.maintenanceTitle}>{maintenance.type}</Text>
+
+        {/* Content */}
+        <View style={styles.contentContainer}>
+          <Text style={styles.maintenanceTitle} numberOfLines={1}>
+            {maintenance.type}
+          </Text>
           {maintenance.description && (
-            <Text style={styles.maintenanceDescription}>
+            <Text style={styles.maintenanceDescription} numberOfLines={1}>
               {maintenance.description}
             </Text>
           )}
         </View>
-        <View style={{ alignItems: "flex-end" }}>
+
+        {/* Right Section */}
+        <View style={styles.rightSection}>
           <Text style={styles.maintenanceDate}>{maintenance.date}</Text>
           {maintenance.cost && (
             <Text style={styles.maintenanceDescription}>
@@ -138,12 +156,6 @@ const AnimatedMaintenanceItem: React.FC<{
             </Text>
           )}
         </View>
-        <FontAwesome
-          name="chevron-right"
-          size={12}
-          color={colors.textTertiary}
-          style={styles.chevron}
-        />
       </TouchableOpacity>
     </Animated.View>
   );
@@ -169,25 +181,23 @@ const MaintenanceHistorySection: React.FC<MaintenanceHistorySectionProps> = ({
       padding: 16,
       marginHorizontal: 16,
       marginBottom: 20,
-      borderWidth: 1,
-      borderColor: colors.border,
       ...Platform.select({
         ios: {
           shadowColor: colors.shadow,
           shadowOffset: {
             width: 0,
-            height: 4,
+            height: 2,
           },
-          shadowOpacity: colors.isDark ? 0.3 : 0.12,
-          shadowRadius: 16,
+          shadowOpacity: colors.isDark ? 0.3 : 0.08,
+          shadowRadius: 8,
         },
         android: {
-          elevation: 8,
+          elevation: 4,
         },
         web: {
           boxShadow: colors.isDark
-            ? "0 4px 16px rgba(0, 0, 0, 0.3)"
-            : "0 4px 16px rgba(0, 0, 0, 0.12)",
+            ? "0 2px 8px rgba(0, 0, 0, 0.3)"
+            : "0 2px 8px rgba(0, 0, 0, 0.08)",
         },
       }),
     },
@@ -215,7 +225,9 @@ const MaintenanceHistorySection: React.FC<MaintenanceHistorySectionProps> = ({
       color: colors.primary,
       letterSpacing: 0.2,
     },
-    maintenanceList: {},
+    maintenanceList: {
+      marginHorizontal: -16,
+    },
     emptyState: {
       alignItems: "center",
       paddingVertical: 40,
