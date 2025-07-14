@@ -1,7 +1,9 @@
 // screens/innerApplication/vehicles/components/MaintenanceHistorySection.tsx
 import { FontAwesome } from "@expo/vector-icons";
-import React from "react";
+import React, { useEffect, useRef } from "react";
 import {
+  Animated,
+  Platform,
   StyleSheet,
   Text,
   TouchableOpacity,
@@ -19,6 +21,134 @@ interface MaintenanceHistorySectionProps {
   showAll?: boolean;
 }
 
+const AnimatedMaintenanceItem: React.FC<{
+  maintenance: MaintenanceRecord;
+  index: number;
+  onPress?: (maintenance: MaintenanceRecord) => void;
+}> = ({ maintenance, index, onPress }) => {
+  const colors = useThemeColors();
+  const animValue = useRef(new Animated.Value(0)).current;
+
+  useEffect(() => {
+    const delay = index * 100; // Stagger animation by 100ms per item
+    const timer = setTimeout(() => {
+      Animated.timing(animValue, {
+        toValue: 1,
+        duration: 400,
+        useNativeDriver: true,
+      }).start();
+    }, delay);
+
+    return () => clearTimeout(timer);
+  }, [index, animValue]);
+
+  const styles = StyleSheet.create({
+    maintenanceItem: {
+      flexDirection: "row",
+      alignItems: "center",
+      paddingVertical: 16,
+      paddingHorizontal: 4,
+      borderBottomWidth: 1,
+      borderBottomColor: colors.border + "20",
+    },
+    maintenanceIconContainer: {
+      width: 40,
+      height: 40,
+      borderRadius: 12,
+      backgroundColor: colors.primary + "15",
+      alignItems: "center",
+      justifyContent: "center",
+      marginRight: 16,
+      ...Platform.select({
+        ios: {
+          shadowColor: colors.primary,
+          shadowOffset: {
+            width: 0,
+            height: 2,
+          },
+          shadowOpacity: 0.1,
+          shadowRadius: 4,
+        },
+        android: {
+          elevation: 2,
+        },
+      }),
+    },
+    maintenanceContent: {
+      flex: 1,
+    },
+    maintenanceTitle: {
+      fontSize: 16,
+      fontWeight: "600",
+      color: colors.text,
+      marginBottom: 4,
+      letterSpacing: 0.2,
+    },
+    maintenanceDescription: {
+      fontSize: 14,
+      color: colors.textSecondary,
+      lineHeight: 18,
+    },
+    maintenanceDate: {
+      fontSize: 14,
+      fontWeight: "500",
+      color: colors.primary,
+      letterSpacing: 0.2,
+    },
+    chevron: {
+      marginLeft: 8,
+    },
+  });
+
+  return (
+    <Animated.View
+      style={{
+        opacity: animValue,
+        transform: [
+          {
+            translateY: animValue.interpolate({
+              inputRange: [0, 1],
+              outputRange: [10, 0],
+            }),
+          },
+        ],
+      }}
+    >
+      <TouchableOpacity
+        style={styles.maintenanceItem}
+        onPress={() => onPress?.(maintenance)}
+        activeOpacity={0.7}
+      >
+        <View style={styles.maintenanceIconContainer}>
+          <FontAwesome name="wrench" size={16} color={colors.primary} />
+        </View>
+        <View style={styles.maintenanceContent}>
+          <Text style={styles.maintenanceTitle}>{maintenance.type}</Text>
+          {maintenance.description && (
+            <Text style={styles.maintenanceDescription}>
+              {maintenance.description}
+            </Text>
+          )}
+        </View>
+        <View style={{ alignItems: "flex-end" }}>
+          <Text style={styles.maintenanceDate}>{maintenance.date}</Text>
+          {maintenance.cost && (
+            <Text style={styles.maintenanceDescription}>
+              {maintenance.cost}€
+            </Text>
+          )}
+        </View>
+        <FontAwesome
+          name="chevron-right"
+          size={12}
+          color={colors.textTertiary}
+          style={styles.chevron}
+        />
+      </TouchableOpacity>
+    </Animated.View>
+  );
+};
+
 const MaintenanceHistorySection: React.FC<MaintenanceHistorySectionProps> = ({
   maintenanceHistory,
   onSeeAllPress,
@@ -32,33 +162,34 @@ const MaintenanceHistorySection: React.FC<MaintenanceHistorySectionProps> = ({
     ? maintenanceHistory
     : maintenanceHistory.slice(0, 5);
 
-  const renderMaintenanceItem = (
-    maintenance: MaintenanceRecord,
-    index: number
-  ) => (
-    <TouchableOpacity
-      key={maintenance.id}
-      style={styles.maintenanceItem}
-      onPress={() => onMaintenanceItemPress?.(maintenance)}
-      activeOpacity={0.7}
-    >
-      <View style={styles.maintenanceIconContainer}>
-        <FontAwesome name="wrench" size={14} color={colors.primary} />
-      </View>
-      <View style={styles.maintenanceContent}>
-        <Text style={styles.maintenanceTitle}>Entretien technique 1</Text>
-      </View>
-      <Text style={styles.maintenanceDate}>14/08/2025</Text>
-    </TouchableOpacity>
-  );
-
   const styles = StyleSheet.create({
     container: {
       backgroundColor: colors.card,
-      paddingHorizontal: 16,
-      paddingTop: 20,
-      paddingBottom: 16,
+      borderRadius: 16,
+      padding: 16,
+      marginHorizontal: 16,
       marginBottom: 20,
+      borderWidth: 1,
+      borderColor: colors.border,
+      ...Platform.select({
+        ios: {
+          shadowColor: colors.shadow,
+          shadowOffset: {
+            width: 0,
+            height: 4,
+          },
+          shadowOpacity: colors.isDark ? 0.3 : 0.12,
+          shadowRadius: 16,
+        },
+        android: {
+          elevation: 8,
+        },
+        web: {
+          boxShadow: colors.isDark
+            ? "0 4px 16px rgba(0, 0, 0, 0.3)"
+            : "0 4px 16px rgba(0, 0, 0, 0.12)",
+        },
+      }),
     },
     sectionHeader: {
       flexDirection: "row",
@@ -67,52 +198,50 @@ const MaintenanceHistorySection: React.FC<MaintenanceHistorySectionProps> = ({
       marginBottom: 16,
     },
     sectionTitle: {
+      fontSize: 18,
+      fontWeight: "700",
+      color: colors.text,
+      letterSpacing: 0.3,
+    },
+    seeAllButton: {
+      paddingHorizontal: 16,
+      paddingVertical: 8,
+      borderRadius: 20,
+      backgroundColor: colors.primary + "15",
+    },
+    seeAllButtonText: {
+      fontSize: 14,
+      fontWeight: "600",
+      color: colors.primary,
+      letterSpacing: 0.2,
+    },
+    maintenanceList: {},
+    emptyState: {
+      alignItems: "center",
+      paddingVertical: 40,
+      paddingHorizontal: 20,
+    },
+    emptyIcon: {
+      width: 60,
+      height: 60,
+      borderRadius: 30,
+      backgroundColor: colors.backgroundSecondary,
+      alignItems: "center",
+      justifyContent: "center",
+      marginBottom: 16,
+    },
+    emptyTitle: {
       fontSize: 16,
       fontWeight: "600",
       color: colors.text,
-    },
-    seeAllButton: {
-      fontSize: 14,
-      fontWeight: "500",
-      color: colors.primary,
-    },
-    maintenanceItem: {
-      flexDirection: "row",
-      alignItems: "center",
-      paddingVertical: 12,
-      borderBottomWidth: 1,
-      borderBottomColor: colors.border + "20",
-    },
-    maintenanceIconContainer: {
-      width: 32,
-      height: 32,
-      borderRadius: 8,
-      backgroundColor: colors.primary + "15",
-      alignItems: "center",
-      justifyContent: "center",
-      marginRight: 12,
-    },
-    maintenanceContent: {
-      flex: 1,
-    },
-    maintenanceTitle: {
-      fontSize: 14,
-      fontWeight: "500",
-      color: colors.text,
-    },
-    maintenanceDate: {
-      fontSize: 14,
-      fontWeight: "400",
-      color: colors.textSecondary,
-    },
-    emptyState: {
-      alignItems: "center",
-      paddingVertical: 32,
+      marginBottom: 8,
+      textAlign: "center",
     },
     emptyText: {
       fontSize: 14,
       color: colors.textSecondary,
-      fontStyle: "italic",
+      textAlign: "center",
+      lineHeight: 20,
     },
   });
 
@@ -121,21 +250,39 @@ const MaintenanceHistorySection: React.FC<MaintenanceHistorySectionProps> = ({
       <View style={styles.sectionHeader}>
         <Text style={styles.sectionTitle}>Historique des entretiens</Text>
         {onSeeAllPress && !showAll && maintenanceHistory.length > 5 && (
-          <TouchableOpacity onPress={onSeeAllPress}>
-            <Text style={styles.seeAllButton}>Voir tout</Text>
+          <TouchableOpacity style={styles.seeAllButton} onPress={onSeeAllPress}>
+            <Text style={styles.seeAllButtonText}>Voir tout</Text>
           </TouchableOpacity>
         )}
       </View>
 
-      {displayedItems.length > 0 ? (
-        displayedItems.map((maintenance, index) =>
-          renderMaintenanceItem(maintenance, index)
-        )
-      ) : (
-        <View style={styles.emptyState}>
-          <Text style={styles.emptyText}>Aucun entretien enregistré</Text>
-        </View>
-      )}
+      <View style={styles.maintenanceList}>
+        {displayedItems.length > 0 ? (
+          displayedItems.map((maintenance, index) => (
+            <AnimatedMaintenanceItem
+              key={maintenance.id}
+              maintenance={maintenance}
+              index={index}
+              onPress={onMaintenanceItemPress}
+            />
+          ))
+        ) : (
+          <View style={styles.emptyState}>
+            <View style={styles.emptyIcon}>
+              <FontAwesome
+                name="wrench"
+                size={24}
+                color={colors.textTertiary}
+              />
+            </View>
+            <Text style={styles.emptyTitle}>Aucun entretien enregistré</Text>
+            <Text style={styles.emptyText}>
+              L&apos;historique des entretiens apparaîtra ici une fois
+              qu&apos;ils seront effectués.
+            </Text>
+          </View>
+        )}
+      </View>
     </View>
   );
 };

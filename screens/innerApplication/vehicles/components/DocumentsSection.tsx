@@ -2,6 +2,7 @@
 import { FontAwesome } from "@expo/vector-icons";
 import React from "react";
 import {
+  Platform,
   StyleSheet,
   Text,
   TouchableOpacity,
@@ -82,8 +83,31 @@ const DocumentsSection: React.FC<DocumentsSectionProps> = ({
   const styles = StyleSheet.create({
     container: {
       backgroundColor: colors.card,
+      borderRadius: 16,
       padding: 16,
+      marginHorizontal: 16,
       marginBottom: 20,
+      borderWidth: 1,
+      borderColor: colors.border,
+      ...Platform.select({
+        ios: {
+          shadowColor: colors.shadow,
+          shadowOffset: {
+            width: 0,
+            height: 4,
+          },
+          shadowOpacity: colors.isDark ? 0.3 : 0.12,
+          shadowRadius: 16,
+        },
+        android: {
+          elevation: 8,
+        },
+        web: {
+          boxShadow: colors.isDark
+            ? "0 4px 16px rgba(0, 0, 0, 0.3)"
+            : "0 4px 16px rgba(0, 0, 0, 0.12)",
+        },
+      }),
     },
     sectionTitle: {
       fontSize: 16,

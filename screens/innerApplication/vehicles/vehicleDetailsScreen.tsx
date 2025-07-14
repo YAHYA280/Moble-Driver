@@ -11,10 +11,119 @@ import { DocumentsSection } from "./components/DocumentsSection";
 import { MaintenanceHistorySection } from "./components/MaintenanceHistorySection";
 import { VehicleInfoCard } from "./components/VehicleInfoCard";
 
+// Simple animated wrapper components - same pattern as vehicle home screen
+const AnimatedVehicleInfoCard: React.FC<{
+  children: React.ReactNode;
+}> = ({ children }) => {
+  const animValue = useRef(new Animated.Value(0)).current;
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      Animated.timing(animValue, {
+        toValue: 1,
+        duration: 600,
+        useNativeDriver: true,
+      }).start();
+    }, 200); // Start after header animation
+
+    return () => clearTimeout(timer);
+  }, [animValue]);
+
+  return (
+    <Animated.View
+      style={{
+        opacity: animValue,
+        transform: [
+          {
+            translateY: animValue.interpolate({
+              inputRange: [0, 1],
+              outputRange: [30, 0],
+            }),
+          },
+        ],
+      }}
+    >
+      {children}
+    </Animated.View>
+  );
+};
+
+const AnimatedMaintenanceSection: React.FC<{
+  children: React.ReactNode;
+}> = ({ children }) => {
+  const animValue = useRef(new Animated.Value(0)).current;
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      Animated.timing(animValue, {
+        toValue: 1,
+        duration: 400,
+        useNativeDriver: true,
+      }).start();
+    }, 400); // Start after vehicle info card
+
+    return () => clearTimeout(timer);
+  }, [animValue]);
+
+  return (
+    <Animated.View
+      style={{
+        opacity: animValue,
+        transform: [
+          {
+            translateY: animValue.interpolate({
+              inputRange: [0, 1],
+              outputRange: [15, 0],
+            }),
+          },
+        ],
+      }}
+    >
+      {children}
+    </Animated.View>
+  );
+};
+
+const AnimatedDocumentsSection: React.FC<{
+  children: React.ReactNode;
+}> = ({ children }) => {
+  const animValue = useRef(new Animated.Value(0)).current;
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      Animated.timing(animValue, {
+        toValue: 1,
+        duration: 400,
+        useNativeDriver: true,
+      }).start();
+    }, 600); // Start after maintenance section
+
+    return () => clearTimeout(timer);
+  }, [animValue]);
+
+  return (
+    <Animated.View
+      style={{
+        opacity: animValue,
+        transform: [
+          {
+            translateY: animValue.interpolate({
+              inputRange: [0, 1],
+              outputRange: [15, 0],
+            }),
+          },
+        ],
+      }}
+    >
+      {children}
+    </Animated.View>
+  );
+};
+
 export const VehicleDetailsScreen: React.FC = () => {
   const { colors } = useTheme();
   const { selectedVehicle } = useVehicleStore();
-  const fadeAnim = useRef(new Animated.Value(0)).current;
+  const headerAnim = useRef(new Animated.Value(0)).current;
 
   useEffect(() => {
     if (!selectedVehicle) {
@@ -22,29 +131,27 @@ export const VehicleDetailsScreen: React.FC = () => {
       return;
     }
 
-    Animated.timing(fadeAnim, {
+    // Start header animation immediately - same as vehicle home screen
+    Animated.timing(headerAnim, {
       toValue: 1,
       duration: 600,
       useNativeDriver: true,
     }).start();
-  }, [selectedVehicle]);
+  }, [selectedVehicle, headerAnim]);
 
   if (!selectedVehicle) {
     return null;
   }
 
   const handleSeeAllMaintenance = () => {
-    // Navigate to full maintenance history or show modal
     console.log("See all maintenance pressed");
   };
 
   const handleMaintenanceItemPress = (maintenance: MaintenanceRecord) => {
-    // Navigate to maintenance details
     console.log("Maintenance item pressed:", maintenance);
   };
 
   const handleDocumentPress = (documentType: string) => {
-    // Handle document action (view, download, etc.)
     console.log("Document pressed:", documentType);
   };
 
@@ -63,33 +170,53 @@ export const VehicleDetailsScreen: React.FC = () => {
 
   return (
     <SafeAreaView style={styles.container}>
-      {/* Header */}
-      <Header
-        leftIcon={{
-          icon: "chevron-left",
-          onPress: () => router.back(),
+      {/* Animated Header - same pattern as vehicle home screen */}
+      <Animated.View
+        style={{
+          opacity: headerAnim,
+          transform: [
+            {
+              translateY: headerAnim.interpolate({
+                inputRange: [0, 1],
+                outputRange: [-50, 0],
+              }),
+            },
+          ],
         }}
-        title="Détails du véhicule"
-      />
+      >
+        <Header
+          leftIcon={{
+            icon: "chevron-left",
+            onPress: () => router.back(),
+          }}
+          title="Détails du véhicule"
+        />
+      </Animated.View>
 
-      {/* Content */}
-      <Animated.View style={[styles.content, { opacity: fadeAnim }]}>
+      {/* Content with same animation pattern */}
+      <Animated.View style={[styles.content, { opacity: headerAnim }]}>
         <ScrollView
           showsVerticalScrollIndicator={false}
           contentContainerStyle={styles.scrollContent}
         >
-          {/* Vehicle Information Card */}
-          <VehicleInfoCard vehicle={selectedVehicle} />
+          {/* Vehicle Information Card - keep original design, just add animation */}
+          <AnimatedVehicleInfoCard>
+            <VehicleInfoCard vehicle={selectedVehicle} />
+          </AnimatedVehicleInfoCard>
 
-          {/* Maintenance History Section */}
-          <MaintenanceHistorySection
-            maintenanceHistory={selectedVehicle.maintenanceHistory}
-            onSeeAllPress={handleSeeAllMaintenance}
-            onMaintenanceItemPress={handleMaintenanceItemPress}
-          />
+          {/* Maintenance History Section - keep original design, just add animation */}
+          <AnimatedMaintenanceSection>
+            <MaintenanceHistorySection
+              maintenanceHistory={selectedVehicle.maintenanceHistory}
+              onSeeAllPress={handleSeeAllMaintenance}
+              onMaintenanceItemPress={handleMaintenanceItemPress}
+            />
+          </AnimatedMaintenanceSection>
 
-          {/* Documents Section */}
-          <DocumentsSection onDocumentPress={handleDocumentPress} />
+          {/* Documents Section - keep original design, just add animation */}
+          <AnimatedDocumentsSection>
+            <DocumentsSection onDocumentPress={handleDocumentPress} />
+          </AnimatedDocumentsSection>
         </ScrollView>
       </Animated.View>
     </SafeAreaView>
