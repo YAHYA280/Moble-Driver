@@ -182,11 +182,20 @@ export const VehiclesScreen: React.FC = () => {
       icon: "exclamation-triangle" as const,
       onPress: () => {
         setShowSidebar(false);
-        // Select the first vehicle for incident reporting if available
         if (vehicles.length > 0) {
           selectVehicle(vehicles[0]);
         }
         router.push("./incidents");
+      },
+      isActive: false,
+    },
+    {
+      id: "history",
+      label: "Historique incidents",
+      icon: "history" as const,
+      onPress: () => {
+        setShowSidebar(false);
+        router.push("/(tabs)/incidents/history");
       },
       isActive: false,
     },

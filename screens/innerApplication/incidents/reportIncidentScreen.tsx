@@ -1,115 +1,35 @@
 // screens/innerApplication/incidents/reportIncidentScreen.tsx
-import { FontAwesome } from "@expo/vector-icons";
-import * as ImagePicker from "expo-image-picker";
 import { router } from "expo-router";
 import React, { useEffect, useRef, useState } from "react";
 import {
   Alert,
   Animated,
-  Image,
   KeyboardAvoidingView,
   Platform,
   ScrollView,
   StyleSheet,
   Text,
-  TextInput,
-  TouchableOpacity,
   View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useTheme } from "../../../contexts/ThemeContext";
 import ConditionalComponent from "../../../shared/components/conditionalComponent/conditionalComponent";
-import { Button } from "../../../shared/components/ui/Button";
 import { Header } from "../../../shared/components/ui/Header";
-import { IncidentPriority } from "../../../shared/types/incident";
+import { Sidebar } from "../../../shared/components/ui/Sidebar";
+import { useAuthStore } from "../../../store/authStore";
 import { useIncidentStore } from "../../../store/incidentStore";
 import { useVehicleStore } from "../../../store/vehicleStore";
-
-const AnimatedFormSection: React.FC<{
-  children: React.ReactNode;
-  delay?: number;
-}> = ({ children, delay = 0 }) => {
-  const animValue = useRef(new Animated.Value(0)).current;
-
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      Animated.timing(animValue, {
-        toValue: 1,
-        duration: 400,
-        useNativeDriver: true,
-      }).start();
-    }, delay);
-
-    return () => clearTimeout(timer);
-  }, [animValue, delay]);
-
-  return (
-    <Animated.View
-      style={{
-        opacity: animValue,
-        transform: [
-          {
-            translateY: animValue.interpolate({
-              inputRange: [0, 1],
-              outputRange: [20, 0],
-            }),
-          },
-        ],
-      }}
-    >
-      {children}
-    </Animated.View>
-  );
-};
+import { ReportIncidentForm } from "./components/ReportIncidentForm";
 
 export const ReportIncidentScreen: React.FC = () => {
   const { colors } = useTheme();
-  const { selectedVehicle, vehicles } = useVehicleStore();
-  const { reportIncident, isLoading, error, clearError } = useIncidentStore();
+  const { selectedVehicle, vehicles, selectVehicle } = useVehicleStore();
+  const { error, clearError } = useIncidentStore();
+  const { logout } = useAuthStore();
   const headerAnim = useRef(new Animated.Value(0)).current;
+  const [showSidebar, setShowSidebar] = useState(false);
 
-  const [selectedPriority, setSelectedPriority] =
-    useState<IncidentPriority>("Faible");
-  const [description, setDescription] = useState("");
-  const [selectedMedia, setSelectedMedia] = useState<string[]>([]);
-
-  const priorities: {
-    value: IncidentPriority;
-    label: string;
-    color: string;
-    bgColor: string;
-  }[] = [
-    {
-      value: "Faible",
-      label: "Faible",
-      color: colors.success,
-      bgColor: colors.success + "20",
-    },
-    {
-      value: "Moyenne",
-      label: "Moyenne",
-      color: colors.warning,
-      bgColor: colors.warning + "20",
-    },
-    {
-      value: "Élevée",
-      label: "Élevée",
-      color: colors.error,
-      bgColor: colors.error + "20",
-    },
-  ];
-
-  // Set default vehicle if none selected
   useEffect(() => {
-    // Request media permissions
-    (async () => {
-      const { status } =
-        await ImagePicker.requestMediaLibraryPermissionsAsync();
-      if (status !== "granted") {
-        console.log("Media library permission denied");
-      }
-    })();
-
     // Start header animation
     Animated.timing(headerAnim, {
       toValue: 1,
@@ -119,224 +39,60 @@ export const ReportIncidentScreen: React.FC = () => {
 
     // Clear any existing errors
     clearError();
-  }, [headerAnim]);
+  }, [headerAnim, clearError]);
 
-  const handleMediaUpload = async () => {
-    try {
-      const result = await ImagePicker.launchImageLibraryAsync({
-        mediaTypes: ImagePicker.MediaTypeOptions.All,
-        allowsEditing: true,
-        aspect: [4, 3],
-        quality: 1,
-        allowsMultipleSelection: false,
-      });
-
-      if (!result.canceled && result.assets[0]) {
-        setSelectedMedia((prev) => [...prev, result.assets[0].uri]);
-      }
-    } catch (error) {
-      Alert.alert("Erreur", "Impossible d'accéder à la galerie");
-    }
+  const handleLogout = () => {
+    Alert.alert("Déconnexion", "Êtes-vous sûr de vouloir vous déconnecter ?", [
+      { text: "Annuler", style: "cancel" },
+      {
+        text: "Déconnecter",
+        style: "destructive",
+        onPress: () => {
+          setShowSidebar(false);
+          logout();
+          router.replace("/auth/login");
+        },
+      },
+    ]);
   };
 
-  const removeMedia = (index: number) => {
-    setSelectedMedia((prev) => prev.filter((_, i) => i !== index));
-  };
-
-  const handleSubmit = async () => {
-    const vehicleToUse = selectedVehicle || vehicles[0];
-
-    if (!vehicleToUse) {
-      Alert.alert("Erreur", "Aucun véhicule disponible");
-      return;
-    }
-
-    if (!description.trim()) {
-      Alert.alert("Erreur", "Veuillez décrire le problème rencontré");
-      return;
-    }
-
-    try {
-      await reportIncident({
-        vehicleId: vehicleToUse.id,
-        vehiclePlateNumber: vehicleToUse.plateNumber,
-        type: "Problème tapis roulant", // Default type based on the design
-        description: description.trim(),
-        priority: selectedPriority,
-        status: "En Cours",
-      });
-
-      // Navigate to success screen
-      router.push("/(tabs)/incidents/success");
-    } catch (error) {
-      Alert.alert(
-        "Erreur",
-        "Une erreur est survenue lors de la création du signalement"
-      );
-    }
-  };
+  const sidebarItems = [
+    {
+      id: "vehicles",
+      label: "Mon parc",
+      icon: "car" as const,
+      onPress: () => {
+        setShowSidebar(false);
+        router.push("/(tabs)/vehicles");
+      },
+      isActive: false,
+    },
+    {
+      id: "incidents",
+      label: "Incidents",
+      icon: "exclamation-triangle" as const,
+      onPress: () => {
+        setShowSidebar(false);
+        // Stay on current screen - incidents
+      },
+      isActive: true,
+    },
+    {
+      id: "history",
+      label: "Historique incidents",
+      icon: "history" as const,
+      onPress: () => {
+        setShowSidebar(false);
+        router.push("/(tabs)/incidents/history");
+      },
+      isActive: false,
+    },
+  ];
 
   const styles = StyleSheet.create({
     container: {
       flex: 1,
       backgroundColor: colors.backgroundSecondary,
-    },
-    content: {
-      flex: 1,
-      paddingHorizontal: 24,
-      paddingTop: 32,
-    },
-    puzzleIconContainer: {
-      alignItems: "center",
-      marginBottom: 32,
-    },
-    puzzleIcon: {
-      width: 80,
-      height: 80,
-      backgroundColor: colors.primary,
-      borderRadius: 12,
-      alignItems: "center",
-      justifyContent: "center",
-      marginBottom: 24,
-      ...Platform.select({
-        ios: {
-          shadowColor: colors.primary,
-          shadowOffset: { width: 0, height: 4 },
-          shadowOpacity: 0.3,
-          shadowRadius: 12,
-        },
-        android: {
-          elevation: 8,
-        },
-      }),
-    },
-    title: {
-      fontSize: 20,
-      fontWeight: "700",
-      color: colors.text,
-      textAlign: "center",
-      marginBottom: 32,
-    },
-    vehicleSelector: {
-      flexDirection: "row",
-      alignItems: "center",
-      paddingHorizontal: 16,
-      paddingVertical: 16,
-      borderWidth: 1,
-      borderColor: colors.border,
-      borderRadius: 8,
-      backgroundColor: colors.surface,
-      marginBottom: 24,
-    },
-    vehiclePlaceholder: {
-      flex: 1,
-      fontSize: 16,
-      color: colors.textTertiary,
-    },
-    descriptionContainer: {
-      borderWidth: 1,
-      borderColor: colors.border,
-      borderRadius: 8,
-      backgroundColor: colors.surface,
-      marginBottom: 24,
-      minHeight: 120,
-      paddingHorizontal: 16,
-      paddingVertical: 12,
-    },
-    descriptionInput: {
-      flex: 1,
-      fontSize: 16,
-      color: colors.text,
-      textAlignVertical: "top",
-    },
-    descriptionPlaceholder: {
-      fontSize: 16,
-      color: colors.textTertiary,
-    },
-    mediaUpload: {
-      flexDirection: "row",
-      alignItems: "center",
-      paddingHorizontal: 16,
-      paddingVertical: 16,
-      borderWidth: 2,
-      borderStyle: "dashed",
-      borderColor: colors.border,
-      borderRadius: 8,
-      backgroundColor: colors.surface,
-      marginBottom: 32,
-    },
-    mediaUploadIcon: {
-      marginRight: 12,
-    },
-    mediaUploadText: {
-      fontSize: 16,
-      color: colors.textTertiary,
-    },
-    prioritySection: {
-      marginBottom: 32,
-    },
-    priorityTitle: {
-      fontSize: 16,
-      fontWeight: "600",
-      color: colors.text,
-      marginBottom: 16,
-    },
-    priorityContainer: {
-      flexDirection: "row",
-      gap: 12,
-    },
-    priorityButton: {
-      flex: 1,
-      flexDirection: "row",
-      alignItems: "center",
-      justifyContent: "center",
-      paddingVertical: 12,
-      paddingHorizontal: 16,
-      borderRadius: 8,
-      borderWidth: 1,
-    },
-    priorityDot: {
-      width: 8,
-      height: 8,
-      borderRadius: 4,
-      marginRight: 8,
-    },
-    priorityText: {
-      fontSize: 14,
-      fontWeight: "600",
-    },
-    submitButton: {
-      paddingHorizontal: 0,
-      paddingBottom: 32,
-      paddingTop: 16,
-    },
-    selectedMediaContainer: {
-      flexDirection: "row",
-      flexWrap: "wrap",
-      gap: 8,
-      marginTop: 12,
-    },
-    mediaItem: {
-      position: "relative",
-      width: 80,
-      height: 80,
-      borderRadius: 8,
-      overflow: "hidden",
-    },
-    mediaImage: {
-      width: "100%",
-      height: "100%",
-    },
-    removeMediaButton: {
-      position: "absolute",
-      top: 4,
-      right: 4,
-      backgroundColor: colors.error,
-      borderRadius: 10,
-      width: 20,
-      height: 20,
-      alignItems: "center",
-      justifyContent: "center",
     },
     errorContainer: {
       backgroundColor: colors.error + "15",
@@ -351,9 +107,18 @@ export const ReportIncidentScreen: React.FC = () => {
       fontSize: 14,
       fontWeight: "500",
     },
+    scrollContainer: {
+      flex: 1,
+    },
+    scrollContent: {
+      flexGrow: 1,
+      paddingBottom: Platform.select({
+        ios: 120, // More padding for iOS
+        android: 100, // Adequate padding for Android
+        default: 120,
+      }),
+    },
   });
-
-  const currentVehicle = selectedVehicle || vehicles[0];
 
   return (
     <SafeAreaView style={styles.container}>
@@ -373,8 +138,8 @@ export const ReportIncidentScreen: React.FC = () => {
       >
         <Header
           leftIcon={{
-            icon: "bars",
-            onPress: () => router.back(),
+            icon: "bars", // Changed back to "bars" for sidebar menu
+            onPress: () => setShowSidebar(true),
           }}
           title="Incident"
         />
@@ -389,179 +154,32 @@ export const ReportIncidentScreen: React.FC = () => {
 
       {/* Main Content with KeyboardAvoidingView */}
       <KeyboardAvoidingView
-        style={{ flex: 1 }}
+        style={styles.scrollContainer}
         behavior={Platform.OS === "ios" ? "padding" : "height"}
         keyboardVerticalOffset={Platform.OS === "ios" ? 0 : 20}
       >
-        <Animated.View style={[{ flex: 1 }, { opacity: headerAnim }]}>
+        <Animated.View
+          style={[styles.scrollContainer, { opacity: headerAnim }]}
+        >
           <ScrollView
+            style={styles.scrollContainer}
+            contentContainerStyle={styles.scrollContent}
             showsVerticalScrollIndicator={false}
-            contentContainerStyle={{ paddingBottom: 20 }}
             keyboardShouldPersistTaps="handled"
           >
-            <View style={styles.content}>
-              {/* Puzzle Icon and Title */}
-              <AnimatedFormSection delay={200}>
-                <View style={styles.puzzleIconContainer}>
-                  <View style={styles.puzzleIcon}>
-                    <FontAwesome name="puzzle-piece" size={32} color="white" />
-                    <View
-                      style={{
-                        position: "absolute",
-                        top: 8,
-                        right: 8,
-                        backgroundColor: "white",
-                        borderRadius: 10,
-                        width: 20,
-                        height: 20,
-                        alignItems: "center",
-                        justifyContent: "center",
-                      }}
-                    >
-                      <FontAwesome
-                        name="question"
-                        size={12}
-                        color={colors.primary}
-                      />
-                    </View>
-                  </View>
-                  <Text style={styles.title}>Notifier un problème</Text>
-                </View>
-              </AnimatedFormSection>
-
-              {/* Vehicle Selector */}
-              <AnimatedFormSection delay={400}>
-                <TouchableOpacity style={styles.vehicleSelector}>
-                  <Text style={styles.vehiclePlaceholder}>
-                    {currentVehicle
-                      ? currentVehicle.plateNumber
-                      : "Sélectionnez le véhicule concerné"}
-                  </Text>
-                  <FontAwesome
-                    name="chevron-down"
-                    size={16}
-                    color={colors.textTertiary}
-                  />
-                </TouchableOpacity>
-              </AnimatedFormSection>
-
-              {/* Description Input */}
-              <AnimatedFormSection delay={600}>
-                <View style={styles.descriptionContainer}>
-                  <TextInput
-                    style={styles.descriptionInput}
-                    placeholder="Décrivez en détail le problème rencontré..."
-                    placeholderTextColor={colors.textTertiary}
-                    value={description}
-                    onChangeText={setDescription}
-                    multiline
-                    numberOfLines={4}
-                    textAlignVertical="top"
-                  />
-                </View>
-              </AnimatedFormSection>
-
-              {/* Media Upload */}
-              <AnimatedFormSection delay={800}>
-                <TouchableOpacity
-                  style={styles.mediaUpload}
-                  onPress={handleMediaUpload}
-                >
-                  <FontAwesome
-                    name="camera"
-                    size={16}
-                    color={colors.textTertiary}
-                    style={styles.mediaUploadIcon}
-                  />
-                  <Text style={styles.mediaUploadText}>
-                    Ajout de photos ou vidéos
-                  </Text>
-                </TouchableOpacity>
-
-                {/* Selected Media Preview */}
-                {selectedMedia.length > 0 && (
-                  <View style={styles.selectedMediaContainer}>
-                    {selectedMedia.map((uri, index) => (
-                      <View key={index} style={styles.mediaItem}>
-                        <Image source={{ uri }} style={styles.mediaImage} />
-                        <TouchableOpacity
-                          style={styles.removeMediaButton}
-                          onPress={() => removeMedia(index)}
-                        >
-                          <FontAwesome name="times" size={10} color="white" />
-                        </TouchableOpacity>
-                      </View>
-                    ))}
-                  </View>
-                )}
-              </AnimatedFormSection>
-
-              {/* Priority Section */}
-              <AnimatedFormSection delay={1000}>
-                <View style={styles.prioritySection}>
-                  <Text style={styles.priorityTitle}>
-                    L&apos;urgence de l&apos;incident
-                  </Text>
-                  <View style={styles.priorityContainer}>
-                    {priorities.map((priority) => (
-                      <TouchableOpacity
-                        key={priority.value}
-                        style={[
-                          styles.priorityButton,
-                          {
-                            backgroundColor:
-                              selectedPriority === priority.value
-                                ? priority.bgColor
-                                : colors.surface,
-                            borderColor:
-                              selectedPriority === priority.value
-                                ? priority.color
-                                : colors.border,
-                          },
-                        ]}
-                        onPress={() => setSelectedPriority(priority.value)}
-                        activeOpacity={0.7}
-                      >
-                        <View
-                          style={[
-                            styles.priorityDot,
-                            { backgroundColor: priority.color },
-                          ]}
-                        />
-                        <Text
-                          style={[
-                            styles.priorityText,
-                            {
-                              color:
-                                selectedPriority === priority.value
-                                  ? priority.color
-                                  : colors.textSecondary,
-                            },
-                          ]}
-                        >
-                          {priority.label}
-                        </Text>
-                      </TouchableOpacity>
-                    ))}
-                  </View>
-                </View>
-              </AnimatedFormSection>
-
-              {/* Submit Button - Now inside ScrollView */}
-              <AnimatedFormSection delay={1200}>
-                <View style={styles.submitButton}>
-                  <Button
-                    title="Soumettre un problème"
-                    onPress={handleSubmit}
-                    loading={isLoading}
-                    disabled={!description.trim()}
-                  />
-                </View>
-              </AnimatedFormSection>
-            </View>
+            <ReportIncidentForm />
           </ScrollView>
         </Animated.View>
       </KeyboardAvoidingView>
+
+      {/* Sidebar */}
+      <Sidebar
+        title="Incidents"
+        items={sidebarItems}
+        visible={showSidebar}
+        onClose={() => setShowSidebar(false)}
+        onLogout={handleLogout}
+      />
     </SafeAreaView>
   );
 };
