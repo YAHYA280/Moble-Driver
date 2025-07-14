@@ -21,6 +21,43 @@ import { useVehicleStore } from "../../../store/vehicleStore";
 import { AssignedVehicleCard } from "./components/AssignedVehicleCard";
 import { VehicleHistoryCard } from "./components/VehicleHistoryCard";
 
+const AnimatedAssignedVehicleCard: React.FC<{
+  vehicle: Vehicle;
+  onPress: () => void;
+}> = ({ vehicle, onPress }) => {
+  const animValue = useRef(new Animated.Value(0)).current;
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      Animated.timing(animValue, {
+        toValue: 1,
+        duration: 600,
+        useNativeDriver: true,
+      }).start();
+    }, 200); // Start after header animation
+
+    return () => clearTimeout(timer);
+  }, [animValue]);
+
+  return (
+    <Animated.View
+      style={{
+        opacity: animValue,
+        transform: [
+          {
+            translateY: animValue.interpolate({
+              inputRange: [0, 1],
+              outputRange: [30, 0],
+            }),
+          },
+        ],
+      }}
+    >
+      <AssignedVehicleCard vehicle={vehicle} onPress={onPress} />
+    </Animated.View>
+  );
+};
+
 const AnimatedVehicleHistoryCard: React.FC<{
   item: Vehicle;
   index: number;
@@ -29,11 +66,11 @@ const AnimatedVehicleHistoryCard: React.FC<{
   const animValue = useRef(new Animated.Value(0)).current;
 
   useEffect(() => {
-    const delay = index * 100;
+    const delay = 400 + index * 80; // Start after assigned vehicle card
     const timer = setTimeout(() => {
       Animated.timing(animValue, {
         toValue: 1,
-        duration: 500,
+        duration: 400,
         useNativeDriver: true,
       }).start();
     }, delay);
@@ -49,7 +86,7 @@ const AnimatedVehicleHistoryCard: React.FC<{
           {
             translateY: animValue.interpolate({
               inputRange: [0, 1],
-              outputRange: [30, 0],
+              outputRange: [15, 0],
             }),
           },
         ],
@@ -85,19 +122,12 @@ export const VehiclesScreen: React.FC = () => {
   useEffect(() => {
     fetchVehicles();
 
-    // Start animations
-    Animated.sequence([
-      Animated.timing(headerAnim, {
-        toValue: 1,
-        duration: 600,
-        useNativeDriver: true,
-      }),
-      Animated.timing(listAnim, {
-        toValue: 1,
-        duration: 400,
-        useNativeDriver: true,
-      }),
-    ]).start();
+    // Start header animation immediately
+    Animated.timing(headerAnim, {
+      toValue: 1,
+      duration: 600,
+      useNativeDriver: true,
+    }).start();
   }, []);
 
   const handleVehiclePress = (vehicle: Vehicle) => {
@@ -289,26 +319,11 @@ export const VehiclesScreen: React.FC = () => {
       )}
 
       {/* Main Content */}
-      <Animated.View
-        style={[
-          { flex: 1 },
-          {
-            opacity: listAnim,
-            transform: [
-              {
-                translateY: listAnim.interpolate({
-                  inputRange: [0, 1],
-                  outputRange: [30, 0],
-                }),
-              },
-            ],
-          },
-        ]}
-      >
+      <View style={{ flex: 1 }}>
         {/* Assigned Vehicle Card */}
         {assignedVehicle && (
           <View style={styles.assignedVehicleContainer}>
-            <AssignedVehicleCard
+            <AnimatedAssignedVehicleCard
               vehicle={assignedVehicle}
               onPress={() => handleVehiclePress(assignedVehicle)}
             />
@@ -340,7 +355,7 @@ export const VehiclesScreen: React.FC = () => {
             ItemSeparatorComponent={() => <View style={{ height: 4 }} />}
           />
         </View>
-      </Animated.View>
+      </View>
 
       {/* Search Modal */}
       <SearchModal

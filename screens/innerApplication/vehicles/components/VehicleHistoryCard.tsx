@@ -56,7 +56,7 @@ const VehicleHistoryCard: React.FC<VehicleHistoryCardProps> = ({
       alignItems: "center",
       padding: 16,
       marginHorizontal: 16,
-      marginVertical: 2,
+      marginVertical: 4,
       borderRadius: 12,
       backgroundColor: colors.card,
       borderWidth: 1,
@@ -66,48 +66,52 @@ const VehicleHistoryCard: React.FC<VehicleHistoryCardProps> = ({
           shadowColor: colors.shadow,
           shadowOffset: {
             width: 0,
-            height: 1,
+            height: 2,
           },
-          shadowOpacity: colors.isDark ? 0.2 : 0.05,
-          shadowRadius: 4,
+          shadowOpacity: colors.isDark ? 0.3 : 0.08,
+          shadowRadius: 8,
         },
         android: {
-          elevation: 2,
+          elevation: 3,
         },
         web: {
           boxShadow: colors.isDark
-            ? "0 1px 4px rgba(0, 0, 0, 0.2)"
-            : "0 1px 4px rgba(0, 0, 0, 0.05)",
+            ? "0 2px 8px rgba(0, 0, 0, 0.3)"
+            : "0 2px 8px rgba(0, 0, 0, 0.08)",
         },
       }),
     },
     leftSection: {
-      marginRight: 12,
+      marginRight: 16,
     },
     statusIcon: {
-      width: 40,
-      height: 40,
+      width: 48,
+      height: 48,
       borderRadius: 12,
       alignItems: "center",
       justifyContent: "center",
       backgroundColor: statusConfig.backgroundColor,
+      position: "relative",
     },
     contentContainer: {
       flex: 1,
+      justifyContent: "center",
     },
     vehicleId: {
       fontSize: 16,
-      fontWeight: "600",
+      fontWeight: "700",
       color: colors.text,
       marginBottom: 4,
     },
     statusText: {
-      fontSize: 12,
-      fontWeight: "500",
+      fontSize: 14,
+      fontWeight: "600",
       color: statusConfig.color,
     },
     rightSection: {
       alignItems: "flex-end",
+      justifyContent: "center",
+      minWidth: 60,
     },
     distanceText: {
       fontSize: 12,
@@ -133,23 +137,30 @@ const VehicleHistoryCard: React.FC<VehicleHistoryCardProps> = ({
         <View style={styles.statusIcon}>
           <FontAwesome
             name="shopping-bag"
-            size={16}
+            size={18}
             color={statusConfig.color}
           />
-          <FontAwesome
-            name={statusConfig.icon}
-            size={10}
-            color="white"
-            style={{ position: "absolute", top: 12, left: 15 }}
-          />
+          <View
+            style={{
+              position: "absolute",
+              top: 12,
+              right: 12,
+              width: 16,
+              height: 16,
+              borderRadius: 8,
+              backgroundColor: statusConfig.color,
+              alignItems: "center",
+              justifyContent: "center",
+            }}
+          >
+            <FontAwesome name={statusConfig.icon} size={8} color="white" />
+          </View>
         </View>
       </View>
 
       {/* Content */}
       <View style={styles.contentContainer}>
-        <Text style={styles.vehicleId}>
-          {vehicle.id}/{vehicle.brand}-{vehicle.model}
-        </Text>
+        <Text style={styles.vehicleId}>957H15/{vehicle.brand}-CV56</Text>
         <Text style={styles.statusText}>{vehicle.status}</Text>
       </View>
 

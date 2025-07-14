@@ -28,8 +28,8 @@ const AssignedVehicleCard: React.FC<AssignedVehicleCardProps> = ({
   const styles = StyleSheet.create({
     container: {
       backgroundColor: colors.card,
-      borderRadius: 12,
-      padding: 20,
+      borderRadius: 16,
+      padding: 24,
       borderWidth: 1,
       borderColor: colors.border,
       ...Platform.select({
@@ -37,18 +37,18 @@ const AssignedVehicleCard: React.FC<AssignedVehicleCardProps> = ({
           shadowColor: colors.shadow,
           shadowOffset: {
             width: 0,
-            height: 2,
+            height: 4,
           },
-          shadowOpacity: colors.isDark ? 0.3 : 0.08,
-          shadowRadius: 8,
+          shadowOpacity: colors.isDark ? 0.3 : 0.12,
+          shadowRadius: 16,
         },
         android: {
-          elevation: 3,
+          elevation: 8,
         },
         web: {
           boxShadow: colors.isDark
-            ? "0 2px 8px rgba(0, 0, 0, 0.3)"
-            : "0 2px 8px rgba(0, 0, 0, 0.08)",
+            ? "0 4px 16px rgba(0, 0, 0, 0.3)"
+            : "0 4px 16px rgba(0, 0, 0, 0.12)",
         },
       }),
     },
@@ -56,7 +56,7 @@ const AssignedVehicleCard: React.FC<AssignedVehicleCardProps> = ({
       flexDirection: "row",
       alignItems: "center",
       justifyContent: "space-between",
-      marginBottom: 16,
+      marginBottom: 20,
     },
     leftHeader: {
       flexDirection: "row",
@@ -64,10 +64,11 @@ const AssignedVehicleCard: React.FC<AssignedVehicleCardProps> = ({
       flex: 1,
     },
     plateNumber: {
-      fontSize: 20,
+      fontSize: 24,
       fontWeight: "700",
       color: colors.text,
-      marginRight: 8,
+      marginRight: 12,
+      letterSpacing: 0.5,
     },
     distance: {
       fontSize: 14,
@@ -78,59 +79,78 @@ const AssignedVehicleCard: React.FC<AssignedVehicleCardProps> = ({
       flexDirection: "row",
       alignItems: "center",
       backgroundColor: colors.primary,
-      paddingHorizontal: 12,
-      paddingVertical: 6,
-      borderRadius: 16,
+      paddingHorizontal: 16,
+      paddingVertical: 8,
+      borderRadius: 20,
+      ...Platform.select({
+        ios: {
+          shadowColor: colors.primary,
+          shadowOffset: {
+            width: 0,
+            height: 2,
+          },
+          shadowOpacity: 0.3,
+          shadowRadius: 8,
+        },
+        android: {
+          elevation: 4,
+        },
+      }),
     },
     licenseBadgeIcon: {
-      marginRight: 6,
+      marginRight: 8,
     },
     licenseBadgeText: {
       color: "white",
-      fontSize: 12,
-      fontWeight: "600",
+      fontSize: 14,
+      fontWeight: "700",
+      letterSpacing: 0.5,
     },
     brandModelRow: {
       flexDirection: "row",
       justifyContent: "space-between",
       alignItems: "center",
-      marginBottom: 20,
+      marginBottom: 24,
     },
     brandContainer: {
       flex: 1,
     },
     brandLabel: {
-      fontSize: 12,
+      fontSize: 13,
       color: colors.textTertiary,
       fontWeight: "500",
-      marginBottom: 4,
+      marginBottom: 6,
+      letterSpacing: 0.3,
     },
     brandValue: {
-      fontSize: 16,
+      fontSize: 18,
       color: colors.text,
-      fontWeight: "600",
+      fontWeight: "700",
+      letterSpacing: 0.3,
     },
     modelContainer: {
       flex: 1,
       alignItems: "flex-end",
     },
     modelLabel: {
-      fontSize: 12,
+      fontSize: 13,
       color: colors.textTertiary,
       fontWeight: "500",
-      marginBottom: 4,
+      marginBottom: 6,
+      letterSpacing: 0.3,
     },
     modelValue: {
-      fontSize: 16,
+      fontSize: 18,
       color: colors.text,
-      fontWeight: "600",
+      fontWeight: "700",
+      letterSpacing: 0.3,
     },
     divider: {
       height: 1,
       backgroundColor: "transparent",
-      marginBottom: 20,
+      marginBottom: 24,
       position: "relative",
-      overflow: "hidden",
+      overflow: "visible",
     },
     dashedLine: {
       position: "absolute",
@@ -139,30 +159,58 @@ const AssignedVehicleCard: React.FC<AssignedVehicleCardProps> = ({
       right: 0,
       height: 1,
       borderStyle: "dashed",
-      borderWidth: 1,
+      borderWidth: 1.5,
       borderColor: colors.primary,
     },
     leftCurve: {
       position: "absolute",
-      left: -8,
-      top: -8,
-      width: 16,
-      height: 16,
-      borderRadius: 8,
+      left: -12,
+      top: -10,
+      width: 20,
+      height: 20,
+      borderRadius: 10,
       backgroundColor: colors.backgroundSecondary,
       borderWidth: 1,
       borderColor: colors.border,
+      ...Platform.select({
+        ios: {
+          shadowColor: colors.shadow,
+          shadowOffset: {
+            width: 0,
+            height: 1,
+          },
+          shadowOpacity: colors.isDark ? 0.2 : 0.08,
+          shadowRadius: 2,
+        },
+        android: {
+          elevation: 2,
+        },
+      }),
     },
     rightCurve: {
       position: "absolute",
-      right: -8,
-      top: -8,
-      width: 16,
-      height: 16,
-      borderRadius: 8,
+      right: -12,
+      top: -10,
+      width: 20,
+      height: 20,
+      borderRadius: 10,
       backgroundColor: colors.backgroundSecondary,
       borderWidth: 1,
       borderColor: colors.border,
+      ...Platform.select({
+        ios: {
+          shadowColor: colors.shadow,
+          shadowOffset: {
+            width: 0,
+            height: 1,
+          },
+          shadowOpacity: colors.isDark ? 0.2 : 0.08,
+          shadowRadius: 2,
+        },
+        android: {
+          elevation: 2,
+        },
+      }),
     },
     nextControlRow: {
       flexDirection: "row",
@@ -170,14 +218,16 @@ const AssignedVehicleCard: React.FC<AssignedVehicleCardProps> = ({
       alignItems: "center",
     },
     nextControlLabel: {
-      fontSize: 14,
+      fontSize: 15,
       color: colors.textTertiary,
       fontWeight: "500",
+      letterSpacing: 0.2,
     },
     nextControlDate: {
-      fontSize: 16,
+      fontSize: 18,
       color: colors.text,
-      fontWeight: "600",
+      fontWeight: "700",
+      letterSpacing: 0.3,
     },
   });
 
