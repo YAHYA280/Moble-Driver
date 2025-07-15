@@ -1,4 +1,3 @@
-// screens/innerApplication/vehicles/components/VehicleHistoryCard.tsx
 import { FontAwesome } from "@expo/vector-icons";
 import React from "react";
 import {
@@ -25,45 +24,8 @@ const VehicleHistoryCard: React.FC<VehicleHistoryCardProps> = ({
 }) => {
   const colors = useThemeColors();
 
-  const getStatusConfig = () => {
-    switch (vehicle.status) {
-      case "En service":
-        return {
-          label: "En service",
-          color: colors.success,
-          backgroundColor: colors.success + "15",
-          icon: "check" as const,
-        };
-      case "En maintenance":
-        return {
-          label: "En maintenance",
-          color: colors.warning,
-          backgroundColor: colors.warning + "15",
-          icon: "wrench" as const,
-        };
-      case "Hors service":
-        return {
-          label: "Hors service",
-          color: colors.error,
-          backgroundColor: colors.error + "15",
-          icon: "times" as const,
-        };
-    }
-  };
-
-  const statusConfig = getStatusConfig();
-
   const getIconBackgroundColor = () => {
-    switch (vehicle.status) {
-      case "En service":
-        return "#22c55e";
-      case "En maintenance":
-        return "#f59e0b";
-      case "Hors service":
-        return "#ef4444";
-      default:
-        return "#6366f1";
-    }
+    return colors.primary;
   };
 
   const formatVehicleId = () => {
@@ -118,21 +80,11 @@ const VehicleHistoryCard: React.FC<VehicleHistoryCardProps> = ({
       color: colors.text,
       marginBottom: 4,
     },
-    distanceRow: {
-      flexDirection: "row",
-      alignItems: "center",
-      marginBottom: 4,
-    },
     distanceText: {
       fontSize: 12,
       color: colors.textSecondary,
       fontWeight: "500",
       marginBottom: 4,
-    },
-    statusLabel: {
-      fontSize: 14,
-      fontWeight: "600",
-      color: statusConfig.color,
     },
     rightSection: {
       alignItems: "flex-end",
@@ -163,12 +115,11 @@ const VehicleHistoryCard: React.FC<VehicleHistoryCardProps> = ({
           {formatVehicleId()}
         </Text>
 
-        <Text style={styles.statusLabel}>{statusConfig.label}</Text>
+        <Text style={styles.distanceText}>20 Km</Text>
       </View>
 
       {/* Right Section */}
       <View style={styles.rightSection}>
-        <Text style={styles.distanceText}>20 Km</Text>
         <Text style={styles.dateText}>{vehicle.lastMaintenanceDate}</Text>
       </View>
     </TouchableOpacity>

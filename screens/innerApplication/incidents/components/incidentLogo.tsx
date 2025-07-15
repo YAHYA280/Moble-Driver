@@ -1,12 +1,12 @@
 import React from "react";
 import Svg, { Defs, Image, Pattern, Rect, Use } from "react-native-svg";
 
-interface LogoVSNProps {
+interface incedentLogoVSNprops {
   width?: number;
   height?: number;
 }
 
-export const LogoVSN: React.FC<LogoVSNProps> = ({
+export const incedentLogoVSN: React.FC<incedentLogoVSNprops> = ({
   width = 100,
   height = 100,
 }) => {

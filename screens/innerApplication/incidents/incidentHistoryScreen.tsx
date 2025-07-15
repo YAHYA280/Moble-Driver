@@ -1,4 +1,3 @@
-// screens/innerApplication/incidents/incidentHistoryScreen.tsx
 import { FontAwesome } from "@expo/vector-icons";
 import { router } from "expo-router";
 import React, { useEffect, useRef } from "react";
@@ -221,7 +220,6 @@ export const IncidentHistoryScreen: React.FC = () => {
   useEffect(() => {
     fetchIncidents();
 
-    // Start header animation
     Animated.timing(headerAnim, {
       toValue: 1,
       duration: 600,
@@ -231,8 +229,6 @@ export const IncidentHistoryScreen: React.FC = () => {
 
   const handleIncidentPress = (incident: Incident) => {
     selectIncident(incident);
-    // In a real app, navigate to incident details
-    console.log("Incident details:", incident);
   };
 
   const handleRefresh = () => {

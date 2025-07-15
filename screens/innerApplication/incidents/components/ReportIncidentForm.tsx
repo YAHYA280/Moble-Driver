@@ -7,7 +7,6 @@ import {
   Alert,
   Animated,
   Image,
-  Platform,
   StyleSheet,
   Text,
   TextInput,
@@ -20,6 +19,7 @@ import { Button } from "../../../../shared/components/ui/Button";
 import { IncidentPriority } from "../../../../shared/types/incident";
 import { useIncidentStore } from "../../../../store/incidentStore";
 import { useVehicleStore } from "../../../../store/vehicleStore";
+import { incedentLogoVSN as IncedentLogoVSN } from "./incidentLogo";
 
 const AnimatedFormSection: React.FC<{
   children: React.ReactNode;
@@ -165,36 +165,16 @@ export const ReportIncidentForm: React.FC = () => {
       paddingHorizontal: 24,
       paddingTop: 32,
     },
-    puzzleIconContainer: {
+    logoContainer: {
       alignItems: "center",
       marginBottom: 32,
-    },
-    puzzleIcon: {
-      width: 80,
-      height: 80,
-      backgroundColor: colors.primary,
-      borderRadius: 12,
-      alignItems: "center",
-      justifyContent: "center",
-      marginBottom: 24,
-      ...Platform.select({
-        ios: {
-          shadowColor: colors.primary,
-          shadowOffset: { width: 0, height: 4 },
-          shadowOpacity: 0.3,
-          shadowRadius: 12,
-        },
-        android: {
-          elevation: 8,
-        },
-      }),
     },
     title: {
       fontSize: 20,
       fontWeight: "700",
       color: colors.text,
       textAlign: "center",
-      marginBottom: 32,
+      marginTop: 16,
     },
     vehicleSelector: {
       flexDirection: "row",
@@ -228,10 +208,6 @@ export const ReportIncidentForm: React.FC = () => {
       color: colors.text,
       textAlignVertical: "top",
     },
-    descriptionPlaceholder: {
-      fontSize: 16,
-      color: colors.textTertiary,
-    },
     mediaUpload: {
       flexDirection: "row",
       alignItems: "center",
@@ -242,7 +218,7 @@ export const ReportIncidentForm: React.FC = () => {
       borderColor: colors.border,
       borderRadius: 8,
       backgroundColor: colors.surface,
-      marginBottom: 32,
+      marginBottom: 16, // Reduced from 32 to 16
     },
     mediaUploadIcon: {
       marginRight: 12,
@@ -250,6 +226,35 @@ export const ReportIncidentForm: React.FC = () => {
     mediaUploadText: {
       fontSize: 16,
       color: colors.textTertiary,
+    },
+    selectedMediaContainer: {
+      flexDirection: "row",
+      flexWrap: "wrap",
+      gap: 8,
+      marginTop: 12,
+      marginBottom: 24, // Added margin bottom for spacing
+    },
+    mediaItem: {
+      position: "relative",
+      width: 80,
+      height: 80,
+      borderRadius: 8,
+      overflow: "hidden",
+    },
+    mediaImage: {
+      width: "100%",
+      height: "100%",
+    },
+    removeMediaButton: {
+      position: "absolute",
+      top: 4,
+      right: 4,
+      backgroundColor: colors.error,
+      borderRadius: 10,
+      width: 20,
+      height: 20,
+      alignItems: "center",
+      justifyContent: "center",
     },
     prioritySection: {
       marginBottom: 32,
@@ -285,35 +290,7 @@ export const ReportIncidentForm: React.FC = () => {
       fontWeight: "600",
     },
     submitButton: {
-      marginBottom: 32, // Add consistent margin bottom
-    },
-    selectedMediaContainer: {
-      flexDirection: "row",
-      flexWrap: "wrap",
-      gap: 8,
-      marginTop: 12,
-    },
-    mediaItem: {
-      position: "relative",
-      width: 80,
-      height: 80,
-      borderRadius: 8,
-      overflow: "hidden",
-    },
-    mediaImage: {
-      width: "100%",
-      height: "100%",
-    },
-    removeMediaButton: {
-      position: "absolute",
-      top: 4,
-      right: 4,
-      backgroundColor: colors.error,
-      borderRadius: 10,
-      width: 20,
-      height: 20,
-      alignItems: "center",
-      justifyContent: "center",
+      marginBottom: 32,
     },
   });
 
@@ -321,27 +298,10 @@ export const ReportIncidentForm: React.FC = () => {
 
   return (
     <View style={styles.content}>
-      {/* Puzzle Icon and Title */}
+      {/* Logo and Title */}
       <AnimatedFormSection delay={200}>
-        <View style={styles.puzzleIconContainer}>
-          <View style={styles.puzzleIcon}>
-            <FontAwesome name="puzzle-piece" size={32} color="white" />
-            <View
-              style={{
-                position: "absolute",
-                top: 8,
-                right: 8,
-                backgroundColor: "white",
-                borderRadius: 10,
-                width: 20,
-                height: 20,
-                alignItems: "center",
-                justifyContent: "center",
-              }}
-            >
-              <FontAwesome name="question" size={12} color={colors.primary} />
-            </View>
-          </View>
+        <View style={styles.logoContainer}>
+          <IncedentLogoVSN width={80} height={80} />
           <Text style={styles.title}>Notifier un problème</Text>
         </View>
       </AnimatedFormSection>

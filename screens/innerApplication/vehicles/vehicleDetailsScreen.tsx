@@ -1,4 +1,3 @@
-// screens/innerApplication/vehicles/vehicleDetailsScreen.tsx
 import { router } from "expo-router";
 import React, { useEffect, useRef } from "react";
 import { Animated, ScrollView, StyleSheet } from "react-native";
@@ -11,7 +10,6 @@ import { DocumentsSection } from "./components/DocumentsSection";
 import { MaintenanceHistorySection } from "./components/MaintenanceHistorySection";
 import { VehicleInfoCard } from "./components/VehicleInfoCard";
 
-// Simple animated wrapper components - same pattern as vehicle home screen
 const AnimatedVehicleInfoCard: React.FC<{
   children: React.ReactNode;
 }> = ({ children }) => {
@@ -24,7 +22,7 @@ const AnimatedVehicleInfoCard: React.FC<{
         duration: 600,
         useNativeDriver: true,
       }).start();
-    }, 200); // Start after header animation
+    }, 200);
 
     return () => clearTimeout(timer);
   }, [animValue]);
@@ -60,7 +58,7 @@ const AnimatedMaintenanceSection: React.FC<{
         duration: 400,
         useNativeDriver: true,
       }).start();
-    }, 400); // Start after vehicle info card
+    }, 400);
 
     return () => clearTimeout(timer);
   }, [animValue]);
@@ -96,7 +94,7 @@ const AnimatedDocumentsSection: React.FC<{
         duration: 400,
         useNativeDriver: true,
       }).start();
-    }, 600); // Start after maintenance section
+    }, 600);
 
     return () => clearTimeout(timer);
   }, [animValue]);
@@ -131,7 +129,6 @@ export const VehicleDetailsScreen: React.FC = () => {
       return;
     }
 
-    // Start header animation immediately - same as vehicle home screen
     Animated.timing(headerAnim, {
       toValue: 1,
       duration: 600,

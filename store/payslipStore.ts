@@ -39,15 +39,26 @@ const applyFiltersToPayslips = (
     filtered = filtered.filter((p) => p.netSalary <= filters.maxAmount!);
   }
 
-  // Filter by search query
+  // Enhanced search query filtering
   if (filters.searchQuery && filters.searchQuery.trim() !== "") {
     const query = filters.searchQuery.toLowerCase().trim();
-    filtered = filtered.filter(
-      (p) =>
-        p.monthYear.toLowerCase().includes(query) ||
-        p.netSalary.toString().includes(query) ||
-        p.grossSalary.toString().includes(query)
-    );
+    filtered = filtered.filter((p) => {
+      // Search in multiple fields
+      const searchableFields = [
+        p.id.toLowerCase(), // Search by ID (e.g., "957H15/880$")
+        p.monthYear.toLowerCase(), // Search by month/year (e.g., "janvier 2025")
+        p.netSalary.toString(), // Search by net salary
+        p.grossSalary.toString(), // Search by gross salary
+        p.status.toLowerCase(), // Search by status
+        p.employeeName.toLowerCase(), // Search by employee name
+        p.employeePosition.toLowerCase(), // Search by position
+        p.availableDate.toLowerCase(), // Search by available date
+        p.createdDate.toLowerCase(), // Search by created date
+      ];
+
+      // Check if query matches any of the searchable fields
+      return searchableFields.some((field) => field.includes(query));
+    });
   }
 
   // Sort by date (newest first)
@@ -66,7 +77,7 @@ const mockPayslips: Payslip[] = [
     year: 2025,
     grossSalary: 1000.0,
     netSalary: 800.0,
-    status: "available",
+    status: "pending",
     availableDate: "14/08/2025",
     createdDate: "08/2025",
     deductions: [
@@ -105,7 +116,7 @@ const mockPayslips: Payslip[] = [
     year: 2025,
     grossSalary: 850.0,
     netSalary: 680.0,
-    status: "pending",
+    status: "available",
     availableDate: "14/07/2025",
     createdDate: "07/2025",
     deductions: [
@@ -273,7 +284,6 @@ export const usePayslipStore = create<PayslipStore>((set, get) => ({
       // Simulate download
       await new Promise((resolve) => setTimeout(resolve, 1500));
       // In real app, this would trigger the download
-      console.log(`Downloading payslip: ${payslipId}`);
       set({ isLoading: false });
     } catch (error) {
       set({

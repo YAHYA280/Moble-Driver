@@ -49,10 +49,10 @@ export const PayslipFilterBar: React.FC<PayslipFilterBarProps> = ({
     { value: 12, label: "Décembre" },
   ];
 
+  // Updated status options - removed "processing"
   const statusOptions = [
     { value: "available", label: "Disponible" },
     { value: "pending", label: "En attente" },
-    { value: "processing", label: "En cours" },
   ];
 
   const activeFiltersCount = Object.keys(filters).filter(

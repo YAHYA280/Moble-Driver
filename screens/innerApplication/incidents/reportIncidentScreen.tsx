@@ -1,4 +1,3 @@
-// screens/innerApplication/incidents/reportIncidentScreen.tsx
 import { router } from "expo-router";
 import React, { useEffect, useRef, useState } from "react";
 import {
@@ -30,14 +29,12 @@ export const ReportIncidentScreen: React.FC = () => {
   const [showSidebar, setShowSidebar] = useState(false);
 
   useEffect(() => {
-    // Start header animation
     Animated.timing(headerAnim, {
       toValue: 1,
       duration: 600,
       useNativeDriver: true,
     }).start();
 
-    // Clear any existing errors
     clearError();
   }, [headerAnim, clearError]);
 
@@ -73,7 +70,6 @@ export const ReportIncidentScreen: React.FC = () => {
       icon: "exclamation-triangle" as const,
       onPress: () => {
         setShowSidebar(false);
-        // Stay on current screen - incidents
       },
       isActive: true,
     },
@@ -113,8 +109,8 @@ export const ReportIncidentScreen: React.FC = () => {
     scrollContent: {
       flexGrow: 1,
       paddingBottom: Platform.select({
-        ios: 120, // More padding for iOS
-        android: 100, // Adequate padding for Android
+        ios: 120,
+        android: 100,
         default: 120,
       }),
     },
@@ -138,7 +134,7 @@ export const ReportIncidentScreen: React.FC = () => {
       >
         <Header
           leftIcon={{
-            icon: "bars", // Changed back to "bars" for sidebar menu
+            icon: "bars",
             onPress: () => setShowSidebar(true),
           }}
           title="Incident"

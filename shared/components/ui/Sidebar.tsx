@@ -55,15 +55,13 @@ export const Sidebar: React.FC<SidebarProps> = ({
   const slideAnim = React.useRef(new Animated.Value(-300)).current;
   const overlayAnim = React.useRef(new Animated.Value(0)).current;
 
-  // Calculate proper sidebar width for different screen sizes
   const sidebarWidth = React.useMemo(() => {
     if (Platform.OS === "android") {
-      // Android optimization: responsive width based on screen size
-      if (screenWidth < 360) return Math.min(260, screenWidth * 0.85); // Small phones
-      if (screenWidth < 400) return Math.min(280, screenWidth * 0.8); // Medium phones
-      return Math.min(320, screenWidth * 0.75); // Large phones/tablets
+      if (screenWidth < 360) return Math.min(260, screenWidth * 0.85);
+      if (screenWidth < 400) return Math.min(280, screenWidth * 0.8);
+      return Math.min(320, screenWidth * 0.75);
     }
-    return Math.min(280, screenWidth * 0.8); // iOS default
+    return Math.min(280, screenWidth * 0.8);
   }, []);
 
   React.useEffect(() => {
@@ -71,7 +69,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
       Animated.parallel([
         Animated.timing(slideAnim, {
           toValue: 0,
-          duration: Platform.OS === "android" ? 250 : 300, // Faster on Android
+          duration: Platform.OS === "android" ? 250 : 300,
           useNativeDriver: true,
         }),
         Animated.timing(overlayAnim, {
@@ -84,7 +82,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
       Animated.parallel([
         Animated.timing(slideAnim, {
           toValue: -sidebarWidth,
-          duration: Platform.OS === "android" ? 200 : 250, // Faster on Android
+          duration: Platform.OS === "android" ? 200 : 250,
           useNativeDriver: true,
         }),
         Animated.timing(overlayAnim, {

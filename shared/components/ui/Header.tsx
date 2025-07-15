@@ -10,10 +10,8 @@ import {
 } from "react-native";
 import { useThemeColors } from "../../../hooks/useTheme";
 
-// Types pour les icônes Font Awesome
 type IconType = keyof typeof FontAwesome.glyphMap;
 
-// Interface pour un bouton d'icône
 interface IconButton {
   icon: IconType;
   onPress: () => void;
@@ -22,26 +20,20 @@ interface IconButton {
   color?: string;
 }
 
-// Interface principale du Header
 interface HeaderProps {
-  // Contenu principal
   title?: string;
   subtitle?: string;
   emoji?: string;
 
-  // Icône gauche
   leftIcon?: IconButton;
 
-  // Icônes droite
   rightIcons?: IconButton[];
 
-  // Styling
   backgroundColor?: string;
   titleColor?: string;
   subtitleColor?: string;
   style?: ViewStyle;
 
-  // Comportement
   onTitlePress?: () => void;
 }
 

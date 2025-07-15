@@ -77,6 +77,12 @@ export const SearchModal: React.FC<SearchModalProps> = ({
     onSearch("");
   };
 
+  const handleTextChange = (text: string) => {
+    setSearchQuery(text);
+    // Trigger search immediately when text changes
+    onSearch(text);
+  };
+
   const styles = StyleSheet.create({
     modalOverlay: {
       flex: 1,
@@ -125,37 +131,7 @@ export const SearchModal: React.FC<SearchModalProps> = ({
       backgroundColor: colors.backgroundSecondary,
     },
     searchContainer: {
-      marginBottom: 16,
-    },
-    actions: {
-      flexDirection: "row",
-      gap: 12,
-    },
-    actionButton: {
-      flex: 1,
-      paddingVertical: 12,
-      paddingHorizontal: 16,
-      borderRadius: 8,
-      alignItems: "center",
-      justifyContent: "center",
-    },
-    searchButton: {
-      backgroundColor: colors.primary,
-    },
-    clearButton: {
-      backgroundColor: colors.backgroundSecondary,
-      borderWidth: 1,
-      borderColor: colors.border,
-    },
-    buttonText: {
-      fontSize: 14,
-      fontWeight: "600",
-    },
-    searchButtonText: {
-      color: "white",
-    },
-    clearButtonText: {
-      color: colors.textSecondary,
+      marginBottom: 0, // Removed margin since we removed buttons
     },
   });
 
@@ -192,32 +168,13 @@ export const SearchModal: React.FC<SearchModalProps> = ({
             <Input
               placeholder={placeholder}
               value={searchQuery}
-              onChangeText={setSearchQuery}
+              onChangeText={handleTextChange}
               rightIcon="search"
               onRightIconPress={handleSearch}
               autoFocus
               onSubmitEditing={handleSearch}
               returnKeyType="search"
             />
-          </View>
-
-          <View style={styles.actions}>
-            <TouchableOpacity
-              style={[styles.actionButton, styles.clearButton]}
-              onPress={handleClear}
-            >
-              <Text style={[styles.buttonText, styles.clearButtonText]}>
-                Effacer
-              </Text>
-            </TouchableOpacity>
-            <TouchableOpacity
-              style={[styles.actionButton, styles.searchButton]}
-              onPress={handleSearch}
-            >
-              <Text style={[styles.buttonText, styles.searchButtonText]}>
-                Rechercher
-              </Text>
-            </TouchableOpacity>
           </View>
         </Animated.View>
       </SafeAreaView>

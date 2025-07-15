@@ -1,4 +1,3 @@
-// screens/innerApplication/vehicles/components/DocumentsSection.tsx
 import { FontAwesome } from "@expo/vector-icons";
 import React from "react";
 import {

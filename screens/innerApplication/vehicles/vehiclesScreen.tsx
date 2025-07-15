@@ -1,4 +1,4 @@
-// screens/innerApplication/vehicles/vehiclesScreen.tsx (Updated to add incidents in sidebar)
+import ConditionalComponent from "@/shared/components/conditionalComponent/conditionalComponent";
 import { router } from "expo-router";
 import React, { useEffect, useRef, useState } from "react";
 import {
@@ -34,7 +34,7 @@ const AnimatedAssignedVehicleCard: React.FC<{
         duration: 600,
         useNativeDriver: true,
       }).start();
-    }, 200); // Start after header animation
+    }, 200);
 
     return () => clearTimeout(timer);
   }, [animValue]);
@@ -66,7 +66,7 @@ const AnimatedVehicleHistoryCard: React.FC<{
   const animValue = useRef(new Animated.Value(0)).current;
 
   useEffect(() => {
-    const delay = 400 + index * 80; // Start after assigned vehicle card
+    const delay = 400 + index * 80;
     const timer = setTimeout(() => {
       Animated.timing(animValue, {
         toValue: 1,
@@ -122,7 +122,6 @@ export const VehiclesScreen: React.FC = () => {
   useEffect(() => {
     fetchVehicles();
 
-    // Start header animation immediately
     Animated.timing(headerAnim, {
       toValue: 1,
       duration: 600,
@@ -201,11 +200,9 @@ export const VehiclesScreen: React.FC = () => {
     },
   ];
 
-  // Get the main assigned vehicle (first one or one with specific status)
   const assignedVehicle =
     vehicles.find((v) => v.status === "En service") || vehicles[0];
 
-  // Get history vehicles (could be all vehicles or a subset)
   const historyVehicles = filteredVehicles;
 
   const renderHistoryItem = ({
@@ -236,9 +233,12 @@ export const VehiclesScreen: React.FC = () => {
         Aucun véhicule trouvé
       </Text>
       <Text style={[styles.emptySubtitle, { color: colors.textSecondary }]}>
-        {Object.keys(filters).length > 0
-          ? "Aucun véhicule ne correspond à vos critères de recherche."
-          : "Vos véhicules apparaîtront ici."}
+        <ConditionalComponent
+          isValid={Object.keys(filters).length > 0}
+          defaultComponent="Vos véhicules apparaîtront ici."
+        >
+          Aucun véhicule ne correspond à vos critères de recherche.
+        </ConditionalComponent>
       </Text>
     </View>
   );
@@ -300,7 +300,6 @@ export const VehiclesScreen: React.FC = () => {
 
   return (
     <SafeAreaView style={styles.container}>
-      {/* Animated Header */}
       <Animated.View
         style={{
           opacity: headerAnim,
@@ -335,23 +334,23 @@ export const VehiclesScreen: React.FC = () => {
       </Animated.View>
 
       {/* Error Display */}
-      {error && (
+      <ConditionalComponent isValid={!!error}>
         <View style={styles.errorContainer}>
           <Text style={styles.errorText}>{error}</Text>
         </View>
-      )}
+      </ConditionalComponent>
 
       {/* Main Content */}
       <View style={{ flex: 1 }}>
         {/* Assigned Vehicle Card */}
-        {assignedVehicle && (
+        <ConditionalComponent isValid={!!assignedVehicle}>
           <View style={styles.assignedVehicleContainer}>
             <AnimatedAssignedVehicleCard
-              vehicle={assignedVehicle}
-              onPress={() => handleVehiclePress(assignedVehicle)}
+              vehicle={assignedVehicle!}
+              onPress={() => handleVehiclePress(assignedVehicle!)}
             />
           </View>
-        )}
+        </ConditionalComponent>
 
         {/* History Section */}
         <View style={styles.historyContainer}>

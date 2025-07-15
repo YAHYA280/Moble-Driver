@@ -1,4 +1,3 @@
-// screens/innerApplication/incidents/incidentSuccessScreen.tsx
 import { FontAwesome } from "@expo/vector-icons";
 import { router } from "expo-router";
 import React, { useEffect, useRef } from "react";
@@ -56,7 +55,6 @@ export const IncidentSuccessScreen: React.FC = () => {
   const containerAnim = useRef(new Animated.Value(0)).current;
 
   useEffect(() => {
-    // Start container animation
     Animated.timing(containerAnim, {
       toValue: 1,
       duration: 800,

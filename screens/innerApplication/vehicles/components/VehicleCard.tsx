@@ -50,10 +50,9 @@ export const VehicleCard: React.FC<VehicleCardProps> = ({
   const statusConfig = getStatusConfig();
 
   const getVehicleIcon = () => {
-    // Return different icons based on vehicle type/capacity
     if (vehicle.capacity > 7) return "bus";
-    if (vehicle.capacity > 5) return "car"; // SUV/Van style
-    return "car"; // Regular car
+    if (vehicle.capacity > 5) return "car";
+    return "car";
   };
 
   const getIconBackgroundColor = () => {

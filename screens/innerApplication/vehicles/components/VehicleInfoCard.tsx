@@ -1,4 +1,4 @@
-// screens/innerApplication/vehicles/components/VehicleInfoCard.tsx
+import ConditionalComponent from "@/shared/components/conditionalComponent/conditionalComponent";
 import { FontAwesome } from "@expo/vector-icons";
 import React from "react";
 import {
@@ -129,19 +129,22 @@ const VehicleInfoCard: React.FC<VehicleInfoCardProps> = ({
     >
       <View style={styles.vehicleCard}>
         <View style={styles.vehicleImageContainer}>
-          {vehicle.imageUrl ? (
+          <ConditionalComponent
+            isValid={!!vehicle.imageUrl}
+            defaultComponent={
+              <Image
+                source={{
+                  uri: "https://images.unsplash.com/photo-1580414165966-0f3c4c2d8e8e?w=80&h=80&fit=crop&crop=center",
+                }}
+                style={styles.vehicleImage}
+              />
+            }
+          >
             <Image
               source={{ uri: vehicle.imageUrl }}
               style={styles.vehicleImage}
             />
-          ) : (
-            <Image
-              source={{
-                uri: "https://images.unsplash.com/photo-1580414165966-0f3c4c2d8e8e?w=80&h=80&fit=crop&crop=center",
-              }}
-              style={styles.vehicleImage}
-            />
-          )}
+          </ConditionalComponent>
         </View>
         <View style={styles.vehicleInfo}>
           <Text style={styles.brandName}>{vehicle.brand}</Text>

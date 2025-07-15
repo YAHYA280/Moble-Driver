@@ -1,4 +1,4 @@
-// screens/innerApplication/vehicles/components/MaintenanceHistorySection.tsx
+import ConditionalComponent from "@/shared/components/conditionalComponent/conditionalComponent";
 import { FontAwesome } from "@expo/vector-icons";
 import React, { useEffect, useRef } from "react";
 import {
@@ -30,7 +30,7 @@ const AnimatedMaintenanceItem: React.FC<{
   const animValue = useRef(new Animated.Value(0)).current;
 
   useEffect(() => {
-    const delay = index * 100; // Stagger animation by 100ms per item
+    const delay = index * 100;
     const timer = setTimeout(() => {
       Animated.timing(animValue, {
         toValue: 1,
@@ -261,39 +261,46 @@ const MaintenanceHistorySection: React.FC<MaintenanceHistorySectionProps> = ({
     <View style={[styles.container, style]}>
       <View style={styles.sectionHeader}>
         <Text style={styles.sectionTitle}>Historique des entretiens</Text>
-        {onSeeAllPress && !showAll && maintenanceHistory.length > 5 && (
+        <ConditionalComponent
+          isValid={!!onSeeAllPress && !showAll && maintenanceHistory.length > 5}
+        >
           <TouchableOpacity style={styles.seeAllButton} onPress={onSeeAllPress}>
             <Text style={styles.seeAllButtonText}>Voir tout</Text>
           </TouchableOpacity>
-        )}
+        </ConditionalComponent>
       </View>
 
       <View style={styles.maintenanceList}>
-        {displayedItems.length > 0 ? (
-          displayedItems.map((maintenance, index) => (
-            <AnimatedMaintenanceItem
-              key={maintenance.id}
-              maintenance={maintenance}
-              index={index}
-              onPress={onMaintenanceItemPress}
-            />
-          ))
-        ) : (
-          <View style={styles.emptyState}>
-            <View style={styles.emptyIcon}>
-              <FontAwesome
-                name="wrench"
-                size={24}
-                color={colors.textTertiary}
-              />
+        <ConditionalComponent
+          isValid={displayedItems.length > 0}
+          defaultComponent={
+            <View style={styles.emptyState}>
+              <View style={styles.emptyIcon}>
+                <FontAwesome
+                  name="wrench"
+                  size={24}
+                  color={colors.textTertiary}
+                />
+              </View>
+              <Text style={styles.emptyTitle}>Aucun entretien enregistré</Text>
+              <Text style={styles.emptyText}>
+                L&apos;historique des entretiens apparaîtra ici une fois
+                qu&apos;ils seront effectués.
+              </Text>
             </View>
-            <Text style={styles.emptyTitle}>Aucun entretien enregistré</Text>
-            <Text style={styles.emptyText}>
-              L&apos;historique des entretiens apparaîtra ici une fois
-              qu&apos;ils seront effectués.
-            </Text>
-          </View>
-        )}
+          }
+        >
+          <>
+            {displayedItems.map((maintenance, index) => (
+              <AnimatedMaintenanceItem
+                key={maintenance.id}
+                maintenance={maintenance}
+                index={index}
+                onPress={onMaintenanceItemPress}
+              />
+            ))}
+          </>
+        </ConditionalComponent>
       </View>
     </View>
   );
