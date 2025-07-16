@@ -246,7 +246,6 @@ export default function TabLayout() {
           ),
         }}
       />
-
       <Tabs.Screen
         name="profile"
         options={{
@@ -313,6 +312,12 @@ export default function TabLayout() {
 
       <Tabs.Screen
         name="incidents"
+        options={{
+          href: null,
+        }}
+      />
+      <Tabs.Screen
+        name="profile-main"
         options={{
           href: null,
         }}
