@@ -1,3 +1,4 @@
+// screens/innerApplication/incidents/incidentHistoryScreen.tsx (Fixed)
 import { FontAwesome } from "@expo/vector-icons";
 import { router } from "expo-router";
 import React, { useEffect, useRef } from "react";
@@ -142,21 +143,6 @@ const AnimatedIncidentCard: React.FC<{
       fontWeight: "600",
       color: statusConfig.color,
     },
-    rightSection: {
-      alignItems: "flex-end",
-      justifyContent: "center",
-      marginLeft: 12,
-    },
-    actionButton: {
-      width: 40,
-      height: 40,
-      borderRadius: 20,
-      alignItems: "center",
-      justifyContent: "center",
-      backgroundColor: colors.isDark
-        ? colors.surfaceSecondary
-        : "rgba(0, 0, 0, 0.05)",
-    },
   });
 
   return (
@@ -183,7 +169,7 @@ const AnimatedIncidentCard: React.FC<{
           <FontAwesome name="exclamation-triangle" size={20} color="white" />
         </View>
 
-        {/* Content */}
+        {/* Content - Full width clickable area */}
         <View style={styles.contentContainer}>
           <Text style={styles.incidentTitle} numberOfLines={1}>
             {item.type}
@@ -194,10 +180,7 @@ const AnimatedIncidentCard: React.FC<{
               {item.reportDate} • {item.vehiclePlateNumber}
             </Text>
           </View>
-        </View>
 
-        {/* Right Section */}
-        <View style={styles.rightSection}>
           <Text style={styles.statusLabel}>{statusConfig.label}</Text>
         </View>
       </TouchableOpacity>
@@ -229,6 +212,15 @@ export const IncidentHistoryScreen: React.FC = () => {
 
   const handleIncidentPress = (incident: Incident) => {
     selectIncident(incident);
+    router.push(`./details/${incident.id}`);
+  };
+
+  // const handleBackPress = () => {
+  //   router.replace("/(tabs)/vehicles");
+  // };
+
+  const handleBackPress = () => {
+    router.back();
   };
 
   const handleRefresh = () => {
@@ -253,6 +245,9 @@ export const IncidentHistoryScreen: React.FC = () => {
     <View style={styles.headerContainer}>
       <Text style={[styles.historyTitle, { color: colors.text }]}>
         Historique des incidents
+      </Text>
+      <Text style={[styles.historySubtitle, { color: colors.textSecondary }]}>
+        Appuyez sur un incident pour voir les détails
       </Text>
     </View>
   );
@@ -288,6 +283,11 @@ export const IncidentHistoryScreen: React.FC = () => {
     historyTitle: {
       fontSize: 18,
       fontWeight: "600",
+      marginBottom: 4,
+    },
+    historySubtitle: {
+      fontSize: 14,
+      fontWeight: "400",
     },
     emptyState: {
       flex: 1,
@@ -333,7 +333,7 @@ export const IncidentHistoryScreen: React.FC = () => {
 
   return (
     <SafeAreaView style={styles.container}>
-      {/* Animated Header */}
+      {/* Animated Header with fixed navigation */}
       <Animated.View
         style={{
           opacity: headerAnim,
@@ -350,7 +350,7 @@ export const IncidentHistoryScreen: React.FC = () => {
         <Header
           leftIcon={{
             icon: "chevron-left",
-            onPress: () => router.back(),
+            onPress: handleBackPress, // Fixed navigation
           }}
           title="Historique des incidents"
         />

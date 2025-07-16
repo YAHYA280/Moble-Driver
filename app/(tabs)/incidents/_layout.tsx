@@ -1,4 +1,4 @@
-// app/(tabs)/incidents/_layout.tsx
+// app/(tabs)/incidents/_layout.tsx - Updated
 import { Stack } from "expo-router";
 
 export default function IncidentsLayout() {
@@ -8,6 +8,7 @@ export default function IncidentsLayout() {
       <Stack.Screen name="report" options={{ headerShown: false }} />
       <Stack.Screen name="success" options={{ headerShown: false }} />
       <Stack.Screen name="history" options={{ headerShown: false }} />
+      <Stack.Screen name="details/[id]" options={{ headerShown: false }} />
     </Stack>
   );
 }
