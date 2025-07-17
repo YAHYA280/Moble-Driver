@@ -1,17 +1,215 @@
 // screens/innerApplication/profile/profileSettingsScreen.tsx
 import { router } from "expo-router";
-import React, { useEffect, useRef } from "react";
-import { Alert, Animated, ScrollView, StyleSheet } from "react-native";
+import React, { useEffect, useRef, useState } from "react";
+import {
+  Alert,
+  Animated,
+  Platform,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+} from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useTheme } from "../../../contexts/ThemeContext";
+import ConditionalComponent from "../../../shared/components/conditionalComponent/conditionalComponent";
 import { Header } from "../../../shared/components/ui/Header";
 import { useProfileStore } from "../../../store/profileStore";
-import { ProfileMenuItem } from "./components/ProfileMenuItem";
+
+interface SettingSectionProps {
+  title: string;
+  children: React.ReactNode;
+}
+
+interface SettingItemProps {
+  title: string;
+  subtitle?: string;
+  value?: boolean;
+  onToggle?: (value: boolean) => void;
+  showToggle?: boolean;
+  onPress?: () => void;
+}
+
+const SettingSection: React.FC<SettingSectionProps> = ({ title, children }) => {
+  const { colors } = useTheme();
+
+  const sectionStyles = StyleSheet.create({
+    section: {
+      marginHorizontal: 16,
+      marginVertical: 8,
+      borderRadius: 12,
+      backgroundColor: colors.card,
+      ...Platform.select({
+        ios: {
+          shadowColor: colors.shadow,
+          shadowOffset: { width: 0, height: 2 },
+          shadowOpacity: colors.isDark ? 0.3 : 0.08,
+          shadowRadius: 8,
+        },
+        android: {
+          elevation: 3,
+        },
+        web: {
+          boxShadow: colors.isDark
+            ? "0 2px 8px rgba(0, 0, 0, 0.3)"
+            : "0 2px 8px rgba(0, 0, 0, 0.08)",
+        },
+      }),
+    },
+    sectionTitle: {
+      fontSize: 18,
+      fontWeight: "700",
+      marginBottom: 0,
+      marginTop: 16,
+      marginLeft: 16,
+      color: colors.text,
+    },
+  });
+
+  return (
+    <View>
+      <Text style={sectionStyles.sectionTitle}>{title}</Text>
+      <View style={sectionStyles.section}>{children}</View>
+    </View>
+  );
+};
+
+const SettingItem: React.FC<SettingItemProps> = ({
+  title,
+  subtitle,
+  value = false,
+  onToggle,
+  showToggle = false,
+  onPress,
+}) => {
+  const { colors } = useTheme();
+
+  const handlePress = () => {
+    if (showToggle && onToggle) {
+      onToggle(!value);
+    } else if (onPress) {
+      onPress();
+    }
+  };
+
+  const itemStyles = StyleSheet.create({
+    item: {
+      flexDirection: "row",
+      alignItems: "center",
+      paddingVertical: 16,
+      paddingHorizontal: 16,
+      borderBottomWidth: 1,
+      borderBottomColor: colors.border + "30",
+    },
+    lastItem: {
+      borderBottomWidth: 0,
+    },
+    contentContainer: {
+      flex: 1,
+    },
+    itemTitle: {
+      fontSize: 16,
+      fontWeight: "500",
+      color: colors.text,
+      marginBottom: subtitle ? 2 : 0,
+    },
+    itemSubtitle: {
+      fontSize: 13,
+      color: colors.textSecondary,
+      lineHeight: 18,
+    },
+    rightContainer: {
+      flexDirection: "row",
+      alignItems: "center",
+    },
+    toggle: {
+      width: 50,
+      height: 30,
+      borderRadius: 15,
+      justifyContent: "center",
+      paddingHorizontal: 2,
+    },
+    toggleActive: {
+      backgroundColor: colors.primary,
+    },
+    toggleInactive: {
+      backgroundColor: colors.border,
+    },
+    toggleButton: {
+      width: 26,
+      height: 26,
+      borderRadius: 13,
+      backgroundColor: colors.surface,
+      ...Platform.select({
+        ios: {
+          shadowColor: colors.shadow,
+          shadowOffset: { width: 0, height: 1 },
+          shadowOpacity: 0.2,
+          shadowRadius: 2,
+        },
+        android: {
+          elevation: 2,
+        },
+      }),
+    },
+    toggleButtonActive: {
+      alignSelf: "flex-end",
+    },
+    toggleButtonInactive: {
+      alignSelf: "flex-start",
+    },
+  });
+
+  return (
+    <TouchableOpacity
+      style={itemStyles.item}
+      onPress={handlePress}
+      activeOpacity={0.7}
+    >
+      <View style={itemStyles.contentContainer}>
+        <Text style={itemStyles.itemTitle}>{title}</Text>
+        <ConditionalComponent isValid={!!subtitle}>
+          <Text style={itemStyles.itemSubtitle}>{subtitle}</Text>
+        </ConditionalComponent>
+      </View>
+
+      <View style={itemStyles.rightContainer}>
+        <ConditionalComponent isValid={!!showToggle}>
+          <View
+            style={[
+              itemStyles.toggle,
+              value ? itemStyles.toggleActive : itemStyles.toggleInactive,
+            ]}
+          >
+            <View
+              style={[
+                itemStyles.toggleButton,
+                value
+                  ? itemStyles.toggleButtonActive
+                  : itemStyles.toggleButtonInactive,
+              ]}
+            />
+          </View>
+        </ConditionalComponent>
+      </View>
+    </TouchableOpacity>
+  );
+};
 
 export const ProfileSettingsScreen: React.FC = () => {
   const { colors } = useTheme();
   const { profile, updateAccountSettings } = useProfileStore();
   const fadeAnim = useRef(new Animated.Value(0)).current;
+  const [hasChanges, setHasChanges] = useState(false);
+
+  // Local state to track changes
+  const [localSettings, setLocalSettings] = useState({
+    emailNotifications: profile?.accountSettings.emailNotifications || false,
+    smsNotifications: profile?.accountSettings.smsNotifications || false,
+    darkMode: profile?.accountSettings.darkMode || false,
+    biometricAuth: profile?.accountSettings.biometricAuth || false,
+  });
 
   useEffect(() => {
     Animated.timing(fadeAnim, {
@@ -21,93 +219,37 @@ export const ProfileSettingsScreen: React.FC = () => {
     }).start();
   }, []);
 
+  useEffect(() => {
+    if (profile) {
+      setLocalSettings({
+        emailNotifications: profile.accountSettings.emailNotifications,
+        smsNotifications: profile.accountSettings.smsNotifications,
+        darkMode: profile.accountSettings.darkMode,
+        biometricAuth: profile.accountSettings.biometricAuth,
+      });
+    }
+  }, [profile]);
+
+  const handleSettingChange = (
+    key: keyof typeof localSettings,
+    value: boolean
+  ) => {
+    setLocalSettings((prev) => ({
+      ...prev,
+      [key]: value,
+    }));
+    setHasChanges(true);
+
+    // Update immediately in the store
+    updateAccountSettings({ [key]: value });
+  };
+
   const handleLanguagePress = () => {
-    // Navigate to language selection screen
-    router.push("./(tabs)/profile/language");
-  };
-
-  const handleNotificationPress = () => {
-    Alert.alert(
-      "Notifications par e-mail",
-      `Les notifications par e-mail sont actuellement ${
-        profile?.accountSettings.emailNotifications ? "activées" : "désactivées"
-      }`,
-      [
-        { text: "Annuler", style: "cancel" },
-        {
-          text: profile?.accountSettings.emailNotifications
-            ? "Désactiver"
-            : "Activer",
-          onPress: () => {
-            updateAccountSettings({
-              emailNotifications: !profile?.accountSettings.emailNotifications,
-            });
-          },
-        },
-      ]
-    );
-  };
-
-  const handleSMSPress = () => {
-    Alert.alert(
-      "Notifications par SMS",
-      `Les notifications par SMS sont actuellement ${
-        profile?.accountSettings.smsNotifications ? "activées" : "désactivées"
-      }`,
-      [
-        { text: "Annuler", style: "cancel" },
-        {
-          text: profile?.accountSettings.smsNotifications
-            ? "Désactiver"
-            : "Activer",
-          onPress: () => {
-            updateAccountSettings({
-              smsNotifications: !profile?.accountSettings.smsNotifications,
-            });
-          },
-        },
-      ]
-    );
-  };
-
-  const handleDarkModePress = () => {
-    updateAccountSettings({
-      darkMode: !profile?.accountSettings.darkMode,
-    });
+    router.push("/(tabs)/profile/language");
   };
 
   const handlePasswordPress = () => {
-    router.push("./(tabs)/profile/change-password");
-  };
-
-  const handleBiometricPress = () => {
-    Alert.alert(
-      "Connexion biométrique",
-      `La connexion biométrique est actuellement ${
-        profile?.accountSettings.biometricAuth ? "activée" : "désactivée"
-      }`,
-      [
-        { text: "Annuler", style: "cancel" },
-        {
-          text: profile?.accountSettings.biometricAuth
-            ? "Désactiver"
-            : "Activer",
-          onPress: () => {
-            updateAccountSettings({
-              biometricAuth: !profile?.accountSettings.biometricAuth,
-            });
-          },
-        },
-      ]
-    );
-  };
-
-  const handleSessionsPress = () => {
-    Alert.alert(
-      "Gestion des sessions actives",
-      "Cette fonctionnalité permet de gérer vos sessions actives sur différents appareils.",
-      [{ text: "OK" }]
-    );
+    router.push("/(tabs)/profile/change-password");
   };
 
   if (!profile) {
@@ -123,15 +265,8 @@ export const ProfileSettingsScreen: React.FC = () => {
       flex: 1,
     },
     scrollContent: {
+      paddingTop: 20,
       paddingBottom: 100,
-    },
-    sectionTitle: {
-      fontSize: 18,
-      fontWeight: "700",
-      color: colors.text,
-      marginHorizontal: 16,
-      marginTop: 20,
-      marginBottom: 12,
     },
   });
 
@@ -151,63 +286,59 @@ export const ProfileSettingsScreen: React.FC = () => {
           contentContainerStyle={styles.scrollContent}
         >
           {/* User Preferences Section */}
-          <ProfileMenuItem
-            icon="envelope"
-            title="Notifications par e-mail"
-            value={
-              profile.accountSettings.emailNotifications
-                ? "Activé"
-                : "Désactivé"
-            }
-            onPress={handleNotificationPress}
-          />
+          <SettingSection title="Préférences utilisateur">
+            <SettingItem
+              title="Notifications par e-mail"
+              value={localSettings.emailNotifications}
+              onToggle={(value) =>
+                handleSettingChange("emailNotifications", value)
+              }
+              showToggle
+            />
 
-          <ProfileMenuItem
-            icon="comments"
-            title="Notifications par SMS"
-            value={
-              profile.accountSettings.smsNotifications ? "Activé" : "Désactivé"
-            }
-            onPress={handleSMSPress}
-          />
+            <SettingItem
+              title="Notifications par SMS"
+              value={localSettings.smsNotifications}
+              onToggle={(value) =>
+                handleSettingChange("smsNotifications", value)
+              }
+              showToggle
+            />
 
-          <ProfileMenuItem
-            icon="globe"
-            title="Langue de l'application"
-            value={
-              profile.accountSettings.language === "fr" ? "Français" : "English"
-            }
-            onPress={handleLanguagePress}
-          />
+            <SettingItem
+              title="Langue de l'application"
+              onPress={handleLanguagePress}
+            />
 
-          <ProfileMenuItem
-            icon="adjust"
-            title="Mode sombre"
-            value={profile.accountSettings.darkMode ? "Activé" : "Désactivé"}
-            onPress={handleDarkModePress}
-          />
+            <SettingItem
+              title="Mode sombre"
+              value={localSettings.darkMode}
+              onToggle={(value) => handleSettingChange("darkMode", value)}
+              showToggle
+            />
+          </SettingSection>
 
           {/* Security & Privacy Section */}
-          <ProfileMenuItem
-            icon="lock"
-            title="Modification du mot de passe"
-            onPress={handlePasswordPress}
-          />
+          <SettingSection title="Sécurité & confidentialité">
+            <SettingItem
+              title="Modification du mot de passe"
+              onPress={handlePasswordPress}
+            />
 
-          <ProfileMenuItem
-            icon="shield"
-            title="La connexion biométrique"
-            value={
-              profile.accountSettings.biometricAuth ? "Activé" : "Désactivé"
-            }
-            onPress={handleBiometricPress}
-          />
+            <SettingItem
+              title="La connexion biométrique"
+              value={localSettings.biometricAuth}
+              onToggle={(value) => handleSettingChange("biometricAuth", value)}
+              showToggle
+            />
 
-          <ProfileMenuItem
-            icon="history"
-            title="Gestion des sessions actives"
-            onPress={handleSessionsPress}
-          />
+            <SettingItem
+              title="Gestion des sessions actives"
+              onPress={() =>
+                Alert.alert("Fonctionnalité", "Bientôt disponible")
+              }
+            />
+          </SettingSection>
         </ScrollView>
       </Animated.View>
     </SafeAreaView>

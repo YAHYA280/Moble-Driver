@@ -114,9 +114,8 @@ export const ProfileScreen: React.FC = () => {
   };
 
   const handleEditPress = () => {
-    router.push("./profile/edit");
+    router.push("/(tabs)/profile/edit");
   };
-
   const sidebarItems = [
     {
       id: "profile",
