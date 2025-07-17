@@ -106,21 +106,24 @@ export const NavigationMenuCard: React.FC<NavigationMenuCardProps> = ({
       backgroundColor: colors.card,
       borderRadius: 16,
       marginHorizontal: 16,
-      marginBottom: 16,
+      marginVertical: 8,
       ...Platform.select({
         ios: {
-          shadowColor: colors.shadow,
-          shadowOffset: { width: 0, height: 4 },
-          shadowOpacity: colors.isDark ? 0.3 : 0.12,
-          shadowRadius: 16,
+          shadowColor: colors.isDark ? "#000000" : colors.shadow,
+          shadowOffset: {
+            width: 0,
+            height: 4,
+          },
+          shadowOpacity: colors.isDark ? 0.5 : 0.1,
+          shadowRadius: 12,
         },
         android: {
           elevation: 8,
         },
         web: {
           boxShadow: colors.isDark
-            ? "0 4px 16px rgba(0, 0, 0, 0.3)"
-            : "0 4px 16px rgba(0, 0, 0, 0.12)",
+            ? "0 4px 12px rgba(0, 0, 0, 0.5)"
+            : "0 4px 12px rgba(0, 0, 0, 0.08)",
         },
       }),
     },
