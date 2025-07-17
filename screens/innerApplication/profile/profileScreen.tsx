@@ -124,15 +124,16 @@ const MenuItem: React.FC<{
 const CurvedBackground: React.FC = () => {
   const { colors } = useTheme();
 
-  // Create the exact shape from your image - subtle rounded bottom
+  // Fixed path with equal sides
   const pathData = `
-  M 0,0 
-  L ${screenWidth},0 
-  L ${screenWidth},170
-  Q ${screenWidth * 0.75},220 ${screenWidth * 0.5},220
-  Q ${screenWidth * 0.25},220 0,170
-  Z
-`;
+    M 0,0 
+    L ${screenWidth},0 
+    L ${screenWidth},170
+    Q ${screenWidth * 0.75},220 ${screenWidth * 0.5},230
+    Q ${screenWidth * 0.25},220 0,170
+    Z
+  `;
+
   return (
     <View style={StyleSheet.absoluteFillObject}>
       {/* Base background */}
@@ -147,7 +148,7 @@ const CurvedBackground: React.FC = () => {
       <Svg
         height="300"
         width={screenWidth}
-        viewBox={`0 0 ${screenWidth} 160`}
+        viewBox={`0 0 ${screenWidth} 240`}
         style={{ position: "absolute", top: 0 }}
       >
         <Path d={pathData} fill="#746CD4" />
@@ -260,28 +261,31 @@ export const ProfileScreen: React.FC = () => {
       top: 0,
       left: 0,
       right: 0,
-      height: 160,
+      height: 240,
     },
     profileSection: {
       alignItems: "center",
-      paddingTop: 0,
+      paddingTop: 170,
       zIndex: 10,
+      position: "absolute",
+      left: 0,
+      right: 0,
     },
     profileImageContainer: {
       position: "relative",
-      marginBottom: 16,
+      marginBottom: 0,
     },
     profileImage: {
-      width: 100,
-      height: 100,
-      borderRadius: 100,
+      width: 120,
+      height: 120,
+      borderRadius: 60,
       borderWidth: 6,
       borderColor: "white",
     },
     profileImagePlaceholder: {
-      width: 100,
-      height: 100,
-      borderRadius: 100,
+      width: 80,
+      height: 80,
+      borderRadius: 40,
       backgroundColor: "rgba(255, 255, 255, 0.2)",
       alignItems: "center",
       justifyContent: "center",
@@ -302,7 +306,7 @@ export const ProfileScreen: React.FC = () => {
     content: {
       flex: 1,
       backgroundColor: colors.isDark ? colors.background : "#FFFFFF",
-      marginTop: 90,
+      marginTop: 170, // Start content after the profile photo
     },
     profileInfo: {
       alignItems: "center",
@@ -310,7 +314,7 @@ export const ProfileScreen: React.FC = () => {
       paddingTop: 20,
     },
     profileName: {
-      fontSize: 25,
+      fontSize: 22,
       fontWeight: "700",
       color: colors.text,
       textAlign: "center",
