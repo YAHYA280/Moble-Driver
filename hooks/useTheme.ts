@@ -17,7 +17,7 @@ export const useThemeColors = () => {
     info: "#06b6d4",
 
     // Background colors (black/white swap)
-    background: isDark ? "#000000" : "#ffffff",
+    background: isDark ? "#0D0D0D" : "#ffffff",
     backgroundSecondary: isDark ? "#1a1a1a" : "#f8f9fa",
     backgroundTertiary: isDark ? "#2a2a2a" : "#fefeff",
     surface: isDark ? "#1a1a1a" : "#ffffff",

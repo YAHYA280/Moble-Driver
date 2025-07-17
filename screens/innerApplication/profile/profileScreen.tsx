@@ -210,7 +210,7 @@ export const ProfileScreen: React.FC = () => {
       height: 120,
       borderRadius: 60,
       borderWidth: 6,
-      borderColor: "white",
+      borderColor: colors.isDark ? "#0D0D0D" : "white",
     },
     profileImagePlaceholder: {
       width: 80,
