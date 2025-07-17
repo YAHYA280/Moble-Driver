@@ -5,6 +5,7 @@ import React, { useEffect, useRef, useState } from "react";
 import {
   Alert,
   Animated,
+  Dimensions,
   Image,
   ScrollView,
   StatusBar,
@@ -21,6 +22,8 @@ import { Header } from "../../../shared/components/ui/Header";
 import { Sidebar } from "../../../shared/components/ui/Sidebar";
 import { useAuthStore } from "../../../store/authStore";
 import { useProfileStore } from "../../../store/profileStore";
+
+const { width: screenWidth, height: screenHeight } = Dimensions.get("window");
 
 const InfoItem: React.FC<{
   icon: string;
@@ -119,18 +122,37 @@ const MenuItem: React.FC<{
 };
 
 const CurvedBackground: React.FC = () => {
+  const { colors } = useTheme();
+
+  // Create the exact shape from your image - subtle rounded bottom
+  const pathData = `
+  M 0,0 
+  L ${screenWidth},0 
+  L ${screenWidth},170
+  Q ${screenWidth * 0.75},220 ${screenWidth * 0.5},220
+  Q ${screenWidth * 0.25},220 0,170
+  Z
+`;
   return (
-    <Svg
-      height="200"
-      width="100%"
-      viewBox="0 0 375 200"
-      style={StyleSheet.absoluteFillObject}
-    >
-      <Path
-        d="M0,0 L375,0 L375,120 Q375,140 355,160 Q335,180 300,190 Q200,210 75,190 Q40,180 20,160 Q0,140 0,120 Z"
-        fill="#746CD4"
+    <View style={StyleSheet.absoluteFillObject}>
+      {/* Base background */}
+      <View
+        style={[
+          StyleSheet.absoluteFillObject,
+          { backgroundColor: colors.isDark ? colors.background : "#FFFFFF" },
+        ]}
       />
-    </Svg>
+
+      {/* Curved purple section */}
+      <Svg
+        height="300"
+        width={screenWidth}
+        viewBox={`0 0 ${screenWidth} 160`}
+        style={{ position: "absolute", top: 0 }}
+      >
+        <Path d={pathData} fill="#746CD4" />
+      </Svg>
+    </View>
   );
 };
 
@@ -228,37 +250,38 @@ export const ProfileScreen: React.FC = () => {
   const styles = StyleSheet.create({
     container: {
       flex: 1,
-      backgroundColor: "#FFFFFF",
+      backgroundColor: colors.isDark ? colors.background : "#FFFFFF",
     },
     statusBar: {
       backgroundColor: "#746CD4",
     },
-    purpleSection: {
-      height: 200,
-      position: "relative",
-      justifyContent: "center",
-      alignItems: "center",
+    backgroundContainer: {
+      position: "absolute",
+      top: 0,
+      left: 0,
+      right: 0,
+      height: 160,
     },
-    profileContainer: {
+    profileSection: {
       alignItems: "center",
+      paddingTop: 0,
       zIndex: 10,
-      paddingTop: 20,
     },
     profileImageContainer: {
       position: "relative",
       marginBottom: 16,
     },
     profileImage: {
-      width: 80,
-      height: 80,
-      borderRadius: 40,
-      borderWidth: 4,
+      width: 100,
+      height: 100,
+      borderRadius: 100,
+      borderWidth: 6,
       borderColor: "white",
     },
     profileImagePlaceholder: {
-      width: 80,
-      height: 80,
-      borderRadius: 40,
+      width: 100,
+      height: 100,
+      borderRadius: 100,
       backgroundColor: "rgba(255, 255, 255, 0.2)",
       alignItems: "center",
       justifyContent: "center",
@@ -276,30 +299,36 @@ export const ProfileScreen: React.FC = () => {
       borderWidth: 3,
       borderColor: "white",
     },
+    content: {
+      flex: 1,
+      backgroundColor: colors.isDark ? colors.background : "#FFFFFF",
+      marginTop: 90,
+    },
+    profileInfo: {
+      alignItems: "center",
+      paddingHorizontal: 20,
+      paddingTop: 20,
+    },
     profileName: {
-      fontSize: 22,
+      fontSize: 25,
       fontWeight: "700",
-      color: "#333333",
+      color: colors.text,
       textAlign: "center",
       marginBottom: 4,
     },
     profileTitle: {
       fontSize: 16,
-      color: "#666666",
+      color: colors.textSecondary,
       textAlign: "center",
       fontWeight: "400",
-    },
-    content: {
-      flex: 1,
-      backgroundColor: "#FFFFFF",
-      paddingTop: 20,
+      marginBottom: 20,
     },
     infoSection: {
       paddingBottom: 20,
     },
     separator: {
       height: 1,
-      backgroundColor: "#F0F0F0",
+      backgroundColor: colors.border,
       marginHorizontal: 20,
       marginVertical: 8,
     },
@@ -311,6 +340,11 @@ export const ProfileScreen: React.FC = () => {
   return (
     <View style={styles.container}>
       <StatusBar barStyle="light-content" backgroundColor="#746CD4" />
+
+      {/* Background with curved shape */}
+      <View style={styles.backgroundContainer}>
+        <CurvedBackground />
+      </View>
 
       <SafeAreaView style={styles.statusBar} edges={["top"]}>
         <Header
@@ -337,39 +371,36 @@ export const ProfileScreen: React.FC = () => {
         />
       </SafeAreaView>
 
-      {/* Purple curved section */}
-      <View style={styles.purpleSection}>
-        <CurvedBackground />
-        <View style={styles.profileContainer}>
-          <View style={styles.profileImageContainer}>
-            <TouchableOpacity onPress={handlePhotoPress} activeOpacity={0.8}>
-              <ConditionalComponent
-                isValid={!!profile.personalInfo.profilePhoto}
-                defaultComponent={
-                  <View style={styles.profileImagePlaceholder}>
-                    <FontAwesome
-                      name="user"
-                      size={32}
-                      color="rgba(255, 255, 255, 0.7)"
-                    />
-                  </View>
-                }
-              >
-                <Image
-                  source={{ uri: profile.personalInfo.profilePhoto }}
-                  style={styles.profileImage}
-                  resizeMode="cover"
-                />
-              </ConditionalComponent>
-            </TouchableOpacity>
-            <View style={styles.onlineIndicator} />
-          </View>
+      {/* Profile image positioned on the curved section */}
+      <View style={styles.profileSection}>
+        <View style={styles.profileImageContainer}>
+          <TouchableOpacity onPress={handlePhotoPress} activeOpacity={0.8}>
+            <ConditionalComponent
+              isValid={!!profile.personalInfo.profilePhoto}
+              defaultComponent={
+                <View style={styles.profileImagePlaceholder}>
+                  <FontAwesome
+                    name="user"
+                    size={32}
+                    color="rgba(255, 255, 255, 0.7)"
+                  />
+                </View>
+              }
+            >
+              <Image
+                source={{ uri: profile.personalInfo.profilePhoto }}
+                style={styles.profileImage}
+                resizeMode="cover"
+              />
+            </ConditionalComponent>
+          </TouchableOpacity>
+          <View style={styles.onlineIndicator} />
         </View>
       </View>
 
       {/* White content area */}
       <Animated.View style={[styles.content, { opacity: fadeAnim }]}>
-        <View style={styles.profileContainer}>
+        <View style={styles.profileInfo}>
           <Text style={styles.profileName}>
             {profile.personalInfo.fullName}
           </Text>
