@@ -7,6 +7,7 @@ import {
   Animated,
   Dimensions,
   Image,
+  Platform,
   ScrollView,
   StatusBar,
   StyleSheet,
@@ -18,7 +19,6 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import Svg, { Path } from "react-native-svg";
 import { useTheme } from "../../../contexts/ThemeContext";
 import ConditionalComponent from "../../../shared/components/conditionalComponent/conditionalComponent";
-import { Header } from "../../../shared/components/ui/Header";
 import { Sidebar } from "../../../shared/components/ui/Sidebar";
 import { useAuthStore } from "../../../store/authStore";
 import { useProfileStore } from "../../../store/profileStore";
@@ -30,7 +30,6 @@ const { width: screenWidth, height: screenHeight } = Dimensions.get("window");
 const CurvedBackground: React.FC = () => {
   const { colors } = useTheme();
 
-  // Fixed path with equal sides
   const pathData = `
     M 0,0 
     L ${screenWidth},0 
@@ -52,7 +51,7 @@ const CurvedBackground: React.FC = () => {
 
       {/* Curved purple section */}
       <Svg
-        height="300"
+        height="250"
         width={screenWidth}
         viewBox={`0 0 ${screenWidth} 240`}
         style={{ position: "absolute", top: 0 }}
@@ -108,6 +107,14 @@ export const ProfileScreen: React.FC = () => {
         },
       },
     ]);
+  };
+
+  const handleSettingsPress = () => {
+    router.push("/(tabs)/profile/settings");
+  };
+
+  const handleEditPress = () => {
+    router.push("./profile/edit");
   };
 
   const sidebarItems = [
@@ -193,10 +200,48 @@ export const ProfileScreen: React.FC = () => {
       right: 0,
       height: 240,
     },
+    headerContainer: {
+      flexDirection: "row",
+      justifyContent: "space-between",
+      alignItems: "center",
+      paddingHorizontal: 16,
+      paddingVertical: 16,
+      backgroundColor: "transparent",
+      zIndex: 20,
+    },
+    leftHeaderSection: {
+      width: 60,
+      alignItems: "flex-start",
+    },
+    centerHeaderSection: {
+      flex: 1,
+      alignItems: "center",
+      justifyContent: "center",
+    },
+    headerButton: {
+      width: 44,
+      height: 44,
+      alignItems: "center",
+      justifyContent: "center",
+      borderRadius: 8,
+      backgroundColor: "transparent",
+    },
+    headerTitle: {
+      fontSize: 20,
+      fontWeight: "800",
+      color: colors.isDark ? "black" : "white",
+      textAlign: "center",
+    },
+    rightHeaderSection: {
+      width: 60,
+      flexDirection: "row",
+      alignItems: "flex-start",
+      justifyContent: "flex-end",
+      marginTop: -8,
+    },
     profileSection: {
       alignItems: "center",
-      paddingTop: 170,
-      zIndex: 10,
+      paddingTop: 150,
       position: "absolute",
       left: 0,
       right: 0,
@@ -224,11 +269,11 @@ export const ProfileScreen: React.FC = () => {
     },
     onlineIndicator: {
       position: "absolute",
-      bottom: 4,
-      right: 4,
-      width: 16,
-      height: 16,
-      borderRadius: 8,
+      bottom: 1,
+      right: 12,
+      width: 20,
+      height: 20,
+      borderRadius: 10,
       backgroundColor: "#4CAF50",
       borderWidth: 3,
       borderColor: "white",
@@ -236,13 +281,13 @@ export const ProfileScreen: React.FC = () => {
     content: {
       flex: 1,
       backgroundColor: colors.isDark ? colors.background : "#FFFFFF",
-      marginTop: 160,
+      marginTop: Platform.OS === "ios" ? 160 : 180,
     },
     profileInfo: {
       alignItems: "center",
       paddingHorizontal: 20,
-      paddingTop: 30,
-      paddingBottom: 20,
+      paddingTop: 5,
+      paddingBottom: 5,
     },
     profileName: {
       fontSize: 22,
@@ -274,28 +319,51 @@ export const ProfileScreen: React.FC = () => {
       </View>
 
       <SafeAreaView style={styles.statusBar} edges={["top"]}>
-        <Header
-          leftIcon={{
-            icon: "bars",
-            onPress: () => setShowSidebar(true),
-            color: "white",
-          }}
-          title="Mon profil"
-          backgroundColor="transparent"
-          titleColor="white"
-          rightIcons={[
-            {
-              icon: "cog",
-              onPress: () => router.push("/(tabs)/profile/settings"),
-              color: "white",
-            },
-            {
-              icon: "edit",
-              onPress: () => router.push("/(tabs)/profile/settings"),
-              color: "white",
-            },
-          ]}
-        />
+        {/* Custom Header */}
+        <View style={styles.headerContainer}>
+          <View style={styles.leftHeaderSection}>
+            <TouchableOpacity
+              style={styles.headerButton}
+              onPress={() => setShowSidebar(true)}
+              activeOpacity={0.7}
+            >
+              <FontAwesome
+                name="bars"
+                size={26}
+                color={colors.isDark ? "black" : "white"}
+              />
+            </TouchableOpacity>
+          </View>
+
+          <View style={styles.centerHeaderSection}>
+            <Text style={styles.headerTitle}>Mon profil</Text>
+          </View>
+
+          <View style={styles.rightHeaderSection}>
+            <TouchableOpacity
+              style={styles.headerButton}
+              onPress={handleSettingsPress}
+              activeOpacity={0.7}
+            >
+              <FontAwesome
+                name="cog"
+                size={26}
+                color={colors.isDark ? "black" : "white"}
+              />
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={styles.headerButton}
+              onPress={handleEditPress}
+              activeOpacity={0.7}
+            >
+              <FontAwesome
+                name="edit"
+                size={26}
+                color={colors.isDark ? "black" : "white"}
+              />
+            </TouchableOpacity>
+          </View>
+        </View>
       </SafeAreaView>
 
       {/* Profile image positioned on the curved section */}
@@ -308,7 +376,7 @@ export const ProfileScreen: React.FC = () => {
                 <View style={styles.profileImagePlaceholder}>
                   <FontAwesome
                     name="user"
-                    size={32}
+                    size={34}
                     color="rgba(255, 255, 255, 0.7)"
                   />
                 </View>
