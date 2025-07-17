@@ -22,104 +22,10 @@ import { Header } from "../../../shared/components/ui/Header";
 import { Sidebar } from "../../../shared/components/ui/Sidebar";
 import { useAuthStore } from "../../../store/authStore";
 import { useProfileStore } from "../../../store/profileStore";
+import { NavigationMenuCard } from "./components/NavigationMenuCard";
+import { PersonalInfoCard } from "./components/PersonalInfoCard";
 
 const { width: screenWidth, height: screenHeight } = Dimensions.get("window");
-
-const InfoItem: React.FC<{
-  icon: string;
-  text: string;
-  isActive?: boolean;
-}> = ({ icon, text, isActive = false }) => {
-  const styles = StyleSheet.create({
-    container: {
-      flexDirection: "row",
-      alignItems: "center",
-      paddingVertical: 12,
-      paddingHorizontal: 20,
-    },
-    iconContainer: {
-      width: 24,
-      alignItems: "center",
-      marginRight: 16,
-    },
-    textContainer: {
-      flexDirection: "row",
-      alignItems: "center",
-      flex: 1,
-    },
-    text: {
-      fontSize: 16,
-      color: "#333333",
-      fontWeight: "400",
-    },
-    activeDot: {
-      width: 8,
-      height: 8,
-      borderRadius: 4,
-      backgroundColor: "#4CAF50",
-      marginRight: 8,
-    },
-    activeText: {
-      color: "#4CAF50",
-      fontWeight: "500",
-    },
-  });
-
-  return (
-    <View style={styles.container}>
-      <View style={styles.iconContainer}>
-        <FontAwesome
-          name={icon as any}
-          size={16}
-          color={isActive ? "#4CAF50" : "#666666"}
-        />
-      </View>
-      <View style={styles.textContainer}>
-        {isActive && <View style={styles.activeDot} />}
-        <Text style={[styles.text, isActive && styles.activeText]}>{text}</Text>
-      </View>
-    </View>
-  );
-};
-
-const MenuItem: React.FC<{
-  icon: string;
-  title: string;
-  onPress: () => void;
-}> = ({ icon, title, onPress }) => {
-  const styles = StyleSheet.create({
-    container: {
-      flexDirection: "row",
-      alignItems: "center",
-      paddingVertical: 16,
-      paddingHorizontal: 20,
-    },
-    iconContainer: {
-      width: 24,
-      alignItems: "center",
-      marginRight: 16,
-    },
-    title: {
-      fontSize: 16,
-      color: "#333333",
-      fontWeight: "400",
-      flex: 1,
-    },
-  });
-
-  return (
-    <TouchableOpacity
-      style={styles.container}
-      onPress={onPress}
-      activeOpacity={0.7}
-    >
-      <View style={styles.iconContainer}>
-        <FontAwesome name={icon as any} size={16} color="#666666" />
-      </View>
-      <Text style={styles.title}>{title}</Text>
-    </TouchableOpacity>
-  );
-};
 
 const CurvedBackground: React.FC = () => {
   const { colors } = useTheme();
@@ -244,6 +150,30 @@ export const ProfileScreen: React.FC = () => {
     },
   ];
 
+  const navigationMenuItems = [
+    {
+      id: "documents",
+      icon: "file-text" as const,
+      label: "Mes documents",
+      subtitle: "Consultez vos documents",
+      onPress: () => router.push("/documents"),
+    },
+    {
+      id: "history",
+      icon: "history" as const,
+      label: "Historique des trajets",
+      subtitle: "Voir l'historique complet",
+      onPress: () => router.push("/(tabs)/profile/history"),
+    },
+    {
+      id: "notifications",
+      icon: "bell" as const,
+      label: "Notifications et alertes",
+      subtitle: "Gérer les notifications",
+      onPress: () => router.push("/notifications"),
+    },
+  ];
+
   if (!profile) {
     return null;
   }
@@ -306,12 +236,13 @@ export const ProfileScreen: React.FC = () => {
     content: {
       flex: 1,
       backgroundColor: colors.isDark ? colors.background : "#FFFFFF",
-      marginTop: 170, // Start content after the profile photo
+      marginTop: 160, // Start content after the profile photo
     },
     profileInfo: {
       alignItems: "center",
       paddingHorizontal: 20,
-      paddingTop: 20,
+      paddingTop: 30,
+      paddingBottom: 20,
     },
     profileName: {
       fontSize: 22,
@@ -325,19 +256,11 @@ export const ProfileScreen: React.FC = () => {
       color: colors.textSecondary,
       textAlign: "center",
       fontWeight: "400",
-      marginBottom: 20,
+      marginBottom: 5,
     },
-    infoSection: {
-      paddingBottom: 20,
-    },
-    separator: {
-      height: 1,
-      backgroundColor: colors.border,
-      marginHorizontal: 20,
-      marginVertical: 8,
-    },
-    menuSection: {
-      paddingTop: 20,
+    cardsContainer: {
+      flex: 1,
+      paddingTop: 10,
     },
   });
 
@@ -413,39 +336,19 @@ export const ProfileScreen: React.FC = () => {
           </Text>
         </View>
 
-        <ScrollView showsVerticalScrollIndicator={false}>
-          {/* Information Section */}
-          <View style={styles.infoSection}>
-            <InfoItem icon="phone" text={profile.personalInfo.phoneNumber} />
-            <InfoItem icon="envelope" text={profile.personalInfo.email} />
-            <InfoItem
-              icon="credit-card"
-              text={profile.professionalInfo.driverId}
-            />
-            <InfoItem icon="circle" text="Actif" isActive={true} />
-            <InfoItem icon="calendar" text="40 ans" />
-          </View>
+        <ScrollView
+          style={styles.cardsContainer}
+          showsVerticalScrollIndicator={false}
+          contentContainerStyle={{ paddingBottom: 120 }}
+        >
+          {/* Personal Information Card */}
+          <PersonalInfoCard profile={profile} />
 
-          <View style={styles.separator} />
-
-          {/* Menu Section */}
-          <View style={styles.menuSection}>
-            <MenuItem
-              icon="file-text"
-              title="Mes documents"
-              onPress={() => router.push("/documents")}
-            />
-            <MenuItem
-              icon="history"
-              title="Historique des trajets"
-              onPress={() => router.push("/(tabs)/profile/history")}
-            />
-            <MenuItem
-              icon="warning"
-              title="Notifications et alertes"
-              onPress={() => router.push("/notifications")}
-            />
-          </View>
+          {/* Navigation Menu Card */}
+          <NavigationMenuCard
+            title="Actions rapides"
+            items={navigationMenuItems}
+          />
         </ScrollView>
       </Animated.View>
 
