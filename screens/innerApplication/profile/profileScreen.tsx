@@ -34,9 +34,9 @@ const CurvedBackground: React.FC = () => {
   const pathData = `
     M 0,0 
     L ${screenWidth},0 
-    L ${screenWidth},170
+    L ${screenWidth},190
     Q ${screenWidth * 0.75},220 ${screenWidth * 0.5},230
-    Q ${screenWidth * 0.25},220 0,170
+    Q ${screenWidth * 0.25},220 0,190
     Z
   `;
 
@@ -236,7 +236,7 @@ export const ProfileScreen: React.FC = () => {
     content: {
       flex: 1,
       backgroundColor: colors.isDark ? colors.background : "#FFFFFF",
-      marginTop: 160, // Start content after the profile photo
+      marginTop: 160,
     },
     profileInfo: {
       alignItems: "center",
