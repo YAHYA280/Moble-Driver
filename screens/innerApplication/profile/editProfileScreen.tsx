@@ -1,19 +1,15 @@
 // screens/innerApplication/profile/editProfileScreen.tsx
-import { FontAwesome, Ionicons } from "@expo/vector-icons";
 import * as ImagePicker from "expo-image-picker";
 import { router } from "expo-router";
 import React, { useEffect, useRef, useState } from "react";
 import {
   Alert,
   Animated,
-  Image,
   KeyboardAvoidingView,
-  Modal,
   Platform,
   ScrollView,
   StyleSheet,
   Text,
-  TouchableOpacity,
   View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
@@ -21,14 +17,34 @@ import { useTheme } from "../../../contexts/ThemeContext";
 import ConditionalComponent from "../../../shared/components/conditionalComponent/conditionalComponent";
 import { Button } from "../../../shared/components/ui/Button";
 import { Header } from "../../../shared/components/ui/Header";
-import { Input } from "../../../shared/components/ui/Input";
 import { PersonalInfo } from "../../../shared/types/profile";
 import { useProfileStore } from "../../../store/profileStore";
 import { validateEmail } from "../../../utils/validators";
+import { EditProfileFormSection } from "./components/edit/EditProfileFormSection";
+import { EditProfilePhotoSection } from "./components/edit/EditProfilePhotoSection";
+import { StatusDropdownModal } from "./components/edit/StatusDropdownModal";
+import { StatusSelectorSection } from "./components/edit/StatusSelectorSection";
 
 interface StatusOption {
   label: string;
   value: "Actif" | "En congé" | "Inactif";
+}
+
+interface FormField {
+  key:
+    | "fullName"
+    | "email"
+    | "phoneNumber"
+    | "driverId"
+    | "yearsOfExperience"
+    | "status";
+  label: string;
+  value: string;
+  placeholder: string;
+  keyboardType?: "default" | "email-address" | "phone-pad" | "numeric";
+  autoCapitalize?: "none" | "sentences" | "words" | "characters";
+  editable?: boolean;
+  error?: string;
 }
 
 export const EditProfileScreen: React.FC = () => {
@@ -247,6 +263,54 @@ export const EditProfileScreen: React.FC = () => {
     return null;
   }
 
+  // Form fields configuration
+  const formFields: FormField[] = [
+    {
+      key: "fullName",
+      label: "Nom et prénom",
+      value: formData.fullName,
+      placeholder: "Saisissez votre nom complet",
+      error: errors.fullName,
+      editable: true,
+    },
+    {
+      key: "phoneNumber",
+      label: "Numéro du téléphone",
+      value: formData.phoneNumber,
+      placeholder: "Saisissez votre numéro de téléphone",
+      keyboardType: "phone-pad",
+      error: errors.phoneNumber,
+      editable: true,
+    },
+    {
+      key: "email",
+      label: "E-mail",
+      value: formData.email,
+      placeholder: "Saisissez votre email",
+      keyboardType: "email-address",
+      autoCapitalize: "none",
+      error: errors.email,
+      editable: true,
+    },
+    {
+      key: "driverId",
+      label: "Numéro du permis",
+      value: formData.driverId,
+      placeholder: "Saisissez votre numéro de permis",
+      error: errors.driverId,
+      editable: false,
+    },
+    {
+      key: "yearsOfExperience",
+      label: "Années d'expériences",
+      value: formData.yearsOfExperience,
+      placeholder: "Saisissez vos années d'expérience",
+      keyboardType: "numeric",
+      error: errors.yearsOfExperience,
+      editable: true,
+    },
+  ];
+
   const styles = StyleSheet.create({
     container: {
       flex: 1,
@@ -260,113 +324,14 @@ export const EditProfileScreen: React.FC = () => {
     },
     scrollContent: {
       flexGrow: 1,
-      paddingBottom: 40,
-    },
-    photoSection: {
-      alignItems: "center",
-      paddingVertical: 30,
-      paddingHorizontal: 20,
-    },
-    photoContainer: {
-      position: "relative",
-      marginBottom: 20,
-    },
-    profilePhoto: {
-      width: 100,
-      height: 100,
-      borderRadius: 50,
-    },
-    photoPlaceholder: {
-      width: 100,
-      height: 100,
-      borderRadius: 50,
-      backgroundColor: colors.primary + "20",
-      alignItems: "center",
-      justifyContent: "center",
-      borderWidth: 2,
-      borderColor: colors.primary + "40",
-    },
-    editPhotoButton: {
-      position: "absolute",
-      bottom: 0,
-      right: 0,
-      width: 32,
-      height: 32,
-      borderRadius: 16,
-      backgroundColor: colors.primary,
-      alignItems: "center",
-      justifyContent: "center",
-      borderWidth: 3,
-      borderColor: colors.backgroundSecondary,
-      ...Platform.select({
-        ios: {
-          shadowColor: colors.shadow,
-          shadowOffset: { width: 0, height: 2 },
-          shadowOpacity: 0.3,
-          shadowRadius: 4,
-        },
-        android: {
-          elevation: 4,
-        },
-      }),
-    },
-    verifiedBadge: {
-      position: "absolute",
-      top: -5,
-      right: -5,
-      width: 24,
-      height: 24,
-      borderRadius: 12,
-      backgroundColor: colors.primary,
-      alignItems: "center",
-      justifyContent: "center",
-      borderWidth: 2,
-      borderColor: colors.backgroundSecondary,
-    },
-    formSection: {
-      flex: 1,
-      paddingHorizontal: 20,
-    },
-    inputContainer: {
-      marginBottom: 24,
-    },
-    statusContainer: {
-      marginBottom: 24,
-    },
-    statusLabel: {
-      fontSize: 14,
-      fontWeight: "500",
-      color: colors.textSecondary,
-      marginBottom: 8,
-    },
-    statusButton: {
-      flexDirection: "row",
-      alignItems: "center",
-      justifyContent: "space-between",
-      paddingHorizontal: 16,
-      paddingVertical: 14,
-      borderRadius: 12,
-      borderWidth: 1,
-      borderColor: colors.border,
-      backgroundColor: colors.input,
-      minHeight: 48,
-    },
-    statusText: {
-      fontSize: 16,
-      color: colors.text,
-      fontWeight: "500",
-    },
-    buttonContainer: {
-      paddingTop: 20,
-      paddingHorizontal: 20,
-      paddingBottom: 20,
+      paddingBottom: Platform.OS === "ios" ? 120 : 80, // Increased bottom padding for iOS
     },
     globalError: {
       backgroundColor: colors.error + "15",
       padding: 12,
       borderRadius: 8,
       marginHorizontal: 20,
-      marginBottom: 20,
+      marginBottom: 16, // Reduced from 20 to 16
       borderLeftWidth: 4,
       borderLeftColor: colors.error,
     },
@@ -375,84 +340,10 @@ export const EditProfileScreen: React.FC = () => {
       fontSize: 14,
       fontWeight: "500",
     },
-    // Status Dropdown Modal Styles
-    modalOverlay: {
-      flex: 1,
-      backgroundColor: "rgba(0, 0, 0, 0.5)",
-      justifyContent: "center",
-      alignItems: "center",
-    },
-    dropdownContainer: {
-      backgroundColor: colors.surface,
-      borderRadius: 12,
-      marginHorizontal: 40,
-      maxHeight: 300,
-      ...Platform.select({
-        ios: {
-          shadowColor: colors.shadow,
-          shadowOffset: { width: 0, height: 4 },
-          shadowOpacity: 0.3,
-          shadowRadius: 8,
-        },
-        android: {
-          elevation: 8,
-        },
-      }),
-    },
-    dropdownHeader: {
-      padding: 16,
-      borderBottomWidth: 1,
-      borderBottomColor: colors.border,
-    },
-    dropdownTitle: {
-      fontSize: 18,
-      fontWeight: "600",
-      color: colors.text,
-      textAlign: "center",
-    },
-    dropdownOption: {
-      flexDirection: "row",
-      alignItems: "center",
-      justifyContent: "space-between",
-      paddingHorizontal: 16,
-      paddingVertical: 14,
-      borderBottomWidth: 1,
-      borderBottomColor: colors.border + "30",
-    },
-    dropdownOptionLast: {
-      borderBottomWidth: 0,
-    },
-    dropdownOptionText: {
-      fontSize: 16,
-      color: colors.text,
-      fontWeight: "500",
-    },
-    selectedOption: {
-      backgroundColor: colors.primary + "15",
-    },
-    selectedOptionText: {
-      color: colors.primary,
-      fontWeight: "600",
-    },
-    checkIcon: {
-      marginLeft: 8,
-    },
-    dropdownFooter: {
-      padding: 16,
-      borderTopWidth: 1,
-      borderTopColor: colors.border,
-    },
-    cancelButton: {
-      paddingVertical: 12,
+    buttonContainer: {
+      paddingTop: 16, // Reduced from 20 to 16
       paddingHorizontal: 20,
-      borderRadius: 8,
-      backgroundColor: colors.backgroundSecondary,
-      alignItems: "center",
-    },
-    cancelButtonText: {
-      fontSize: 16,
-      color: colors.textSecondary,
-      fontWeight: "500",
+      paddingBottom: Platform.OS === "ios" ? 40 : 20, // Extra padding for iOS
     },
   });
 
@@ -488,59 +379,22 @@ export const EditProfileScreen: React.FC = () => {
           >
             {/* Profile Photo Section */}
             <Animated.View
-              style={[
-                styles.photoSection,
-                {
-                  transform: [
-                    {
-                      scale: photoAnim.interpolate({
-                        inputRange: [0, 1],
-                        outputRange: [0.8, 1],
-                      }),
-                    },
-                  ],
-                },
-              ]}
+              style={{
+                transform: [
+                  {
+                    scale: photoAnim.interpolate({
+                      inputRange: [0, 1],
+                      outputRange: [0.8, 1],
+                    }),
+                  },
+                ],
+              }}
             >
-              <View style={styles.photoContainer}>
-                <TouchableOpacity
-                  onPress={handlePhotoPress}
-                  activeOpacity={0.8}
-                >
-                  <ConditionalComponent
-                    isValid={!!profile.personalInfo.profilePhoto}
-                    defaultComponent={
-                      <View style={styles.photoPlaceholder}>
-                        <FontAwesome
-                          name="user"
-                          size={40}
-                          color={colors.primary}
-                        />
-                      </View>
-                    }
-                  >
-                    <Image
-                      source={{ uri: profile.personalInfo.profilePhoto }}
-                      style={styles.profilePhoto}
-                      resizeMode="cover"
-                    />
-                  </ConditionalComponent>
-                </TouchableOpacity>
-
-                <TouchableOpacity
-                  style={styles.editPhotoButton}
-                  onPress={handlePhotoPress}
-                  activeOpacity={0.8}
-                >
-                  <FontAwesome name="camera" size={14} color="white" />
-                </TouchableOpacity>
-
-                <ConditionalComponent isValid={profile.isVerified}>
-                  <View style={styles.verifiedBadge}>
-                    <Ionicons name="checkmark" size={14} color="white" />
-                  </View>
-                </ConditionalComponent>
-              </View>
+              <EditProfilePhotoSection
+                profilePhoto={profile.personalInfo.profilePhoto}
+                isVerified={profile.isVerified}
+                onPhotoPress={handlePhotoPress}
+              />
             </Animated.View>
 
             {/* Error Display */}
@@ -550,165 +404,39 @@ export const EditProfileScreen: React.FC = () => {
               </View>
             </ConditionalComponent>
 
-            {/* Form Section */}
-            <View style={styles.formSection}>
-              <View style={styles.inputContainer}>
-                <Input
-                  label="Nom et prénom"
-                  value={formData.fullName}
-                  onChangeText={(value) => handleInputChange("fullName", value)}
-                  placeholder="Saisissez votre nom complet"
-                  error={errors.fullName}
-                  variant="outlined"
-                />
-              </View>
+            {/* Form Fields */}
+            <EditProfileFormSection
+              fields={formFields}
+              onFieldChange={handleInputChange}
+            />
 
-              <View style={styles.inputContainer}>
-                <Input
-                  label="Numéro du téléphone"
-                  value={formData.phoneNumber}
-                  onChangeText={(value) =>
-                    handleInputChange("phoneNumber", value)
-                  }
-                  placeholder="Saisissez votre numéro de téléphone"
-                  keyboardType="phone-pad"
-                  error={errors.phoneNumber}
-                  variant="outlined"
-                />
-              </View>
+            {/* Status Selector */}
+            <StatusSelectorSection
+              status={formData.status}
+              onPress={() => setShowStatusDropdown(true)}
+            />
 
-              <View style={styles.inputContainer}>
-                <Input
-                  label="E-mail"
-                  value={formData.email}
-                  onChangeText={(value) => handleInputChange("email", value)}
-                  placeholder="Saisissez votre email"
-                  keyboardType="email-address"
-                  autoCapitalize="none"
-                  error={errors.email}
-                  variant="outlined"
-                />
-              </View>
-
-              <View style={styles.inputContainer}>
-                <Input
-                  label="Numéro du permis"
-                  value={formData.driverId}
-                  onChangeText={(value) => handleInputChange("driverId", value)}
-                  placeholder="Saisissez votre numéro de permis"
-                  error={errors.driverId}
-                  variant="outlined"
-                  editable={false}
-                />
-              </View>
-
-              <View style={styles.statusContainer}>
-                <Text style={styles.statusLabel}>Statut</Text>
-                <TouchableOpacity
-                  style={styles.statusButton}
-                  onPress={() => setShowStatusDropdown(true)}
-                  activeOpacity={0.7}
-                >
-                  <Text style={styles.statusText}>{formData.status}</Text>
-                  <FontAwesome
-                    name="chevron-down"
-                    size={14}
-                    color={colors.textSecondary}
-                  />
-                </TouchableOpacity>
-              </View>
-
-              <View style={styles.inputContainer}>
-                <Input
-                  label="Années d'expériences"
-                  value={formData.yearsOfExperience}
-                  onChangeText={(value) =>
-                    handleInputChange("yearsOfExperience", value)
-                  }
-                  placeholder="Saisissez vos années d'expérience"
-                  keyboardType="numeric"
-                  error={errors.yearsOfExperience}
-                  variant="outlined"
-                />
-              </View>
-
-              {/* Submit Button - Now inside ScrollView */}
-              <View style={styles.buttonContainer}>
-                <Button
-                  title="Modifier mon profil"
-                  onPress={handleSubmit}
-                  loading={isLoading}
-                  disabled={isLoading}
-                />
-              </View>
+            {/* Submit Button */}
+            <View style={styles.buttonContainer}>
+              <Button
+                title="Modifier mon profil"
+                onPress={handleSubmit}
+                loading={isLoading}
+                disabled={isLoading}
+              />
             </View>
           </ScrollView>
         </Animated.View>
       </KeyboardAvoidingView>
 
       {/* Status Dropdown Modal */}
-      <Modal
+      <StatusDropdownModal
         visible={showStatusDropdown}
-        transparent
-        animationType="fade"
-        onRequestClose={() => setShowStatusDropdown(false)}
-      >
-        <TouchableOpacity
-          style={styles.modalOverlay}
-          activeOpacity={1}
-          onPress={() => setShowStatusDropdown(false)}
-        >
-          <View style={styles.dropdownContainer}>
-            <View style={styles.dropdownHeader}>
-              <Text style={styles.dropdownTitle}>Sélectionner le statut</Text>
-            </View>
-
-            {statusOptions.map((option, index) => (
-              <TouchableOpacity
-                key={option.value}
-                style={[
-                  styles.dropdownOption,
-                  index === statusOptions.length - 1 &&
-                    styles.dropdownOptionLast,
-                  formData.status === option.value && styles.selectedOption,
-                ]}
-                onPress={() => handleStatusSelect(option)}
-                activeOpacity={0.7}
-              >
-                <Text
-                  style={[
-                    styles.dropdownOptionText,
-                    formData.status === option.value &&
-                      styles.selectedOptionText,
-                  ]}
-                >
-                  {option.label}
-                </Text>
-                <ConditionalComponent
-                  isValid={formData.status === option.value}
-                >
-                  <Ionicons
-                    name="checkmark"
-                    size={18}
-                    color={colors.primary}
-                    style={styles.checkIcon}
-                  />
-                </ConditionalComponent>
-              </TouchableOpacity>
-            ))}
-
-            <View style={styles.dropdownFooter}>
-              <TouchableOpacity
-                style={styles.cancelButton}
-                onPress={() => setShowStatusDropdown(false)}
-                activeOpacity={0.7}
-              >
-                <Text style={styles.cancelButtonText}>Annuler</Text>
-              </TouchableOpacity>
-            </View>
-          </View>
-        </TouchableOpacity>
-      </Modal>
+        currentStatus={formData.status}
+        options={statusOptions}
+        onSelect={handleStatusSelect}
+        onClose={() => setShowStatusDropdown(false)}
+      />
     </SafeAreaView>
   );
 };
