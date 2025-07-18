@@ -114,27 +114,41 @@ export const ProfileScreen: React.FC = () => {
     router.push("/(tabs)/profile/edit");
   };
 
+  // to be removed when adding the exact screens
+  const showComingSoonAlert = (featureName: string) => {
+    Alert.alert(
+      "Bientôt disponible",
+      `La fonctionnalité "${featureName}" sera disponible prochainement. Yahya :D`,
+      [
+        {
+          text: "OK",
+          style: "default",
+        },
+      ]
+    );
+  };
+
   const navigationMenuItems = [
     {
       id: "documents",
       icon: "file-text" as const,
       label: "Mes documents",
       subtitle: "Consultez vos documents",
-      onPress: () => router.push("/documents"),
+      onPress: () => showComingSoonAlert("Mes documents"),
     },
     {
       id: "history",
       icon: "history" as const,
       label: "Historique des trajets",
       subtitle: "Voir l'historique complet",
-      onPress: () => router.push("/(tabs)/profile/history"),
+      onPress: () => showComingSoonAlert("Historique des trajets"),
     },
     {
       id: "notifications",
       icon: "bell" as const,
       label: "Notifications et alertes",
       subtitle: "Gérer les notifications",
-      onPress: () => router.push("/notifications"),
+      onPress: () => router.push("/notifications?returnTo=/(tabs)/profile"),
     },
     {
       id: "logout",
