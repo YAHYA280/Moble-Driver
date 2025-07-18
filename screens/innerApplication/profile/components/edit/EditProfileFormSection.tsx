@@ -64,7 +64,6 @@ export const EditProfileFormSection: React.FC<EditProfileFormSectionProps> = ({
             keyboardType={field.keyboardType}
             autoCapitalize={field.autoCapitalize}
             error={field.error}
-            variant="outlined"
             editable={field.editable}
           />
         </View>

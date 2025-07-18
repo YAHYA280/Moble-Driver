@@ -342,7 +342,7 @@ export const EditProfileScreen: React.FC = () => {
       flexGrow: 1,
       paddingHorizontal: 16,
       paddingTop: 20,
-      paddingBottom: Platform.OS === "ios" ? 60 : 40,
+      paddingBottom: Platform.OS === "ios" ? 60 : 50,
     },
     photoCard: {
       backgroundColor: colors.card,
@@ -509,7 +509,6 @@ export const EditProfileScreen: React.FC = () => {
                     keyboardType={field.keyboardType}
                     autoCapitalize={field.autoCapitalize}
                     error={field.error}
-                    variant="outlined"
                     editable={field.editable}
                   />
                 </View>

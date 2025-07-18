@@ -209,7 +209,6 @@ export const ChangePasswordScreen: React.FC = () => {
                 showPasswordToggle
                 placeholder="Saisissez votre mot de passe actuel"
                 error={errors.currentPassword}
-                variant="outlined"
               />
             </View>
 
@@ -225,7 +224,6 @@ export const ChangePasswordScreen: React.FC = () => {
                 showPasswordToggle
                 placeholder="Saisissez votre nouveau mot de passe"
                 error={errors.newPassword}
-                variant="outlined"
               />
             </View>
 
@@ -241,7 +239,6 @@ export const ChangePasswordScreen: React.FC = () => {
                 showPasswordToggle
                 placeholder="Confirmez votre nouveau mot de passe"
                 error={errors.confirmPassword}
-                variant="outlined"
               />
             </View>
 

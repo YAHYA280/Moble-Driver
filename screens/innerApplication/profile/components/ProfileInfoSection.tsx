@@ -122,7 +122,6 @@ export const ProfileInfoSection: React.FC<ProfileInfoSectionProps> = ({
                 onValueChange(field, value);
               }
             }}
-            variant="outlined"
             size="small"
             placeholder={item.label}
             keyboardType={
