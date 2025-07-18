@@ -1,9 +1,18 @@
 // screens/innerApplication/profile/changePasswordScreen.tsx
 import { router } from "expo-router";
 import React, { useState } from "react";
-import { Alert, StyleSheet, Text, View } from "react-native";
+import {
+  Alert,
+  KeyboardAvoidingView,
+  Platform,
+  ScrollView,
+  StyleSheet,
+  Text,
+  View,
+} from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useTheme } from "../../../contexts/ThemeContext";
+import ConditionalComponent from "../../../shared/components/conditionalComponent/conditionalComponent";
 import { Button } from "../../../shared/components/ui/Button";
 import { Header } from "../../../shared/components/ui/Header";
 import { Input } from "../../../shared/components/ui/Input";
@@ -85,57 +94,73 @@ export const ChangePasswordScreen: React.FC = () => {
       flex: 1,
       backgroundColor: colors.backgroundSecondary,
     },
-    content: {
+    keyboardView: {
       flex: 1,
+    },
+    scrollView: {
+      flex: 1,
+    },
+    scrollContent: {
+      flexGrow: 1,
       paddingHorizontal: 16,
       paddingTop: 20,
+      paddingBottom: Platform.OS === "ios" ? 40 : 20,
+    },
+    card: {
+      backgroundColor: colors.card,
+      borderRadius: 16,
+      padding: 24,
+      marginBottom: 20,
+      ...Platform.select({
+        ios: {
+          shadowColor: colors.isDark ? "#000000" : colors.shadow,
+          shadowOffset: {
+            width: 0,
+            height: 4,
+          },
+          shadowOpacity: colors.isDark ? 0.3 : 0.1,
+          shadowRadius: 12,
+        },
+        android: {
+          elevation: 8,
+        },
+        web: {
+          boxShadow: colors.isDark
+            ? "0 4px 12px rgba(0, 0, 0, 0.3)"
+            : "0 4px 12px rgba(0, 0, 0, 0.1)",
+        },
+      }),
     },
     title: {
       fontSize: 24,
       fontWeight: "700",
       color: colors.text,
       marginBottom: 8,
+      textAlign: "center",
     },
     subtitle: {
       fontSize: 16,
       color: colors.textSecondary,
       marginBottom: 32,
       lineHeight: 22,
-    },
-    form: {
-      flex: 1,
+      textAlign: "center",
     },
     inputContainer: {
-      marginBottom: 16,
+      marginBottom: 20,
     },
     errorText: {
       color: colors.error,
       fontSize: 14,
-      marginTop: 4,
-      marginLeft: 4,
+      marginTop: 8,
+      marginHorizontal: 4,
+      textAlign: "center",
+      backgroundColor: colors.error + "15",
+      padding: 12,
+      borderRadius: 8,
+      marginBottom: 16,
     },
     buttonContainer: {
-      paddingVertical: 20,
-      paddingBottom: 40,
-    },
-    securityNote: {
-      backgroundColor: colors.info + "15",
-      padding: 16,
-      borderRadius: 12,
-      marginBottom: 24,
-      borderLeftWidth: 4,
-      borderLeftColor: colors.info,
-    },
-    securityNoteTitle: {
-      fontSize: 16,
-      fontWeight: "600",
-      color: colors.info,
-      marginBottom: 4,
-    },
-    securityNoteText: {
-      fontSize: 14,
-      color: colors.textSecondary,
-      lineHeight: 20,
+      paddingTop: 8,
     },
   });
 
@@ -149,81 +174,94 @@ export const ChangePasswordScreen: React.FC = () => {
         title="Modifier le mot de passe"
       />
 
-      <View style={styles.content}>
-        <Text style={styles.title}>Modifier votre mot de passe</Text>
-        <Text style={styles.subtitle}>
-          Pour votre sécurité, veuillez saisir votre mot de passe actuel puis
-          votre nouveau mot de passe.
-        </Text>
+      <KeyboardAvoidingView
+        style={styles.keyboardView}
+        behavior={Platform.OS === "ios" ? "padding" : "height"}
+        keyboardVerticalOffset={Platform.OS === "ios" ? 0 : 20}
+      >
+        <ScrollView
+          style={styles.scrollView}
+          contentContainerStyle={styles.scrollContent}
+          showsVerticalScrollIndicator={false}
+          keyboardShouldPersistTaps="handled"
+        >
+          <View style={styles.card}>
+            <Text style={styles.title}>Modifier votre mot de passe</Text>
+            <Text style={styles.subtitle}>
+              Saisissez votre mot de passe actuel puis votre nouveau mot de
+              passe.
+            </Text>
 
-        <View style={styles.securityNote}>
-          <Text style={styles.securityNoteTitle}>Conseils de sécurité</Text>
-          <Text style={styles.securityNoteText}>
-            Utilisez un mot de passe fort avec au moins 6 caractères, incluant
-            des lettres, des chiffres et des symboles.
-          </Text>
-        </View>
+            {/* Global Error */}
+            <ConditionalComponent isValid={!!error}>
+              <Text style={styles.errorText}>{error}</Text>
+            </ConditionalComponent>
 
-        <View style={styles.form}>
-          <View style={styles.inputContainer}>
-            <Input
-              label="Mot de passe actuel"
-              value={formData.currentPassword}
-              onChangeText={(value) =>
-                handleInputChange("currentPassword", value)
-              }
-              isPassword
-              showPasswordToggle
-              placeholder="Saisissez votre mot de passe actuel"
-              error={errors.currentPassword}
-              variant="outlined"
-            />
+            {/* Current Password */}
+            <View style={styles.inputContainer}>
+              <Input
+                label="Mot de passe actuel"
+                value={formData.currentPassword}
+                onChangeText={(value) =>
+                  handleInputChange("currentPassword", value)
+                }
+                isPassword
+                showPasswordToggle
+                placeholder="Saisissez votre mot de passe actuel"
+                error={errors.currentPassword}
+                variant="outlined"
+              />
+            </View>
+
+            {/* New Password */}
+            <View style={styles.inputContainer}>
+              <Input
+                label="Nouveau mot de passe"
+                value={formData.newPassword}
+                onChangeText={(value) =>
+                  handleInputChange("newPassword", value)
+                }
+                isPassword
+                showPasswordToggle
+                placeholder="Saisissez votre nouveau mot de passe"
+                error={errors.newPassword}
+                variant="outlined"
+              />
+            </View>
+
+            {/* Confirm Password */}
+            <View style={styles.inputContainer}>
+              <Input
+                label="Confirmer le nouveau mot de passe"
+                value={formData.confirmPassword}
+                onChangeText={(value) =>
+                  handleInputChange("confirmPassword", value)
+                }
+                isPassword
+                showPasswordToggle
+                placeholder="Confirmez votre nouveau mot de passe"
+                error={errors.confirmPassword}
+                variant="outlined"
+              />
+            </View>
+
+            {/* Submit Button */}
+            <View style={styles.buttonContainer}>
+              <Button
+                title="Modifier le mot de passe"
+                onPress={handleSubmit}
+                loading={isLoading}
+                disabled={
+                  !formData.currentPassword ||
+                  !formData.newPassword ||
+                  !formData.confirmPassword ||
+                  isLoading
+                }
+              />
+            </View>
           </View>
-
-          <View style={styles.inputContainer}>
-            <Input
-              label="Nouveau mot de passe"
-              value={formData.newPassword}
-              onChangeText={(value) => handleInputChange("newPassword", value)}
-              isPassword
-              showPasswordToggle
-              placeholder="Saisissez votre nouveau mot de passe"
-              error={errors.newPassword}
-              variant="outlined"
-            />
-          </View>
-
-          <View style={styles.inputContainer}>
-            <Input
-              label="Confirmer le nouveau mot de passe"
-              value={formData.confirmPassword}
-              onChangeText={(value) =>
-                handleInputChange("confirmPassword", value)
-              }
-              isPassword
-              showPasswordToggle
-              placeholder="Confirmez votre nouveau mot de passe"
-              error={errors.confirmPassword}
-              variant="outlined"
-            />
-          </View>
-
-          {error && <Text style={styles.errorText}>{error}</Text>}
-        </View>
-
-        <View style={styles.buttonContainer}>
-          <Button
-            title="Modifier le mot de passe"
-            onPress={handleSubmit}
-            loading={isLoading}
-            disabled={
-              !formData.currentPassword ||
-              !formData.newPassword ||
-              !formData.confirmPassword
-            }
-          />
-        </View>
-      </View>
+        </ScrollView>
+      </KeyboardAvoidingView>
     </SafeAreaView>
   );
 };

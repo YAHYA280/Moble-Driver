@@ -1,4 +1,4 @@
-// screens/innerApplication/profile/components/EditProfileFormSection.tsx
+// screens/innerApplication/profile/components/edit/EditProfileFormSection.tsx
 import React from "react";
 import { StyleSheet, View } from "react-native";
 import { useThemeColors } from "../../../../../hooks/useTheme";
@@ -10,7 +10,8 @@ interface FormField {
     | "email"
     | "phoneNumber"
     | "driverId"
-    | "yearsOfExperience"
+    | "dateOfBirth"
+    | "address"
     | "status";
   label: string;
   value: string;
@@ -29,7 +30,8 @@ interface EditProfileFormSectionProps {
       | "email"
       | "phoneNumber"
       | "driverId"
-      | "yearsOfExperience"
+      | "dateOfBirth"
+      | "address"
       | "status",
     value: string
   ) => void;
@@ -43,10 +45,10 @@ export const EditProfileFormSection: React.FC<EditProfileFormSectionProps> = ({
 
   const styles = StyleSheet.create({
     container: {
-      paddingHorizontal: 20,
+      // No padding needed as it's now inside a card
     },
     inputContainer: {
-      marginBottom: 16, // Reduced from 24 to 16
+      marginBottom: 16,
     },
   });
 

@@ -1,7 +1,13 @@
-// screens/innerApplication/profile/components/StatusSelectorSection.tsx
-import { FontAwesome } from "@expo/vector-icons";
+// screens/innerApplication/profile/components/edit/StatusSelectorSection.tsx
+import { FontAwesome, Ionicons } from "@expo/vector-icons";
 import React from "react";
-import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import {
+  Platform,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+} from "react-native";
 import { useThemeColors } from "../../../../../hooks/useTheme";
 
 interface StatusSelectorSectionProps {
@@ -15,14 +21,52 @@ export const StatusSelectorSection: React.FC<StatusSelectorSectionProps> = ({
 }) => {
   const colors = useThemeColors();
 
+  const getStatusColor = (status: string) => {
+    switch (status) {
+      case "Actif":
+        return "#4CAF50";
+      case "En congé":
+        return "#FF9800";
+      case "Inactif":
+        return "#F44336";
+      default:
+        return colors.textSecondary;
+    }
+  };
+
+  const getStatusIcon = (status: string) => {
+    switch (status) {
+      case "Actif":
+        return "checkmark-circle";
+      case "En congé":
+        return "time";
+      case "Inactif":
+        return "close-circle";
+      default:
+        return "radio-button-off";
+    }
+  };
+
+  const getStatusDescription = (status: string) => {
+    switch (status) {
+      case "Actif":
+        return "Disponible pour les trajets";
+      case "En congé":
+        return "Temporairement indisponible";
+      case "Inactif":
+        return "Non disponible";
+      default:
+        return "";
+    }
+  };
+
   const styles = StyleSheet.create({
     container: {
-      paddingHorizontal: 20,
-      marginBottom: 16, // Reduced from 24 to 16
+      // No padding needed as it's now inside a card
     },
     statusLabel: {
       fontSize: 14,
-      fontWeight: "500",
+      fontWeight: "600",
       color: colors.textSecondary,
       marginBottom: 8,
     },
@@ -31,34 +75,104 @@ export const StatusSelectorSection: React.FC<StatusSelectorSectionProps> = ({
       alignItems: "center",
       justifyContent: "space-between",
       paddingHorizontal: 16,
-      paddingVertical: 14,
+      paddingVertical: 16,
       borderRadius: 12,
-      borderWidth: 1,
-      borderColor: colors.border,
+      borderWidth: 1.5,
+      borderColor: colors.inputBorder,
       backgroundColor: colors.input,
-      minHeight: 48,
+      minHeight: 56,
+      ...Platform.select({
+        ios: {
+          shadowColor: colors.shadow,
+          shadowOffset: { width: 0, height: 2 },
+          shadowOpacity: colors.isDark ? 0.2 : 0.08,
+          shadowRadius: 4,
+        },
+        android: {
+          elevation: 2,
+        },
+        web: {
+          boxShadow: colors.isDark
+            ? "0 2px 4px rgba(0, 0, 0, 0.2)"
+            : "0 2px 4px rgba(0, 0, 0, 0.08)",
+        },
+      }),
+    },
+    statusContent: {
+      flexDirection: "row",
+      alignItems: "center",
+      flex: 1,
+    },
+    statusIconContainer: {
+      width: 32,
+      height: 32,
+      borderRadius: 16,
+      alignItems: "center",
+      justifyContent: "center",
+      marginRight: 12,
+    },
+    statusTextContainer: {
+      flex: 1,
     },
     statusText: {
       fontSize: 16,
       color: colors.text,
-      fontWeight: "500",
+      fontWeight: "600",
+    },
+    statusDescription: {
+      fontSize: 12,
+      color: colors.textSecondary,
+      marginTop: 2,
+    },
+    chevronContainer: {
+      width: 24,
+      height: 24,
+      alignItems: "center",
+      justifyContent: "center",
+      backgroundColor: colors.backgroundSecondary,
+      borderRadius: 12,
     },
   });
 
   return (
     <View style={styles.container}>
-      <Text style={styles.statusLabel}>Statut</Text>
+      <Text style={styles.statusLabel}>Statut de disponibilité</Text>
       <TouchableOpacity
         style={styles.statusButton}
         onPress={onPress}
-        activeOpacity={0.7}
+        activeOpacity={0.8}
       >
-        <Text style={styles.statusText}>{status}</Text>
-        <FontAwesome
-          name="chevron-down"
-          size={14}
-          color={colors.textSecondary}
-        />
+        <View style={styles.statusContent}>
+          <View
+            style={[
+              styles.statusIconContainer,
+              {
+                backgroundColor: getStatusColor(status) + "20",
+              },
+            ]}
+          >
+            <Ionicons
+              name={getStatusIcon(status) as any}
+              size={18}
+              color={getStatusColor(status)}
+            />
+          </View>
+
+          <View style={styles.statusTextContainer}>
+            <Text style={styles.statusText}>{status}</Text>
+            <Text style={styles.statusDescription}>
+              {getStatusDescription(status)}
+            </Text>
+          </View>
+        </View>
+
+        <View style={styles.chevronContainer}>
+          <FontAwesome
+            name="chevron-down"
+            size={12}
+            color={colors.textSecondary}
+          />
+        </View>
       </TouchableOpacity>
     </View>
   );

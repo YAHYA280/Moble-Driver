@@ -18,7 +18,7 @@ const mockProfile: UserProfile = {
     lastName: "Martin",
     email: "chauffeur@gmail.com",
     phoneNumber: "+14532442224",
-    address: "123 Rue de la Paix, Casablanca",
+    address: "123 Rue de la Paix, Casablanca, Maroc",
     profilePhoto:
       "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&h=150&fit=crop&crop=face",
     dateOfBirth: "15/03/1985",
@@ -67,6 +67,24 @@ const mockProfile: UserProfile = {
           field: "emailNotifications",
           oldValue: "false",
           newValue: "true",
+        },
+      ],
+    },
+    {
+      id: "3",
+      modificationDate: "2025-01-01 10:00",
+      modificationType: "personal",
+      modifiedBy: "Jean Jacques Martin",
+      changes: [
+        {
+          field: "address",
+          oldValue: "456 Avenue Hassan II, Rabat",
+          newValue: "123 Rue de la Paix, Casablanca, Maroc",
+        },
+        {
+          field: "dateOfBirth",
+          oldValue: "",
+          newValue: "15/03/1985",
         },
       ],
     },

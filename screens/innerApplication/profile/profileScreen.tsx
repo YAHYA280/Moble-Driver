@@ -1,7 +1,7 @@
 // screens/innerApplication/profile/profileScreen.tsx
 import { FontAwesome } from "@expo/vector-icons";
 import { router } from "expo-router";
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useRef } from "react";
 import {
   Alert,
   Animated,
@@ -19,7 +19,6 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import Svg, { Path } from "react-native-svg";
 import { useTheme } from "../../../contexts/ThemeContext";
 import ConditionalComponent from "../../../shared/components/conditionalComponent/conditionalComponent";
-import { Sidebar } from "../../../shared/components/ui/Sidebar";
 import { useAuthStore } from "../../../store/authStore";
 import { useProfileStore } from "../../../store/profileStore";
 import { NavigationMenuCard } from "./components/NavigationMenuCard";
@@ -65,7 +64,6 @@ const CurvedBackground: React.FC = () => {
 export const ProfileScreen: React.FC = () => {
   const { colors } = useTheme();
   const { logout } = useAuthStore();
-  const [showSidebar, setShowSidebar] = useState(false);
   const { profile, fetchProfile, uploadProfilePhoto } = useProfileStore();
 
   const fadeAnim = useRef(new Animated.Value(0)).current;
@@ -101,7 +99,6 @@ export const ProfileScreen: React.FC = () => {
         text: "Déconnecter",
         style: "destructive",
         onPress: () => {
-          setShowSidebar(false);
           logout();
           router.replace("/auth/login");
         },
@@ -116,45 +113,6 @@ export const ProfileScreen: React.FC = () => {
   const handleEditPress = () => {
     router.push("/(tabs)/profile/edit");
   };
-  const sidebarItems = [
-    {
-      id: "profile",
-      label: "Mon profil",
-      icon: "user" as const,
-      onPress: () => setShowSidebar(false),
-      isActive: true,
-    },
-    {
-      id: "documents",
-      label: "Mes documents",
-      icon: "file-text" as const,
-      onPress: () => {
-        setShowSidebar(false);
-        router.push("/documents");
-      },
-      isActive: false,
-    },
-    {
-      id: "history",
-      label: "Historique des trajets",
-      icon: "history" as const,
-      onPress: () => {
-        setShowSidebar(false);
-        router.push("/(tabs)/profile/history");
-      },
-      isActive: false,
-    },
-    {
-      id: "notifications",
-      label: "Notifications et alertes",
-      icon: "bell" as const,
-      onPress: () => {
-        setShowSidebar(false);
-        router.push("/notifications");
-      },
-      isActive: false,
-    },
-  ];
 
   const navigationMenuItems = [
     {
@@ -177,6 +135,13 @@ export const ProfileScreen: React.FC = () => {
       label: "Notifications et alertes",
       subtitle: "Gérer les notifications",
       onPress: () => router.push("/notifications"),
+    },
+    {
+      id: "logout",
+      icon: "sign-out" as const,
+      label: "Déconnexion",
+      subtitle: "Se déconnecter du compte",
+      onPress: handleLogout,
     },
   ];
 
@@ -208,10 +173,6 @@ export const ProfileScreen: React.FC = () => {
       backgroundColor: "transparent",
       zIndex: 20,
     },
-    leftHeaderSection: {
-      width: 60,
-      alignItems: "flex-start",
-    },
     centerHeaderSection: {
       flex: 1,
       alignItems: "center",
@@ -232,7 +193,7 @@ export const ProfileScreen: React.FC = () => {
       textAlign: "center",
     },
     rightHeaderSection: {
-      width: 60,
+      width: 100,
       flexDirection: "row",
       alignItems: "flex-start",
       justifyContent: "flex-end",
@@ -320,20 +281,6 @@ export const ProfileScreen: React.FC = () => {
       <SafeAreaView style={styles.statusBar} edges={["top"]}>
         {/* Custom Header */}
         <View style={styles.headerContainer}>
-          <View style={styles.leftHeaderSection}>
-            <TouchableOpacity
-              style={styles.headerButton}
-              onPress={() => setShowSidebar(true)}
-              activeOpacity={0.7}
-            >
-              <FontAwesome
-                name="bars"
-                size={26}
-                color={colors.isDark ? "black" : "white"}
-              />
-            </TouchableOpacity>
-          </View>
-
           <View style={styles.centerHeaderSection}>
             <Text style={styles.headerTitle}>Mon profil</Text>
           </View>
@@ -418,15 +365,6 @@ export const ProfileScreen: React.FC = () => {
           />
         </ScrollView>
       </Animated.View>
-
-      {/* Sidebar */}
-      <Sidebar
-        title="Mon profil"
-        items={sidebarItems}
-        visible={showSidebar}
-        onClose={() => setShowSidebar(false)}
-        onLogout={handleLogout}
-      />
     </View>
   );
 };

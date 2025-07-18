@@ -191,6 +191,14 @@ export const PersonalInfoCard: React.FC<PersonalInfoCardProps> = ({
       />
 
       {age && <InfoItem icon="calendar" label="Âge" value={`${age} ans`} />}
+
+      {profile.personalInfo.address && (
+        <InfoItem
+          icon="map-marker"
+          label="Adresse"
+          value={profile.personalInfo.address}
+        />
+      )}
     </View>
   );
 };

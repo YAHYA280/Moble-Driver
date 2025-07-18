@@ -1,4 +1,5 @@
 // screens/innerApplication/profile/editProfileScreen.tsx
+import { Input } from "@/shared/components/ui/Input";
 import * as ImagePicker from "expo-image-picker";
 import { router } from "expo-router";
 import React, { useEffect, useRef, useState } from "react";
@@ -20,7 +21,6 @@ import { Header } from "../../../shared/components/ui/Header";
 import { PersonalInfo } from "../../../shared/types/profile";
 import { useProfileStore } from "../../../store/profileStore";
 import { validateEmail } from "../../../utils/validators";
-import { EditProfileFormSection } from "./components/edit/EditProfileFormSection";
 import { EditProfilePhotoSection } from "./components/edit/EditProfilePhotoSection";
 import { StatusDropdownModal } from "./components/edit/StatusDropdownModal";
 import { StatusSelectorSection } from "./components/edit/StatusSelectorSection";
@@ -36,7 +36,8 @@ interface FormField {
     | "email"
     | "phoneNumber"
     | "driverId"
-    | "yearsOfExperience"
+    | "dateOfBirth"
+    | "address"
     | "status";
   label: string;
   value: string;
@@ -67,7 +68,8 @@ export const EditProfileScreen: React.FC = () => {
     email: "",
     driverId: "",
     status: "Actif" as "Actif" | "En congé" | "Inactif",
-    yearsOfExperience: "",
+    dateOfBirth: "",
+    address: "",
   });
 
   const [errors, setErrors] = useState({
@@ -76,7 +78,8 @@ export const EditProfileScreen: React.FC = () => {
     email: "",
     driverId: "",
     status: "",
-    yearsOfExperience: "",
+    dateOfBirth: "",
+    address: "",
   });
 
   const [showStatusDropdown, setShowStatusDropdown] = useState(false);
@@ -95,8 +98,8 @@ export const EditProfileScreen: React.FC = () => {
         email: profile.personalInfo.email,
         driverId: profile.professionalInfo.driverId,
         status: profile.professionalInfo.status,
-        yearsOfExperience:
-          profile.professionalInfo.yearsOfExperience.toString(),
+        dateOfBirth: profile.personalInfo.dateOfBirth || "",
+        address: profile.personalInfo.address || "",
       });
     }
 
@@ -127,7 +130,8 @@ export const EditProfileScreen: React.FC = () => {
       email: "",
       driverId: "",
       status: "",
-      yearsOfExperience: "",
+      dateOfBirth: "",
+      address: "",
     };
 
     if (!formData.fullName.trim()) {
@@ -148,10 +152,12 @@ export const EditProfileScreen: React.FC = () => {
       newErrors.driverId = "Le numéro de permis est requis";
     }
 
-    if (!formData.yearsOfExperience.trim()) {
-      newErrors.yearsOfExperience = "Les années d'expérience sont requises";
-    } else if (isNaN(Number(formData.yearsOfExperience))) {
-      newErrors.yearsOfExperience = "Doit être un nombre";
+    if (!formData.dateOfBirth.trim()) {
+      newErrors.dateOfBirth = "La date de naissance est requise";
+    }
+
+    if (!formData.address.trim()) {
+      newErrors.address = "L'adresse est requise";
     }
 
     setErrors(newErrors);
@@ -166,6 +172,8 @@ export const EditProfileScreen: React.FC = () => {
         fullName: formData.fullName,
         phoneNumber: formData.phoneNumber,
         email: formData.email,
+        dateOfBirth: formData.dateOfBirth,
+        address: formData.address,
       };
 
       await updatePersonalInfo(updatedInfo);
@@ -293,21 +301,29 @@ export const EditProfileScreen: React.FC = () => {
       editable: true,
     },
     {
+      key: "dateOfBirth",
+      label: "Date de naissance",
+      value: formData.dateOfBirth,
+      placeholder: "Saisissez votre date de naissance (JJ/MM/AAAA)",
+      error: errors.dateOfBirth,
+      editable: true,
+    },
+    {
+      key: "address",
+      label: "Adresse",
+      value: formData.address,
+      placeholder: "Saisissez votre adresse complète",
+      error: errors.address,
+      editable: true,
+      autoCapitalize: "words",
+    },
+    {
       key: "driverId",
       label: "Numéro du permis",
       value: formData.driverId,
       placeholder: "Saisissez votre numéro de permis",
       error: errors.driverId,
       editable: false,
-    },
-    {
-      key: "yearsOfExperience",
-      label: "Années d'expériences",
-      value: formData.yearsOfExperience,
-      placeholder: "Saisissez vos années d'expérience",
-      keyboardType: "numeric",
-      error: errors.yearsOfExperience,
-      editable: true,
     },
   ];
 
@@ -324,14 +340,78 @@ export const EditProfileScreen: React.FC = () => {
     },
     scrollContent: {
       flexGrow: 1,
-      paddingBottom: Platform.OS === "ios" ? 120 : 80, // Increased bottom padding for iOS
+      paddingHorizontal: 16,
+      paddingTop: 20,
+      paddingBottom: Platform.OS === "ios" ? 60 : 40,
+    },
+    photoCard: {
+      backgroundColor: colors.card,
+      borderRadius: 16,
+      marginBottom: 16,
+      ...Platform.select({
+        ios: {
+          shadowColor: colors.isDark ? "#000000" : colors.shadow,
+          shadowOffset: {
+            width: 0,
+            height: 4,
+          },
+          shadowOpacity: colors.isDark ? 0.3 : 0.1,
+          shadowRadius: 12,
+        },
+        android: {
+          elevation: 8,
+        },
+        web: {
+          boxShadow: colors.isDark
+            ? "0 4px 12px rgba(0, 0, 0, 0.3)"
+            : "0 4px 12px rgba(0, 0, 0, 0.1)",
+        },
+      }),
+    },
+    formCard: {
+      backgroundColor: colors.card,
+      borderRadius: 16,
+      padding: 24,
+      marginBottom: 16,
+      ...Platform.select({
+        ios: {
+          shadowColor: colors.isDark ? "#000000" : colors.shadow,
+          shadowOffset: {
+            width: 0,
+            height: 4,
+          },
+          shadowOpacity: colors.isDark ? 0.3 : 0.1,
+          shadowRadius: 12,
+        },
+        android: {
+          elevation: 8,
+        },
+        web: {
+          boxShadow: colors.isDark
+            ? "0 4px 12px rgba(0, 0, 0, 0.3)"
+            : "0 4px 12px rgba(0, 0, 0, 0.1)",
+        },
+      }),
+    },
+    cardTitle: {
+      fontSize: 20,
+      fontWeight: "700",
+      color: colors.text,
+      marginBottom: 8,
+      textAlign: "center",
+    },
+    cardSubtitle: {
+      fontSize: 14,
+      color: colors.textSecondary,
+      marginBottom: 24,
+      textAlign: "center",
+      lineHeight: 20,
     },
     globalError: {
       backgroundColor: colors.error + "15",
       padding: 12,
       borderRadius: 8,
-      marginHorizontal: 20,
-      marginBottom: 16, // Reduced from 20 to 16
+      marginBottom: 16,
       borderLeftWidth: 4,
       borderLeftColor: colors.error,
     },
@@ -339,11 +419,13 @@ export const EditProfileScreen: React.FC = () => {
       color: colors.error,
       fontSize: 14,
       fontWeight: "500",
+      textAlign: "center",
+    },
+    inputContainer: {
+      marginBottom: 16,
     },
     buttonContainer: {
-      paddingTop: 16, // Reduced from 20 to 16
-      paddingHorizontal: 20,
-      paddingBottom: Platform.OS === "ios" ? 40 : 20, // Extra padding for iOS
+      paddingTop: 8,
     },
   });
 
@@ -377,18 +459,21 @@ export const EditProfileScreen: React.FC = () => {
             showsVerticalScrollIndicator={false}
             keyboardShouldPersistTaps="handled"
           >
-            {/* Profile Photo Section */}
+            {/* Profile Photo Card */}
             <Animated.View
-              style={{
-                transform: [
-                  {
-                    scale: photoAnim.interpolate({
-                      inputRange: [0, 1],
-                      outputRange: [0.8, 1],
-                    }),
-                  },
-                ],
-              }}
+              style={[
+                styles.photoCard,
+                {
+                  transform: [
+                    {
+                      scale: photoAnim.interpolate({
+                        inputRange: [0, 1],
+                        outputRange: [0.8, 1],
+                      }),
+                    },
+                  ],
+                },
+              ]}
             >
               <EditProfilePhotoSection
                 profilePhoto={profile.personalInfo.profilePhoto}
@@ -397,33 +482,56 @@ export const EditProfileScreen: React.FC = () => {
               />
             </Animated.View>
 
-            {/* Error Display */}
-            <ConditionalComponent isValid={!!error}>
-              <View style={styles.globalError}>
-                <Text style={styles.globalErrorText}>{error}</Text>
+            {/* Form Card */}
+            <View style={styles.formCard}>
+              <Text style={styles.cardTitle}>Informations personnelles</Text>
+              <Text style={styles.cardSubtitle}>
+                Modifiez vos informations personnelles ci-dessous
+              </Text>
+
+              {/* Error Display */}
+              <ConditionalComponent isValid={!!error}>
+                <View style={styles.globalError}>
+                  <Text style={styles.globalErrorText}>{error}</Text>
+                </View>
+              </ConditionalComponent>
+
+              {/* Form Fields */}
+              {formFields.map((field) => (
+                <View key={field.key} style={styles.inputContainer}>
+                  <Input
+                    label={field.label}
+                    value={field.value}
+                    onChangeText={(value) =>
+                      handleInputChange(field.key, value)
+                    }
+                    placeholder={field.placeholder}
+                    keyboardType={field.keyboardType}
+                    autoCapitalize={field.autoCapitalize}
+                    error={field.error}
+                    variant="outlined"
+                    editable={field.editable}
+                  />
+                </View>
+              ))}
+
+              {/* Status Selector */}
+              <View style={styles.inputContainer}>
+                <StatusSelectorSection
+                  status={formData.status}
+                  onPress={() => setShowStatusDropdown(true)}
+                />
               </View>
-            </ConditionalComponent>
 
-            {/* Form Fields */}
-            <EditProfileFormSection
-              fields={formFields}
-              onFieldChange={handleInputChange}
-            />
-
-            {/* Status Selector */}
-            <StatusSelectorSection
-              status={formData.status}
-              onPress={() => setShowStatusDropdown(true)}
-            />
-
-            {/* Submit Button */}
-            <View style={styles.buttonContainer}>
-              <Button
-                title="Modifier mon profil"
-                onPress={handleSubmit}
-                loading={isLoading}
-                disabled={isLoading}
-              />
+              {/* Submit Button */}
+              <View style={styles.buttonContainer}>
+                <Button
+                  title="Modifier mon profil"
+                  onPress={handleSubmit}
+                  loading={isLoading}
+                  disabled={isLoading}
+                />
+              </View>
             </View>
           </ScrollView>
         </Animated.View>
