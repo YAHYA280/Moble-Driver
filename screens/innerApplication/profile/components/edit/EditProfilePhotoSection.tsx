@@ -1,4 +1,3 @@
-// screens/innerApplication/profile/components/EditProfilePhotoSection.tsx
 import { FontAwesome } from "@expo/vector-icons";
 import React from "react";
 import {

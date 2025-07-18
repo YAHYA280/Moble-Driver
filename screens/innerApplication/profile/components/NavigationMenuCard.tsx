@@ -10,6 +10,7 @@ import {
   ViewStyle,
 } from "react-native";
 import { useThemeColors } from "../../../../hooks/useTheme";
+import ConditionalComponent from "../../../../shared/components/conditionalComponent/conditionalComponent";
 
 interface NavigationMenuItem {
   id: string;
@@ -80,7 +81,9 @@ const NavigationItem: React.FC<{ item: NavigationMenuItem }> = ({ item }) => {
 
       <View style={styles.textContainer}>
         <Text style={styles.label}>{item.label}</Text>
-        {item.subtitle && <Text style={styles.subtitle}>{item.subtitle}</Text>}
+        <ConditionalComponent isValid={!!item.subtitle}>
+          <Text style={styles.subtitle}>{item.subtitle}</Text>
+        </ConditionalComponent>
       </View>
 
       <View style={styles.arrowContainer}>

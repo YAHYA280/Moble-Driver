@@ -1,4 +1,3 @@
-// screens/innerApplication/profile/components/edit/StatusDropdownModal.tsx
 import { Ionicons } from "@expo/vector-icons";
 import React from "react";
 import {

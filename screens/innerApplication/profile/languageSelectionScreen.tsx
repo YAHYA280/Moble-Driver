@@ -11,6 +11,7 @@ import {
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useTheme } from "../../../contexts/ThemeContext";
+import ConditionalComponent from "../../../shared/components/conditionalComponent/conditionalComponent";
 import { Header } from "../../../shared/components/ui/Header";
 import { useProfileStore } from "../../../store/profileStore";
 
@@ -174,11 +175,11 @@ export const LanguageSelectionScreen: React.FC = () => {
                 </Text>
                 <Text style={styles.nativeName}>{language.nativeName}</Text>
               </View>
-              {isSelected(language.code) && (
+              <ConditionalComponent isValid={isSelected(language.code)}>
                 <View style={styles.selectedIndicator}>
                   <View style={styles.selectedDot} />
                 </View>
-              )}
+              </ConditionalComponent>
             </TouchableOpacity>
           ))}
 
@@ -208,11 +209,11 @@ export const LanguageSelectionScreen: React.FC = () => {
                 </Text>
                 <Text style={styles.nativeName}>{language.nativeName}</Text>
               </View>
-              {isSelected(language.code) && (
+              <ConditionalComponent isValid={isSelected(language.code)}>
                 <View style={styles.selectedIndicator}>
                   <View style={styles.selectedDot} />
                 </View>
-              )}
+              </ConditionalComponent>
             </TouchableOpacity>
           ))}
         </ScrollView>

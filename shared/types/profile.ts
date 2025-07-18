@@ -74,3 +74,38 @@ export interface ProfileActions {
   clearPendingChanges: () => void;
   clearError: () => void;
 }
+
+// EditProfileFormSection
+
+export interface FormField {
+  key:
+    | "fullName"
+    | "email"
+    | "phoneNumber"
+    | "driverId"
+    | "dateOfBirth"
+    | "address"
+    | "status";
+  label: string;
+  value: string;
+  placeholder: string;
+  keyboardType?: "default" | "email-address" | "phone-pad" | "numeric";
+  autoCapitalize?: "none" | "sentences" | "words" | "characters";
+  editable?: boolean;
+  error?: string;
+}
+
+export interface EditProfileFormSectionProps {
+  fields: FormField[];
+  onFieldChange: (
+    field:
+      | "fullName"
+      | "email"
+      | "phoneNumber"
+      | "driverId"
+      | "dateOfBirth"
+      | "address"
+      | "status",
+    value: string
+  ) => void;
+}

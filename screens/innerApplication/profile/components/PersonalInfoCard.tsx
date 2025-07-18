@@ -3,6 +3,7 @@ import { FontAwesome } from "@expo/vector-icons";
 import React from "react";
 import { Platform, StyleSheet, Text, View, ViewStyle } from "react-native";
 import { useThemeColors } from "../../../../hooks/useTheme";
+import ConditionalComponent from "../../../../shared/components/conditionalComponent/conditionalComponent";
 import { UserProfile } from "../../../../shared/types/profile";
 
 interface PersonalInfoCardProps {
@@ -76,6 +77,10 @@ const InfoItem: React.FC<InfoItemProps> = ({
       backgroundColor: getStatusColor(),
       marginRight: 8,
     },
+    valueRow: {
+      flexDirection: "row",
+      alignItems: "center",
+    },
   });
 
   return (
@@ -85,8 +90,10 @@ const InfoItem: React.FC<InfoItemProps> = ({
       </View>
       <View style={styles.textContainer}>
         <Text style={styles.label}>{label}</Text>
-        <View style={{ flexDirection: "row", alignItems: "center" }}>
-          {isStatus && <View style={styles.statusIndicator} />}
+        <View style={styles.valueRow}>
+          <ConditionalComponent isValid={isStatus}>
+            <View style={styles.statusIndicator} />
+          </ConditionalComponent>
           <Text style={styles.value}>{value}</Text>
         </View>
       </View>
@@ -190,15 +197,17 @@ export const PersonalInfoCard: React.FC<PersonalInfoCardProps> = ({
         isStatus={true}
       />
 
-      {age && <InfoItem icon="calendar" label="Âge" value={`${age} ans`} />}
+      <ConditionalComponent isValid={!!age}>
+        <InfoItem icon="calendar" label="Âge" value={`${age} ans`} />
+      </ConditionalComponent>
 
-      {profile.personalInfo.address && (
+      <ConditionalComponent isValid={!!profile.personalInfo.address}>
         <InfoItem
           icon="map-marker"
           label="Adresse"
           value={profile.personalInfo.address}
         />
-      )}
+      </ConditionalComponent>
     </View>
   );
 };
