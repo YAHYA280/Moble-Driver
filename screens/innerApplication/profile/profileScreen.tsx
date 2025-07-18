@@ -64,7 +64,7 @@ const CurvedBackground: React.FC = () => {
 export const ProfileScreen: React.FC = () => {
   const { colors } = useTheme();
   const { logout } = useAuthStore();
-  const { profile, fetchProfile, uploadProfilePhoto } = useProfileStore();
+  const { profile, fetchProfile } = useProfileStore();
 
   const fadeAnim = useRef(new Animated.Value(0)).current;
 
@@ -77,20 +77,6 @@ export const ProfileScreen: React.FC = () => {
       useNativeDriver: true,
     }).start();
   }, []);
-
-  const handlePhotoPress = () => {
-    Alert.alert("Photo de profil", "Que souhaitez-vous faire ?", [
-      { text: "Annuler", style: "cancel" },
-      {
-        text: "Changer la photo",
-        onPress: () => {
-          const newPhotoUrl =
-            "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150&h=150&fit=crop&crop=face";
-          uploadProfilePhoto(newPhotoUrl);
-        },
-      },
-    ]);
-  };
 
   const handleLogout = () => {
     Alert.alert("Déconnexion", "Êtes-vous sûr de vouloir vous déconnecter ?", [
@@ -187,10 +173,22 @@ export const ProfileScreen: React.FC = () => {
       backgroundColor: "transparent",
       zIndex: 20,
     },
+    leftHeaderSection: {
+      width: 100,
+      flexDirection: "row",
+      alignItems: "center",
+      justifyContent: "flex-start",
+    },
     centerHeaderSection: {
       flex: 1,
       alignItems: "center",
       justifyContent: "center",
+    },
+    rightHeaderSection: {
+      width: 100,
+      flexDirection: "row",
+      alignItems: "center",
+      justifyContent: "flex-end",
     },
     headerButton: {
       width: 44,
@@ -199,19 +197,13 @@ export const ProfileScreen: React.FC = () => {
       justifyContent: "center",
       borderRadius: 8,
       backgroundColor: "transparent",
+      marginLeft: 8,
     },
     headerTitle: {
       fontSize: 20,
       fontWeight: "800",
       color: colors.isDark ? "black" : "white",
       textAlign: "center",
-    },
-    rightHeaderSection: {
-      width: 100,
-      flexDirection: "row",
-      alignItems: "flex-start",
-      justifyContent: "flex-end",
-      marginTop: -8,
     },
     profileSection: {
       alignItems: "center",
@@ -232,14 +224,14 @@ export const ProfileScreen: React.FC = () => {
       borderColor: colors.isDark ? "#0D0D0D" : "white",
     },
     profileImagePlaceholder: {
-      width: 80,
-      height: 80,
-      borderRadius: 40,
+      width: 120,
+      height: 120,
+      borderRadius: 60,
       backgroundColor: "rgba(255, 255, 255, 0.2)",
       alignItems: "center",
       justifyContent: "center",
-      borderWidth: 4,
-      borderColor: "white",
+      borderWidth: 6,
+      borderColor: colors.isDark ? "#0D0D0D" : "white",
     },
     onlineIndicator: {
       position: "absolute",
@@ -295,10 +287,15 @@ export const ProfileScreen: React.FC = () => {
       <SafeAreaView style={styles.statusBar} edges={["top"]}>
         {/* Custom Header */}
         <View style={styles.headerContainer}>
+          {/* Left section - empty for balance */}
+          <View style={styles.leftHeaderSection} />
+
+          {/* Center section - title */}
           <View style={styles.centerHeaderSection}>
             <Text style={styles.headerTitle}>Mon profil</Text>
           </View>
 
+          {/* Right section - buttons */}
           <View style={styles.rightHeaderSection}>
             <TouchableOpacity
               style={styles.headerButton}
@@ -329,26 +326,25 @@ export const ProfileScreen: React.FC = () => {
       {/* Profile image positioned on the curved section */}
       <View style={styles.profileSection}>
         <View style={styles.profileImageContainer}>
-          <TouchableOpacity onPress={handlePhotoPress} activeOpacity={0.8}>
-            <ConditionalComponent
-              isValid={!!profile.personalInfo.profilePhoto}
-              defaultComponent={
-                <View style={styles.profileImagePlaceholder}>
-                  <FontAwesome
-                    name="user"
-                    size={34}
-                    color="rgba(255, 255, 255, 0.7)"
-                  />
-                </View>
-              }
-            >
-              <Image
-                source={{ uri: profile.personalInfo.profilePhoto }}
-                style={styles.profileImage}
-                resizeMode="cover"
-              />
-            </ConditionalComponent>
-          </TouchableOpacity>
+          {/* Removed TouchableOpacity - profile photo is no longer clickable */}
+          <ConditionalComponent
+            isValid={!!profile.personalInfo.profilePhoto}
+            defaultComponent={
+              <View style={styles.profileImagePlaceholder}>
+                <FontAwesome
+                  name="user"
+                  size={40}
+                  color="rgba(255, 255, 255, 0.7)"
+                />
+              </View>
+            }
+          >
+            <Image
+              source={{ uri: profile.personalInfo.profilePhoto }}
+              style={styles.profileImage}
+              resizeMode="cover"
+            />
+          </ConditionalComponent>
           <View style={styles.onlineIndicator} />
         </View>
       </View>
