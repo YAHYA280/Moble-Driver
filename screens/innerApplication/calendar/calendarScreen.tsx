@@ -4,12 +4,23 @@ import { SearchModal } from "@/shared/components/ui/SearchModal";
 import { Sidebar } from "@/shared/components/ui/Sidebar";
 import { useAuthStore } from "@/store/authStore";
 import { useCalendarStore } from "@/store/calendarStore";
-import { useTheme } from "@react-navigation/native";
 import { router } from "expo-router";
 import React, { useEffect, useRef, useState } from "react";
-import { Alert, Animated, SafeAreaView, View } from "react-native";
+import {
+  Alert,
+  Animated,
+  FlatList,
+  RefreshControl,
+  SafeAreaView,
+  StyleSheet,
+  Text,
+  View,
+} from "react-native";
+import { useTheme } from "../../../contexts/ThemeContext";
+import { Header } from "../../../shared/components/ui/Header";
 import { Appointment } from "../../../shared/types/calendar";
 import { AppointmentCard } from "./components/AppointmentCard";
+import { CalendarFilterBar } from "./components/CalendarFilterBar";
 import { CalendarHeader } from "./components/CalendarHeader";
 import { CalendarMonthView } from "./components/CalendarMonthView";
 

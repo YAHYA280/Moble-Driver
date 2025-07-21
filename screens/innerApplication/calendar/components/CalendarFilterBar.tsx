@@ -29,7 +29,7 @@ interface CalendarFilterBarProps {
   style?: ViewStyle;
 }
 
-const CalendarFilterBar: React.FC<CalendarFilterBarProps> = ({
+export const CalendarFilterBar: React.FC<CalendarFilterBarProps> = ({
   filters,
   onFiltersChange,
   onClearFilters,
@@ -414,5 +414,3 @@ const CalendarFilterBar: React.FC<CalendarFilterBarProps> = ({
     </>
   );
 };
-
-export { CalendarFilterBar };
