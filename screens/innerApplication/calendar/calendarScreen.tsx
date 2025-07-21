@@ -16,7 +16,7 @@ import {
   Text,
   View,
 } from "react-native";
-import { Calendar } from "react-native-calendars";
+import { Calendar, DateData } from "react-native-calendars";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useTheme } from "../../../contexts/ThemeContext";
 import { Header } from "../../../shared/components/ui/Header";
@@ -81,39 +81,6 @@ const AnimatedAppointmentCard: React.FC<{
   );
 };
 
-// Enhanced Calendar Day Component with animations
-const EnhancedCalendarDay: React.FC<{
-  date: string;
-  appointments: Appointment[];
-  onPress: (date: string) => void;
-}> = ({ date, appointments, onPress }) => {
-  const colors = useTheme().colors;
-  const scaleAnim = useRef(new Animated.Value(1)).current;
-
-  const handlePress = () => {
-    Animated.sequence([
-      Animated.timing(scaleAnim, {
-        toValue: 0.95,
-        duration: 100,
-        useNativeDriver: true,
-      }),
-      Animated.spring(scaleAnim, {
-        toValue: 1,
-        tension: 300,
-        friction: 10,
-        useNativeDriver: true,
-      }),
-    ]).start();
-    onPress(date);
-  };
-
-  return (
-    <Animated.View style={{ transform: [{ scale: scaleAnim }] }}>
-      {/* Calendar component will handle the rendering */}
-    </Animated.View>
-  );
-};
-
 export const CalendarScreen: React.FC = () => {
   const { colors } = useTheme();
   const [showSidebar, setShowSidebar] = useState(false);
@@ -168,35 +135,50 @@ export const CalendarScreen: React.FC = () => {
     ]).start();
   }, []);
 
-  // Create marked dates with dots for appointments
+  // Create marked dates with dots for appointments - Following react-native-calendars format
   const getMarkedDates = () => {
     const marked: any = {};
 
+    // Group appointments by date
+    const appointmentsByDate: Record<string, Appointment[]> = {};
     filteredAppointments.forEach((appointment) => {
-      const date = appointment.date;
-
-      if (!marked[date]) {
-        marked[date] = {
-          dots: [],
-          marked: true,
-        };
+      if (!appointmentsByDate[appointment.date]) {
+        appointmentsByDate[appointment.date] = [];
       }
+      appointmentsByDate[appointment.date].push(appointment);
+    });
 
-      // Add colored dots based on appointment type
-      const typeColors = {
-        "visite-medicale": "#22c55e",
-        formation: "#ef4444",
-        "entretien-rh": "#3b82f6",
-        maintenance: "#f59e0b",
-        reunion: "#8b5cf6",
-        autre: "#6b7280",
-      };
+    // Create marked dates with dots
+    Object.keys(appointmentsByDate).forEach((date) => {
+      const dayAppointments = appointmentsByDate[date];
 
-      marked[date].dots.push({
-        key: appointment.id,
-        color: typeColors[appointment.type] || "#6b7280",
-        selectedDotColor: "#ffffff",
+      // Get unique appointment types for this day (max 3 dots)
+      const uniqueTypes = [
+        ...new Set(dayAppointments.map((a) => a.type)),
+      ].slice(0, 3);
+
+      // Create dots array
+      const dots = uniqueTypes.map((type) => {
+        const typeColors = {
+          "visite-medicale": "#22c55e",
+          formation: "#ef4444",
+          "entretien-rh": "#3b82f6",
+          maintenance: "#f59e0b",
+          reunion: "#8b5cf6",
+          autre: "#6b7280",
+        };
+
+        return {
+          key: type,
+          color: typeColors[type] || "#6b7280",
+          selectedDotColor: "#ffffff",
+        };
       });
+
+      marked[date] = {
+        dots: dots,
+        marked: true,
+      };
     });
 
     // Mark selected date
@@ -220,34 +202,20 @@ export const CalendarScreen: React.FC = () => {
     router.push(`./calendar/appointment/${appointment.id}`);
   };
 
-  const handleDayPress = (day: any) => {
+  const handleDayPress = (day: DateData) => {
     const date = day.dateString;
     setSelectedDate(date);
     const dayAppointments = getAppointmentsForDate(date);
 
-    if (dayAppointments.length === 1) {
-      // Smooth transition to appointment details
-      setTimeout(() => {
-        handleAppointmentPress(dayAppointments[0]);
-      }, 200);
-    } else if (dayAppointments.length > 1) {
-      // Switch to list view with smooth animation
-      Animated.timing(contentAnim, {
-        toValue: 0,
-        duration: 200,
-        useNativeDriver: true,
-      }).start(() => {
-        setCurrentView("list");
-        setFilters({
-          dateFrom: new Date(date),
-          dateTo: new Date(date),
-        });
-        Animated.timing(contentAnim, {
-          toValue: 1,
-          duration: 300,
-          useNativeDriver: true,
-        }).start();
-      });
+    if (dayAppointments.length === 0) {
+      // No appointments for this day - still navigate to agenda view to show empty state
+      router.push(`./calendar/agenda/${date}`);
+    } else if (dayAppointments.length === 1) {
+      // Single appointment - navigate to agenda view (not directly to details)
+      router.push(`./calendar/agenda/${date}`);
+    } else {
+      // Multiple appointments - navigate to agenda view
+      router.push(`./calendar/agenda/${date}`);
     }
   };
 
@@ -460,6 +428,16 @@ export const CalendarScreen: React.FC = () => {
       fontSize: 14,
       fontWeight: "500",
     },
+    todayPreviewContainer: {
+      margin: 16,
+      marginTop: 8,
+    },
+    todayPreviewTitle: {
+      fontSize: 18,
+      fontWeight: "600",
+      color: colors.text,
+      marginBottom: 12,
+    },
   });
 
   return (
@@ -574,6 +552,11 @@ export const CalendarScreen: React.FC = () => {
                 hideExtraDays={false}
                 disableMonthChange={false}
                 firstDay={1}
+                onMonthChange={(month) => {
+                  setCurrentDate(
+                    new Date(month.year, month.month - 1, month.day)
+                  );
+                }}
                 renderHeader={(date) => {
                   const monthNames = [
                     "Janvier",
@@ -626,22 +609,12 @@ export const CalendarScreen: React.FC = () => {
               }
             >
               <Animated.View
-                style={{
-                  margin: 16,
-                  marginTop: 8,
-                  opacity: calendarOpacity,
-                }}
+                style={[
+                  styles.todayPreviewContainer,
+                  { opacity: calendarOpacity },
+                ]}
               >
-                <Text
-                  style={{
-                    fontSize: 18,
-                    fontWeight: "600",
-                    color: colors.text,
-                    marginBottom: 12,
-                  }}
-                >
-                  Aujourd&apos;hui
-                </Text>
+                <Text style={styles.todayPreviewTitle}>Aujourd&apos;hui</Text>
                 {getAppointmentsForDate(new Date().toISOString().split("T")[0])
                   .slice(0, 2)
                   .map((appointment, index) => (

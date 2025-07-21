@@ -5,6 +5,7 @@ export default function CalendarLayout() {
     <Stack screenOptions={{ headerShown: false }}>
       <Stack.Screen name="index" options={{ headerShown: false }} />
       <Stack.Screen name="appointment/[id]" options={{ headerShown: false }} />
+      <Stack.Screen name="agenda/[date]" options={{ headerShown: false }} />
     </Stack>
   );
 }
