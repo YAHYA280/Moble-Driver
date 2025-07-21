@@ -1,3 +1,4 @@
+// screens/innerApplication/calendar/calendarScreen.tsx
 import ConditionalComponent from "@/shared/components/conditionalComponent/conditionalComponent";
 import { SearchModal } from "@/shared/components/ui/SearchModal";
 import { Sidebar } from "@/shared/components/ui/Sidebar";
@@ -86,6 +87,7 @@ export const CalendarScreen: React.FC = () => {
   const [showSidebar, setShowSidebar] = useState(false);
   const [showSearchModal, setShowSearchModal] = useState(false);
   const [currentDate, setCurrentDate] = useState(new Date());
+  const [refreshing, setRefreshing] = useState(false);
   const headerAnim = useRef(new Animated.Value(0)).current;
   const contentAnim = useRef(new Animated.Value(0)).current;
   const calendarOpacity = useRef(new Animated.Value(0)).current;
@@ -197,11 +199,6 @@ export const CalendarScreen: React.FC = () => {
     return marked;
   };
 
-  const handleAppointmentPress = (appointment: Appointment) => {
-    selectAppointment(appointment);
-    router.push(`./calendar/appointment/${appointment.id}`);
-  };
-
   const handleDayPress = (day: DateData) => {
     const date = day.dateString;
     setSelectedDate(date);
@@ -209,15 +206,66 @@ export const CalendarScreen: React.FC = () => {
 
     if (dayAppointments.length === 0) {
       // No appointments for this day - still navigate to agenda view to show empty state
-      router.push(`./calendar/agenda/${date}`);
+      router.push(`/(tabs)/calendar/agenda/${date}`);
     } else if (dayAppointments.length === 1) {
       // Single appointment - navigate to agenda view (not directly to details)
-      router.push(`./calendar/agenda/${date}`);
+      router.push(`/(tabs)/calendar/agenda/${date}`);
     } else {
       // Multiple appointments - navigate to agenda view
-      router.push(`./calendar/agenda/${date}`);
+      router.push(`/(tabs)/calendar/agenda/${date}`);
     }
   };
+
+  const handleAppointmentPress = (appointment: Appointment) => {
+    selectAppointment(appointment);
+    router.push(`/(tabs)/calendar/appointment/${appointment.id}`);
+  };
+
+  const renderAppointmentItem = ({
+    item,
+    index,
+  }: {
+    item: Appointment;
+    index: number;
+  }) => (
+    <AnimatedAppointmentCard
+      item={item}
+      index={index}
+      onPress={() => handleAppointmentPress(item)}
+      showDate={currentView === "list"}
+    />
+  );
+
+  const renderEmptyState = () => (
+    <Animated.View
+      style={[
+        styles.emptyState,
+        {
+          opacity: contentAnim,
+          transform: [
+            {
+              translateY: contentAnim.interpolate({
+                inputRange: [0, 1],
+                outputRange: [50, 0],
+              }),
+            },
+          ],
+        },
+      ]}
+    >
+      <View style={styles.emptyIcon}>
+        <Text style={styles.emptyIconText}>📅</Text>
+      </View>
+      <Text style={[styles.emptyTitle, { color: colors.text }]}>
+        Aucun rendez-vous trouvé
+      </Text>
+      <Text style={[styles.emptySubtitle, { color: colors.textSecondary }]}>
+        {Object.keys(filters).length > 0
+          ? "Aucun rendez-vous ne correspond à vos critères de recherche."
+          : "Vos rendez-vous apparaîtront ici."}
+      </Text>
+    </Animated.View>
+  );
 
   const handleViewToggle = () => {
     Animated.timing(contentAnim, {
@@ -234,8 +282,10 @@ export const CalendarScreen: React.FC = () => {
     });
   };
 
-  const handleRefresh = () => {
-    fetchAppointments();
+  const handleRefresh = async () => {
+    setRefreshing(true);
+    await fetchAppointments();
+    setRefreshing(false);
   };
 
   const handleLogout = () => {
@@ -287,56 +337,12 @@ export const CalendarScreen: React.FC = () => {
     },
   ];
 
-  const renderAppointmentItem = ({
-    item,
-    index,
-  }: {
-    item: Appointment;
-    index: number;
-  }) => (
-    <AnimatedAppointmentCard
-      item={item}
-      index={index}
-      onPress={() => handleAppointmentPress(item)}
-      showDate={currentView === "list"}
-    />
-  );
-
-  const renderEmptyState = () => (
-    <Animated.View
-      style={[
-        styles.emptyState,
-        {
-          opacity: contentAnim,
-          transform: [
-            {
-              translateY: contentAnim.interpolate({
-                inputRange: [0, 1],
-                outputRange: [50, 0],
-              }),
-            },
-          ],
-        },
-      ]}
-    >
-      <View style={styles.emptyIcon}>
-        <Text style={styles.emptyIconText}>📅</Text>
-      </View>
-      <Text style={[styles.emptyTitle, { color: colors.text }]}>
-        Aucun rendez-vous trouvé
-      </Text>
-      <Text style={[styles.emptySubtitle, { color: colors.textSecondary }]}>
-        {Object.keys(filters).length > 0
-          ? "Aucun rendez-vous ne correspond à vos critères de recherche."
-          : "Vos rendez-vous apparaîtront ici."}
-      </Text>
-    </Animated.View>
-  );
-
+  // Improved calendar theme with better dark/light mode support
   const calendarTheme = {
     backgroundColor: colors.surface,
     calendarBackground: colors.surface,
     textSectionTitleColor: colors.textSecondary,
+    textSectionTitleDisabledColor: colors.textTertiary,
     selectedDayBackgroundColor: colors.primary,
     selectedDayTextColor: "#ffffff",
     todayTextColor: colors.primary,
@@ -344,15 +350,21 @@ export const CalendarScreen: React.FC = () => {
     textDisabledColor: colors.textTertiary,
     dotColor: colors.primary,
     selectedDotColor: "#ffffff",
-    arrowColor: colors.textSecondary,
+    arrowColor: colors.primary,
+    disabledArrowColor: colors.textTertiary,
     monthTextColor: colors.text,
     indicatorColor: colors.primary,
     textDayFontWeight: "500" as const,
-    textMonthFontWeight: "600" as const,
+    textMonthFontWeight: "700" as const,
     textDayHeaderFontWeight: "600" as const,
     textDayFontSize: 16,
     textMonthFontSize: 18,
     textDayHeaderFontSize: 14,
+    // Additional theme properties for better mode switching
+    textDayStyle: { color: colors.text },
+    textMonthStyle: { color: colors.text },
+    textDayHeaderStyle: { color: colors.textSecondary },
+    weekVerticalMargin: 8,
   };
 
   const styles = StyleSheet.create({
@@ -367,6 +379,7 @@ export const CalendarScreen: React.FC = () => {
       backgroundColor: colors.surface,
       marginHorizontal: 16,
       marginTop: 8,
+      marginBottom: 16,
       borderRadius: 16,
       overflow: "hidden",
       ...Platform.select({
@@ -428,15 +441,39 @@ export const CalendarScreen: React.FC = () => {
       fontSize: 14,
       fontWeight: "500",
     },
-    todayPreviewContainer: {
-      margin: 16,
-      marginTop: 8,
+    infoContainer: {
+      backgroundColor: colors.surface,
+      marginHorizontal: 16,
+      marginBottom: 16,
+      padding: 20,
+      borderRadius: 16,
+      ...Platform.select({
+        ios: {
+          shadowColor: colors.shadow,
+          shadowOffset: { width: 0, height: 2 },
+          shadowOpacity: colors.isDark ? 0.3 : 0.08,
+          shadowRadius: 8,
+        },
+        android: {
+          elevation: 4,
+        },
+        web: {
+          boxShadow: colors.isDark
+            ? "0 2px 8px rgba(0, 0, 0, 0.3)"
+            : "0 2px 8px rgba(0, 0, 0, 0.08)",
+        },
+      }),
     },
-    todayPreviewTitle: {
+    infoTitle: {
       fontSize: 18,
       fontWeight: "600",
       color: colors.text,
-      marginBottom: 12,
+      marginBottom: 8,
+    },
+    infoText: {
+      fontSize: 14,
+      color: colors.textSecondary,
+      lineHeight: 20,
     },
   });
 
@@ -527,7 +564,7 @@ export const CalendarScreen: React.FC = () => {
                 ListEmptyComponent={renderEmptyState}
                 refreshControl={
                   <RefreshControl
-                    refreshing={isLoading}
+                    refreshing={refreshing}
                     onRefresh={handleRefresh}
                     colors={[colors.primary]}
                     tintColor={colors.primary}
@@ -539,10 +576,19 @@ export const CalendarScreen: React.FC = () => {
           }
         >
           <View>
+            <RefreshControl
+              refreshing={refreshing}
+              onRefresh={handleRefresh}
+              colors={[colors.primary]}
+              tintColor={colors.primary}
+              style={{ flex: 0 }}
+            />
+
             <Animated.View
               style={[styles.calendarContainer, { opacity: calendarOpacity }]}
             >
               <Calendar
+                key={colors.isDark ? "dark" : "light"} // Force re-render on theme change
                 current={currentDate.toISOString().split("T")[0]}
                 onDayPress={handleDayPress}
                 markedDates={getMarkedDates()}
@@ -601,33 +647,18 @@ export const CalendarScreen: React.FC = () => {
               />
             </Animated.View>
 
-            {/* Today's appointments preview */}
-            <ConditionalComponent
-              isValid={
-                getAppointmentsForDate(new Date().toISOString().split("T")[0])
-                  .length > 0
-              }
+            {/* Information Card - Only show in calendar view */}
+            <Animated.View
+              style={[styles.infoContainer, { opacity: calendarOpacity }]}
             >
-              <Animated.View
-                style={[
-                  styles.todayPreviewContainer,
-                  { opacity: calendarOpacity },
-                ]}
-              >
-                <Text style={styles.todayPreviewTitle}>Aujourd&apos;hui</Text>
-                {getAppointmentsForDate(new Date().toISOString().split("T")[0])
-                  .slice(0, 2)
-                  .map((appointment, index) => (
-                    <AnimatedAppointmentCard
-                      key={appointment.id}
-                      item={appointment}
-                      index={index}
-                      onPress={() => handleAppointmentPress(appointment)}
-                      showDate={false}
-                    />
-                  ))}
-              </Animated.View>
-            </ConditionalComponent>
+              <Text style={styles.infoTitle}>Navigation</Text>
+              <Text style={styles.infoText}>
+                Appuyez sur une date pour voir vos rendez-vous du jour. Les
+                points colorés indiquent les types de rendez-vous : vert pour
+                médical, rouge pour formation, bleu pour RH, orange pour
+                maintenance, violet pour réunion.
+              </Text>
+            </Animated.View>
           </View>
         </ConditionalComponent>
       </Animated.View>

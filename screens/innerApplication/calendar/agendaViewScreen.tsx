@@ -73,7 +73,7 @@ export const AgendaViewScreen: React.FC = () => {
 
   const handleAppointmentPress = (appointment: Appointment) => {
     selectAppointment(appointment);
-    router.push(`./appointment/${appointment.id}`);
+    router.push(`/(tabs)/calendar/appointment/${appointment.id}`);
   };
 
   const weekDays = date ? getWeekDays(date) : [];
