@@ -1,4 +1,3 @@
-// screens/innerApplication/profile/changePasswordScreen.tsx
 import { router } from "expo-router";
 import React, { useState } from "react";
 import {
@@ -19,77 +18,8 @@ import { Input } from "../../../shared/components/ui/Input";
 import { useProfileStore } from "../../../store/profileStore";
 import { validatePassword } from "../../../utils/validators";
 
-export const ChangePasswordScreen: React.FC = () => {
-  const { colors } = useTheme();
-  const { changePassword, isLoading, error, clearError } = useProfileStore();
-
-  const [formData, setFormData] = useState({
-    currentPassword: "",
-    newPassword: "",
-    confirmPassword: "",
-  });
-
-  const [errors, setErrors] = useState({
-    currentPassword: "",
-    newPassword: "",
-    confirmPassword: "",
-  });
-
-  const validateForm = () => {
-    const newErrors = {
-      currentPassword: "",
-      newPassword: "",
-      confirmPassword: "",
-    };
-
-    if (!formData.currentPassword) {
-      newErrors.currentPassword = "Mot de passe actuel requis";
-    }
-
-    if (!formData.newPassword) {
-      newErrors.newPassword = "Nouveau mot de passe requis";
-    } else if (!validatePassword(formData.newPassword)) {
-      newErrors.newPassword =
-        "Le mot de passe doit contenir au moins 6 caractères";
-    }
-
-    if (!formData.confirmPassword) {
-      newErrors.confirmPassword = "Confirmation requise";
-    } else if (formData.newPassword !== formData.confirmPassword) {
-      newErrors.confirmPassword = "Les mots de passe ne correspondent pas";
-    }
-
-    setErrors(newErrors);
-    return !Object.values(newErrors).some((error) => error !== "");
-  };
-
-  const handleSubmit = async () => {
-    if (!validateForm()) return;
-
-    try {
-      await changePassword(formData.currentPassword, formData.newPassword);
-      Alert.alert("Succès", "Votre mot de passe a été modifié avec succès", [
-        {
-          text: "OK",
-          onPress: () => router.back(),
-        },
-      ]);
-    } catch (err) {
-      // Error is handled by the store
-    }
-  };
-
-  const handleInputChange = (field: keyof typeof formData, value: string) => {
-    setFormData((prev) => ({ ...prev, [field]: value }));
-    if (errors[field]) {
-      setErrors((prev) => ({ ...prev, [field]: "" }));
-    }
-    if (error) {
-      clearError();
-    }
-  };
-
-  const styles = StyleSheet.create({
+const createStyles = (colors: any) =>
+  StyleSheet.create({
     container: {
       flex: 1,
       backgroundColor: colors.backgroundSecondary,
@@ -163,6 +93,83 @@ export const ChangePasswordScreen: React.FC = () => {
       paddingTop: 8,
     },
   });
+
+const validateFormData = (formData: any) => {
+  const newErrors = {
+    currentPassword: "",
+    newPassword: "",
+    confirmPassword: "",
+  };
+
+  if (!formData.currentPassword) {
+    newErrors.currentPassword = "Mot de passe actuel requis";
+  }
+
+  if (!formData.newPassword) {
+    newErrors.newPassword = "Nouveau mot de passe requis";
+  } else if (!validatePassword(formData.newPassword)) {
+    newErrors.newPassword =
+      "Le mot de passe doit contenir au moins 6 caractères";
+  }
+
+  if (!formData.confirmPassword) {
+    newErrors.confirmPassword = "Confirmation requise";
+  } else if (formData.newPassword !== formData.confirmPassword) {
+    newErrors.confirmPassword = "Les mots de passe ne correspondent pas";
+  }
+
+  return {
+    errors: newErrors,
+    isValid: !Object.values(newErrors).some((error) => error !== ""),
+  };
+};
+
+export const ChangePasswordScreen: React.FC = () => {
+  const { colors } = useTheme();
+  const styles = createStyles(colors);
+  const { changePassword, isLoading, error, clearError } = useProfileStore();
+
+  const [formData, setFormData] = useState({
+    currentPassword: "",
+    newPassword: "",
+    confirmPassword: "",
+  });
+
+  const [errors, setErrors] = useState({
+    currentPassword: "",
+    newPassword: "",
+    confirmPassword: "",
+  });
+
+  const validateForm = () => {
+    const { errors: newErrors, isValid } = validateFormData(formData);
+    setErrors(newErrors);
+    return isValid;
+  };
+
+  const handleSubmit = async () => {
+    if (!validateForm()) return;
+
+    try {
+      await changePassword(formData.currentPassword, formData.newPassword);
+      Alert.alert("Succès", "Votre mot de passe a été modifié avec succès", [
+        {
+          text: "OK",
+          onPress: () => router.back(),
+        },
+      ]);
+    } catch (err) {}
+  };
+
+  const handleInputChange = (field: keyof typeof formData, value: string) => {
+    setFormData((prev) => ({ ...prev, [field]: value }));
+    if (errors[field]) {
+      setErrors((prev) => ({ ...prev, [field]: "" }));
+    }
+    if (error) {
+      clearError();
+    }
+  };
 
   return (
     <SafeAreaView style={styles.container}>

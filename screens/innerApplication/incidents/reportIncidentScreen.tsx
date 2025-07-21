@@ -17,12 +17,12 @@ import { Header } from "../../../shared/components/ui/Header";
 import { Sidebar } from "../../../shared/components/ui/Sidebar";
 import { useAuthStore } from "../../../store/authStore";
 import { useIncidentStore } from "../../../store/incidentStore";
-import { useVehicleStore } from "../../../store/vehicleStore";
+
 import { ReportIncidentForm } from "./components/ReportIncidentForm";
 
 export const ReportIncidentScreen: React.FC = () => {
   const { colors } = useTheme();
-  const { selectedVehicle, vehicles, selectVehicle } = useVehicleStore();
+
   const { error, clearError } = useIncidentStore();
   const { logout } = useAuthStore();
   const headerAnim = useRef(new Animated.Value(0)).current;
@@ -66,7 +66,7 @@ export const ReportIncidentScreen: React.FC = () => {
     },
     {
       id: "incidents",
-      label: "Incidents",
+      label: "Créer Incidents",
       icon: "exclamation-triangle" as const,
       onPress: () => {
         setShowSidebar(false);
@@ -75,7 +75,7 @@ export const ReportIncidentScreen: React.FC = () => {
     },
     {
       id: "history",
-      label: "Historique incidents",
+      label: "Liste des incidents",
       icon: "history" as const,
       onPress: () => {
         setShowSidebar(false);

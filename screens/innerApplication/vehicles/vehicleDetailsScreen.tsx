@@ -140,17 +140,11 @@ export const VehicleDetailsScreen: React.FC = () => {
     return null;
   }
 
-  const handleSeeAllMaintenance = () => {
-    console.log("See all maintenance pressed");
-  };
+  const handleSeeAllMaintenance = () => {};
 
-  const handleMaintenanceItemPress = (maintenance: MaintenanceRecord) => {
-    console.log("Maintenance item pressed:", maintenance);
-  };
+  const handleMaintenanceItemPress = (maintenance: MaintenanceRecord) => {};
 
-  const handleDocumentPress = (documentType: string) => {
-    console.log("Document pressed:", documentType);
-  };
+  const handleDocumentPress = (documentType: string) => {};
 
   const styles = StyleSheet.create({
     container: {

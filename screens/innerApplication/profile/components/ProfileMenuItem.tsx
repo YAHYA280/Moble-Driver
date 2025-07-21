@@ -1,4 +1,3 @@
-// screens/innerApplication/profile/components/ProfileMenuItem.tsx
 import ConditionalComponent from "@/shared/components/conditionalComponent/conditionalComponent";
 import { FontAwesome } from "@expo/vector-icons";
 import React from "react";
@@ -25,19 +24,8 @@ interface ProfileMenuItemProps {
   style?: ViewStyle;
 }
 
-export const ProfileMenuItem: React.FC<ProfileMenuItemProps> = ({
-  icon,
-  title,
-  subtitle,
-  value,
-  onPress,
-  showArrow = true,
-  disabled = false,
-  style,
-}) => {
-  const colors = useThemeColors();
-
-  const styles = StyleSheet.create({
+const createStyles = (colors: any, showArrow: boolean, disabled: boolean) =>
+  StyleSheet.create({
     container: {
       flexDirection: "row",
       alignItems: "center",
@@ -81,7 +69,9 @@ export const ProfileMenuItem: React.FC<ProfileMenuItemProps> = ({
       fontSize: 16,
       fontWeight: "600",
       color: colors.text,
-      marginBottom: subtitle ? 2 : 0,
+    },
+    titleWithSubtitle: {
+      marginBottom: 2,
     },
     subtitle: {
       fontSize: 14,
@@ -102,6 +92,20 @@ export const ProfileMenuItem: React.FC<ProfileMenuItemProps> = ({
     },
   });
 
+export const ProfileMenuItem: React.FC<ProfileMenuItemProps> = ({
+  icon,
+  title,
+  subtitle,
+  value,
+  onPress,
+  showArrow = true,
+  disabled = false,
+  style,
+}) => {
+  const colors = useThemeColors();
+
+  const styles = createStyles(colors, showArrow, disabled);
+
   return (
     <TouchableOpacity
       style={[styles.container, style]}
@@ -114,7 +118,11 @@ export const ProfileMenuItem: React.FC<ProfileMenuItemProps> = ({
       </View>
 
       <View style={styles.contentContainer}>
-        <Text style={styles.title}>{title}</Text>
+        <Text
+          style={[styles.title, subtitle ? styles.titleWithSubtitle : null]}
+        >
+          {title}
+        </Text>
         <ConditionalComponent isValid={!!subtitle}>
           <Text style={styles.subtitle}>{subtitle}</Text>
         </ConditionalComponent>

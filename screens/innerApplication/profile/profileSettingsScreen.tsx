@@ -1,4 +1,3 @@
-// screens/innerApplication/profile/profileSettingsScreen.tsx
 import { router } from "expo-router";
 import React, { useEffect, useRef, useState } from "react";
 import {
@@ -31,10 +30,8 @@ interface SettingItemProps {
   onPress?: () => void;
 }
 
-const SettingSection: React.FC<SettingSectionProps> = ({ title, children }) => {
-  const { colors } = useTheme();
-
-  const sectionStyles = StyleSheet.create({
+const createSectionStyles = (colors: any) =>
+  StyleSheet.create({
     section: {
       marginHorizontal: 16,
       marginVertical: 8,
@@ -67,33 +64,8 @@ const SettingSection: React.FC<SettingSectionProps> = ({ title, children }) => {
     },
   });
 
-  return (
-    <View>
-      <Text style={sectionStyles.sectionTitle}>{title}</Text>
-      <View style={sectionStyles.section}>{children}</View>
-    </View>
-  );
-};
-
-const SettingItem: React.FC<SettingItemProps> = ({
-  title,
-  subtitle,
-  value = false,
-  onToggle,
-  showToggle = false,
-  onPress,
-}) => {
-  const { colors } = useTheme();
-
-  const handlePress = () => {
-    if (showToggle && onToggle) {
-      onToggle(!value);
-    } else if (onPress) {
-      onPress();
-    }
-  };
-
-  const itemStyles = StyleSheet.create({
+const createItemStyles = (colors: any) =>
+  StyleSheet.create({
     item: {
       flexDirection: "row",
       alignItems: "center",
@@ -112,7 +84,7 @@ const SettingItem: React.FC<SettingItemProps> = ({
       fontSize: 16,
       fontWeight: "500",
       color: colors.text,
-      marginBottom: subtitle ? 2 : 0,
+      marginBottom: 2,
     },
     itemSubtitle: {
       fontSize: 13,
@@ -161,6 +133,52 @@ const SettingItem: React.FC<SettingItemProps> = ({
     },
   });
 
+const createMainStyles = (colors: any) =>
+  StyleSheet.create({
+    container: {
+      flex: 1,
+      backgroundColor: colors.backgroundSecondary,
+    },
+    content: {
+      flex: 1,
+    },
+    scrollContent: {
+      paddingTop: 20,
+      paddingBottom: 100,
+    },
+  });
+
+const SettingSection: React.FC<SettingSectionProps> = ({ title, children }) => {
+  const { colors } = useTheme();
+  const sectionStyles = createSectionStyles(colors);
+
+  return (
+    <View>
+      <Text style={sectionStyles.sectionTitle}>{title}</Text>
+      <View style={sectionStyles.section}>{children}</View>
+    </View>
+  );
+};
+
+const SettingItem: React.FC<SettingItemProps> = ({
+  title,
+  subtitle,
+  value = false,
+  onToggle,
+  showToggle = false,
+  onPress,
+}) => {
+  const { colors } = useTheme();
+  const itemStyles = createItemStyles(colors);
+
+  const handlePress = () => {
+    if (showToggle && onToggle) {
+      onToggle(!value);
+    } else if (onPress) {
+      onPress();
+    }
+  };
+
   return (
     <TouchableOpacity
       style={itemStyles.item}
@@ -168,7 +186,11 @@ const SettingItem: React.FC<SettingItemProps> = ({
       activeOpacity={0.7}
     >
       <View style={itemStyles.contentContainer}>
-        <Text style={itemStyles.itemTitle}>{title}</Text>
+        <Text
+          style={[itemStyles.itemTitle, { marginBottom: subtitle ? 2 : 0 }]}
+        >
+          {title}
+        </Text>
         <ConditionalComponent isValid={!!subtitle}>
           <Text style={itemStyles.itemSubtitle}>{subtitle}</Text>
         </ConditionalComponent>
@@ -202,6 +224,9 @@ export const ProfileSettingsScreen: React.FC = () => {
   const { profile, updateAccountSettings } = useProfileStore();
   const fadeAnim = useRef(new Animated.Value(0)).current;
   const [hasChanges, setHasChanges] = useState(false);
+
+  // Create styles once per theme change
+  const styles = createMainStyles(colors);
 
   // Local state to track changes
   const [localSettings, setLocalSettings] = useState({
@@ -245,30 +270,16 @@ export const ProfileSettingsScreen: React.FC = () => {
   };
 
   const handleLanguagePress = () => {
-    router.push("/(tabs)/profile/language");
+    router.push("./(tabs)/profile/language");
   };
 
   const handlePasswordPress = () => {
-    router.push("/(tabs)/profile/change-password");
+    router.push("./(tabs)/profile/change-password");
   };
 
   if (!profile) {
     return null;
   }
-
-  const styles = StyleSheet.create({
-    container: {
-      flex: 1,
-      backgroundColor: colors.backgroundSecondary,
-    },
-    content: {
-      flex: 1,
-    },
-    scrollContent: {
-      paddingTop: 20,
-      paddingBottom: 100,
-    },
-  });
 
   return (
     <SafeAreaView style={styles.container}>

@@ -1,4 +1,3 @@
-// screens/innerApplication/incidents/components/ReportIncidentForm.tsx
 import { FontAwesome } from "@expo/vector-icons";
 import * as ImagePicker from "expo-image-picker";
 import { router } from "expo-router";
@@ -95,12 +94,10 @@ export const ReportIncidentForm: React.FC = () => {
   ];
 
   useEffect(() => {
-    // Request media permissions
     (async () => {
       const { status } =
         await ImagePicker.requestMediaLibraryPermissionsAsync();
       if (status !== "granted") {
-        console.log("Media library permission denied");
       }
     })();
   }, []);
@@ -144,13 +141,12 @@ export const ReportIncidentForm: React.FC = () => {
       await reportIncident({
         vehicleId: vehicleToUse.id,
         vehiclePlateNumber: vehicleToUse.plateNumber,
-        type: "Problème tapis roulant", // Default type based on the design
+        type: "Problème tapis roulant",
         description: description.trim(),
         priority: selectedPriority,
         status: "En Cours",
       });
 
-      // Navigate to success screen
       router.push("/(tabs)/incidents/success");
     } catch (error) {
       Alert.alert(
@@ -218,7 +214,7 @@ export const ReportIncidentForm: React.FC = () => {
       borderColor: colors.border,
       borderRadius: 8,
       backgroundColor: colors.surface,
-      marginBottom: 16, // Reduced from 32 to 16
+      marginBottom: 16,
     },
     mediaUploadIcon: {
       marginRight: 12,
@@ -232,7 +228,7 @@ export const ReportIncidentForm: React.FC = () => {
       flexWrap: "wrap",
       gap: 8,
       marginTop: 12,
-      marginBottom: 24, // Added margin bottom for spacing
+      marginBottom: 24,
     },
     mediaItem: {
       position: "relative",

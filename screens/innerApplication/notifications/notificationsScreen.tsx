@@ -221,7 +221,6 @@ export const NotificationsScreen: React.FC = () => {
   };
 
   const handleNotificationAction = (actionId: string) => {
-    console.log("Action triggered:", actionId);
     Alert.alert("Action", `Action ${actionId} déclenchée`);
   };
 

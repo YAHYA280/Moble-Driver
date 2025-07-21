@@ -1,4 +1,3 @@
-// screens/innerApplication/profile/components/ProfileHeader.tsx
 import ConditionalComponent from "@/shared/components/conditionalComponent/conditionalComponent";
 import { FontAwesome } from "@expo/vector-icons";
 import React from "react";
@@ -22,16 +21,8 @@ interface ProfileHeaderProps {
   style?: ViewStyle;
 }
 
-export const ProfileHeader: React.FC<ProfileHeaderProps> = ({
-  profile,
-  onEditPress,
-  onPhotoPress,
-  isEditMode = false,
-  style,
-}) => {
-  const colors = useThemeColors();
-
-  const styles = StyleSheet.create({
+const createStyles = (colors: any) =>
+  StyleSheet.create({
     container: {
       backgroundColor: colors.primary,
       paddingTop: 60,
@@ -145,7 +136,6 @@ export const ProfileHeader: React.FC<ProfileHeaderProps> = ({
       width: 8,
       height: 8,
       borderRadius: 4,
-      backgroundColor: colors.success,
       marginRight: 8,
     },
     statusText: {
@@ -166,6 +156,16 @@ export const ProfileHeader: React.FC<ProfileHeaderProps> = ({
     },
   });
 
+export const ProfileHeader: React.FC<ProfileHeaderProps> = ({
+  profile,
+  onEditPress,
+  onPhotoPress,
+  isEditMode = false,
+  style,
+}) => {
+  const colors = useThemeColors();
+  const styles = createStyles(colors);
+
   const getStatusColor = () => {
     switch (profile.professionalInfo.status) {
       case "Actif":
@@ -181,7 +181,6 @@ export const ProfileHeader: React.FC<ProfileHeaderProps> = ({
 
   return (
     <View style={[styles.container, style]}>
-      {/* Edit Button */}
       <ConditionalComponent isValid={!!onEditPress}>
         <TouchableOpacity
           style={styles.editButton}
@@ -197,7 +196,6 @@ export const ProfileHeader: React.FC<ProfileHeaderProps> = ({
       </ConditionalComponent>
 
       <View style={styles.headerContent}>
-        {/* Profile Photo */}
         <View style={styles.photoContainer}>
           <TouchableOpacity
             style={styles.photoWrapper}
@@ -236,7 +234,6 @@ export const ProfileHeader: React.FC<ProfileHeaderProps> = ({
           </ConditionalComponent>
         </View>
 
-        {/* Name and Position */}
         <View style={styles.nameContainer}>
           <Text style={styles.fullName}>{profile.personalInfo.fullName}</Text>
           <Text style={styles.position}>
@@ -244,7 +241,6 @@ export const ProfileHeader: React.FC<ProfileHeaderProps> = ({
           </Text>
         </View>
 
-        {/* Status */}
         <View style={styles.statusContainer}>
           <View
             style={[styles.statusDot, { backgroundColor: getStatusColor() }]}

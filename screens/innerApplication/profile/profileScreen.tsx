@@ -1,4 +1,3 @@
-// screens/innerApplication/profile/profileScreen.tsx
 import { FontAwesome } from "@expo/vector-icons";
 import { router } from "expo-router";
 import React, { useEffect, useRef } from "react";
@@ -26,130 +25,20 @@ import { PersonalInfoCard } from "./components/PersonalInfoCard";
 
 const { width: screenWidth, height: screenHeight } = Dimensions.get("window");
 
-const CurvedBackground: React.FC = () => {
-  const { colors } = useTheme();
-
-  const pathData = `
-    M 0,0 
-    L ${screenWidth},0 
-    L ${screenWidth},190
-    Q ${screenWidth * 0.75},220 ${screenWidth * 0.5},230
-    Q ${screenWidth * 0.25},220 0,190
-    Z
-  `;
-
-  return (
-    <View style={StyleSheet.absoluteFillObject}>
-      {/* Base background */}
-      <View
-        style={[
-          StyleSheet.absoluteFillObject,
-          { backgroundColor: colors.isDark ? colors.background : "#FFFFFF" },
-        ]}
-      />
-
-      {/* Curved purple section */}
-      <Svg
-        height="250"
-        width={screenWidth}
-        viewBox={`0 0 ${screenWidth} 240`}
-        style={{ position: "absolute", top: 0 }}
-      >
-        <Path d={pathData} fill="#746CD4" />
-      </Svg>
-    </View>
-  );
-};
-
-export const ProfileScreen: React.FC = () => {
-  const { colors } = useTheme();
-  const { logout } = useAuthStore();
-  const { profile, fetchProfile } = useProfileStore();
-
-  const fadeAnim = useRef(new Animated.Value(0)).current;
-
-  useEffect(() => {
-    fetchProfile();
-
-    Animated.timing(fadeAnim, {
-      toValue: 1,
-      duration: 600,
-      useNativeDriver: true,
-    }).start();
-  }, []);
-
-  const handleLogout = () => {
-    Alert.alert("Déconnexion", "Êtes-vous sûr de vouloir vous déconnecter ?", [
-      { text: "Annuler", style: "cancel" },
-      {
-        text: "Déconnecter",
-        style: "destructive",
-        onPress: () => {
-          logout();
-          router.replace("/auth/login");
-        },
-      },
-    ]);
-  };
-
-  const handleSettingsPress = () => {
-    router.push("/(tabs)/profile/settings");
-  };
-
-  const handleEditPress = () => {
-    router.push("/(tabs)/profile/edit");
-  };
-
-  // to be removed when adding the exact screens
-  const showComingSoonAlert = (featureName: string) => {
-    Alert.alert(
-      "Bientôt disponible",
-      `La fonctionnalité "${featureName}" sera disponible prochainement. Yahya :D`,
-      [
-        {
-          text: "OK",
-          style: "default",
-        },
-      ]
-    );
-  };
-
-  const navigationMenuItems = [
-    {
-      id: "documents",
-      icon: "file-text" as const,
-      label: "Mes documents",
-      subtitle: "Consultez vos documents",
-      onPress: () => showComingSoonAlert("Mes documents"),
+const createCurvedBackgroundStyles = (colors: any) =>
+  StyleSheet.create({
+    absoluteFill: {
+      ...StyleSheet.absoluteFillObject,
+      backgroundColor: colors.isDark ? colors.background : "#FFFFFF",
     },
-    {
-      id: "history",
-      icon: "history" as const,
-      label: "Historique des trajets",
-      subtitle: "Voir l'historique complet",
-      onPress: () => showComingSoonAlert("Historique des trajets"),
+    svgContainer: {
+      position: "absolute",
+      top: 0,
     },
-    {
-      id: "notifications",
-      icon: "bell" as const,
-      label: "Notifications et alertes",
-      subtitle: "Gérer les notifications",
-      onPress: () => router.push("/notifications?returnTo=/(tabs)/profile"),
-    },
-    {
-      id: "logout",
-      icon: "sign-out" as const,
-      label: "Déconnexion",
-      subtitle: "Se déconnecter du compte",
-      onPress: handleLogout,
-    },
-  ];
+  });
 
-  if (!profile) {
-    return null;
-  }
-
-  const styles = StyleSheet.create({
+const createMainStyles = (colors: any) =>
+  StyleSheet.create({
     container: {
       flex: 1,
       backgroundColor: colors.isDark ? colors.background : "#FFFFFF",
@@ -273,7 +162,130 @@ export const ProfileScreen: React.FC = () => {
       flex: 1,
       paddingTop: 10,
     },
+    scrollContentContainer: {
+      paddingBottom: 120,
+    },
   });
+
+const CurvedBackground: React.FC = () => {
+  const { colors } = useTheme();
+  const styles = createCurvedBackgroundStyles(colors);
+
+  const pathData = `
+    M 0,0 
+    L ${screenWidth},0 
+    L ${screenWidth},190
+    Q ${screenWidth * 0.75},220 ${screenWidth * 0.5},230
+    Q ${screenWidth * 0.25},220 0,190
+    Z
+  `;
+
+  return (
+    <View style={StyleSheet.absoluteFillObject}>
+      {/* Base background */}
+      <View style={styles.absoluteFill} />
+
+      {/* Curved purple section */}
+      <Svg
+        height="250"
+        width={screenWidth}
+        viewBox={`0 0 ${screenWidth} 240`}
+        style={styles.svgContainer}
+      >
+        <Path d={pathData} fill="#746CD4" />
+      </Svg>
+    </View>
+  );
+};
+
+export const ProfileScreen: React.FC = () => {
+  const { colors } = useTheme();
+  const { logout } = useAuthStore();
+  const { profile, fetchProfile } = useProfileStore();
+
+  const fadeAnim = useRef(new Animated.Value(0)).current;
+
+  const styles = createMainStyles(colors);
+
+  useEffect(() => {
+    fetchProfile();
+
+    Animated.timing(fadeAnim, {
+      toValue: 1,
+      duration: 600,
+      useNativeDriver: true,
+    }).start();
+  }, []);
+
+  const handleLogout = () => {
+    Alert.alert("Déconnexion", "Êtes-vous sûr de vouloir vous déconnecter ?", [
+      { text: "Annuler", style: "cancel" },
+      {
+        text: "Déconnecter",
+        style: "destructive",
+        onPress: () => {
+          logout();
+          router.replace("/auth/login");
+        },
+      },
+    ]);
+  };
+
+  const handleSettingsPress = () => {
+    router.push("./(tabs)/profile/settings");
+  };
+
+  const handleEditPress = () => {
+    router.push("./(tabs)/profile/edit");
+  };
+
+  const showComingSoonAlert = (featureName: string) => {
+    Alert.alert(
+      "Bientôt disponible",
+      `La fonctionnalité "${featureName}" sera disponible prochainement. Yahya :D`,
+      [
+        {
+          text: "OK",
+          style: "default",
+        },
+      ]
+    );
+  };
+
+  const navigationMenuItems = [
+    {
+      id: "documents",
+      icon: "file-text" as const,
+      label: "Mes documents",
+      subtitle: "Consultez vos documents",
+      onPress: () => showComingSoonAlert("Mes documents"),
+    },
+    {
+      id: "history",
+      icon: "history" as const,
+      label: "Historique des trajets",
+      subtitle: "Voir l'historique complet",
+      onPress: () => showComingSoonAlert("Historique des trajets"),
+    },
+    {
+      id: "notifications",
+      icon: "bell" as const,
+      label: "Notifications et alertes",
+      subtitle: "Gérer les notifications",
+      onPress: () => router.push("/notifications?returnTo=/(tabs)/profile"),
+    },
+    {
+      id: "logout",
+      icon: "sign-out" as const,
+      label: "Déconnexion",
+      subtitle: "Se déconnecter du compte",
+      onPress: handleLogout,
+    },
+  ];
+
+  if (!profile) {
+    return null;
+  }
 
   return (
     <View style={styles.container}>
@@ -363,12 +375,10 @@ export const ProfileScreen: React.FC = () => {
         <ScrollView
           style={styles.cardsContainer}
           showsVerticalScrollIndicator={false}
-          contentContainerStyle={{ paddingBottom: 120 }}
+          contentContainerStyle={styles.scrollContentContainer}
         >
-          {/* Personal Information Card */}
           <PersonalInfoCard profile={profile} />
 
-          {/* Navigation Menu Card */}
           <NavigationMenuCard
             title="Actions rapides"
             items={navigationMenuItems}

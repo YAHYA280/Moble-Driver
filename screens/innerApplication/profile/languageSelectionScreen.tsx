@@ -1,4 +1,3 @@
-// screens/innerApplication/profile/languageSelectionScreen.tsx
 import { router } from "expo-router";
 import React, { useEffect, useRef } from "react";
 import {
@@ -22,47 +21,8 @@ interface Language {
   flag: string;
 }
 
-export const LanguageSelectionScreen: React.FC = () => {
-  const { colors } = useTheme();
-  const { profile, updateAccountSettings } = useProfileStore();
-  const fadeAnim = useRef(new Animated.Value(0)).current;
-
-  const languages: Language[] = [
-    { code: "en", name: "English (US)", nativeName: "English", flag: "🇺🇸" },
-    { code: "en", name: "English (UK)", nativeName: "English", flag: "🇬🇧" },
-    { code: "zh", name: "Mandarin", nativeName: "中文", flag: "🇨🇳" },
-    { code: "hi", name: "Hindi", nativeName: "हिन्दी", flag: "🇮🇳" },
-    { code: "es", name: "Spanish", nativeName: "Español", flag: "🇪🇸" },
-    { code: "fr", name: "French", nativeName: "Français", flag: "🇫🇷" },
-    { code: "ar", name: "Arabic", nativeName: "العربية", flag: "🇸🇦" },
-    { code: "ru", name: "Russian", nativeName: "Русский", flag: "🇷🇺" },
-    {
-      code: "id",
-      name: "Indonesia",
-      nativeName: "Bahasa Indonesia",
-      flag: "🇮🇩",
-    },
-    { code: "vi", name: "Vietnamese", nativeName: "Tiếng Việt", flag: "🇻🇳" },
-  ];
-
-  useEffect(() => {
-    Animated.timing(fadeAnim, {
-      toValue: 1,
-      duration: 600,
-      useNativeDriver: true,
-    }).start();
-  }, []);
-
-  const handleLanguageSelect = (languageCode: "fr" | "en" | "ar") => {
-    updateAccountSettings({ language: languageCode });
-    router.back();
-  };
-
-  const isSelected = (languageCode: string) => {
-    return profile?.accountSettings.language === languageCode;
-  };
-
-  const styles = StyleSheet.create({
+const createStyles = (colors: any) =>
+  StyleSheet.create({
     container: {
       flex: 1,
       backgroundColor: colors.backgroundSecondary,
@@ -133,6 +93,49 @@ export const LanguageSelectionScreen: React.FC = () => {
       backgroundColor: "white",
     },
   });
+
+export const LanguageSelectionScreen: React.FC = () => {
+  const { colors } = useTheme();
+  const { profile, updateAccountSettings } = useProfileStore();
+  const fadeAnim = useRef(new Animated.Value(0)).current;
+
+  // Create styles once per theme change
+  const styles = createStyles(colors);
+
+  const languages: Language[] = [
+    { code: "en", name: "English (US)", nativeName: "English", flag: "🇺🇸" },
+    { code: "en", name: "English (UK)", nativeName: "English", flag: "🇬🇧" },
+    { code: "zh", name: "Mandarin", nativeName: "中文", flag: "🇨🇳" },
+    { code: "hi", name: "Hindi", nativeName: "हिन्दी", flag: "🇮🇳" },
+    { code: "es", name: "Spanish", nativeName: "Español", flag: "🇪🇸" },
+    { code: "fr", name: "French", nativeName: "Français", flag: "🇫🇷" },
+    { code: "ar", name: "Arabic", nativeName: "العربية", flag: "🇸🇦" },
+    { code: "ru", name: "Russian", nativeName: "Русский", flag: "🇷🇺" },
+    {
+      code: "id",
+      name: "Indonesia",
+      nativeName: "Bahasa Indonesia",
+      flag: "🇮🇩",
+    },
+    { code: "vi", name: "Vietnamese", nativeName: "Tiếng Việt", flag: "🇻🇳" },
+  ];
+
+  useEffect(() => {
+    Animated.timing(fadeAnim, {
+      toValue: 1,
+      duration: 600,
+      useNativeDriver: true,
+    }).start();
+  }, []);
+
+  const handleLanguageSelect = (languageCode: "fr" | "en" | "ar") => {
+    updateAccountSettings({ language: languageCode });
+    router.back();
+  };
+
+  const isSelected = (languageCode: string) => {
+    return profile?.accountSettings.language === languageCode;
+  };
 
   return (
     <SafeAreaView style={styles.container}>

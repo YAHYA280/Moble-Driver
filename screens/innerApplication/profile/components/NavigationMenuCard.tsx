@@ -1,4 +1,3 @@
-// screens/innerApplication/profile/components/NavigationMenuCard.tsx
 import { FontAwesome } from "@expo/vector-icons";
 import React from "react";
 import {
@@ -26,10 +25,8 @@ interface NavigationMenuCardProps {
   style?: ViewStyle;
 }
 
-const NavigationItem: React.FC<{ item: NavigationMenuItem }> = ({ item }) => {
-  const colors = useThemeColors();
-
-  const styles = StyleSheet.create({
+const createNavigationItemStyles = (colors: any) =>
+  StyleSheet.create({
     container: {
       flexDirection: "row",
       alignItems: "center",
@@ -55,7 +52,7 @@ const NavigationItem: React.FC<{ item: NavigationMenuItem }> = ({ item }) => {
       fontSize: 16,
       fontWeight: "600",
       color: colors.text,
-      marginBottom: item.subtitle ? 2 : 0,
+      marginBottom: 2,
     },
     subtitle: {
       fontSize: 14,
@@ -69,42 +66,8 @@ const NavigationItem: React.FC<{ item: NavigationMenuItem }> = ({ item }) => {
     },
   });
 
-  return (
-    <TouchableOpacity
-      style={styles.container}
-      onPress={item.onPress}
-      activeOpacity={0.7}
-    >
-      <View style={styles.iconContainer}>
-        <FontAwesome name={item.icon} size={18} color={colors.primary} />
-      </View>
-
-      <View style={styles.textContainer}>
-        <Text style={styles.label}>{item.label}</Text>
-        <ConditionalComponent isValid={!!item.subtitle}>
-          <Text style={styles.subtitle}>{item.subtitle}</Text>
-        </ConditionalComponent>
-      </View>
-
-      <View style={styles.arrowContainer}>
-        <FontAwesome
-          name="chevron-right"
-          size={14}
-          color={colors.textTertiary}
-        />
-      </View>
-    </TouchableOpacity>
-  );
-};
-
-export const NavigationMenuCard: React.FC<NavigationMenuCardProps> = ({
-  title,
-  items,
-  style,
-}) => {
-  const colors = useThemeColors();
-
-  const styles = StyleSheet.create({
+const createCardStyles = (colors: any) =>
+  StyleSheet.create({
     container: {
       backgroundColor: colors.card,
       borderRadius: 16,
@@ -141,6 +104,46 @@ export const NavigationMenuCard: React.FC<NavigationMenuCardProps> = ({
       color: colors.text,
     },
   });
+
+const NavigationItem: React.FC<{ item: NavigationMenuItem }> = ({ item }) => {
+  const colors = useThemeColors();
+  const styles = createNavigationItemStyles(colors);
+
+  return (
+    <TouchableOpacity
+      style={styles.container}
+      onPress={item.onPress}
+      activeOpacity={0.7}
+    >
+      <View style={styles.iconContainer}>
+        <FontAwesome name={item.icon} size={18} color={colors.primary} />
+      </View>
+
+      <View style={styles.textContainer}>
+        <Text style={styles.label}>{item.label}</Text>
+        <ConditionalComponent isValid={!!item.subtitle}>
+          <Text style={styles.subtitle}>{item.subtitle}</Text>
+        </ConditionalComponent>
+      </View>
+
+      <View style={styles.arrowContainer}>
+        <FontAwesome
+          name="chevron-right"
+          size={14}
+          color={colors.textTertiary}
+        />
+      </View>
+    </TouchableOpacity>
+  );
+};
+
+export const NavigationMenuCard: React.FC<NavigationMenuCardProps> = ({
+  title,
+  items,
+  style,
+}) => {
+  const colors = useThemeColors();
+  const styles = createCardStyles(colors);
 
   return (
     <View style={[styles.container, style]}>

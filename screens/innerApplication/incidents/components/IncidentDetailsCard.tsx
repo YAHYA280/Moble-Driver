@@ -1,4 +1,3 @@
-// screens/innerApplication/incidents/components/IncidentDetailsCard.tsx
 import { FontAwesome } from "@expo/vector-icons";
 import React from "react";
 import { Platform, StyleSheet, Text, View, ViewStyle } from "react-native";
@@ -124,7 +123,7 @@ export const IncidentDetailsCard: React.FC<IncidentDetailsCardProps> = ({
       marginVertical: 16,
     },
     descriptionSection: {
-      marginBottom: 16,
+      marginBottom: 0,
     },
     sectionTitle: {
       fontSize: 16,
@@ -136,26 +135,6 @@ export const IncidentDetailsCard: React.FC<IncidentDetailsCardProps> = ({
       fontSize: 15,
       lineHeight: 22,
       color: colors.textSecondary,
-    },
-    detailsGrid: {
-      flexDirection: "row",
-      flexWrap: "wrap",
-      gap: 16,
-    },
-    detailItem: {
-      flex: 1,
-      minWidth: "45%",
-    },
-    detailLabel: {
-      fontSize: 13,
-      color: colors.textTertiary,
-      fontWeight: "500",
-      marginBottom: 4,
-    },
-    detailValue: {
-      fontSize: 15,
-      color: colors.text,
-      fontWeight: "600",
     },
   });
 
@@ -184,34 +163,10 @@ export const IncidentDetailsCard: React.FC<IncidentDetailsCardProps> = ({
 
       <View style={styles.divider} />
 
-      {/* Description */}
+      {/* Description Only */}
       <View style={styles.descriptionSection}>
         <Text style={styles.sectionTitle}>Description du problème</Text>
         <Text style={styles.description}>{incident.description}</Text>
-      </View>
-
-      {/* Details Grid */}
-      <View style={styles.detailsGrid}>
-        <View style={styles.detailItem}>
-          <Text style={styles.detailLabel}>ID de l&apos;incident</Text>
-          <Text style={styles.detailValue}>#{incident.id}</Text>
-        </View>
-        <View style={styles.detailItem}>
-          <Text style={styles.detailLabel}>Signalé par</Text>
-          <Text style={styles.detailValue}>{incident.reportedBy}</Text>
-        </View>
-        {incident.location && (
-          <View style={styles.detailItem}>
-            <Text style={styles.detailLabel}>Localisation</Text>
-            <Text style={styles.detailValue}>{incident.location}</Text>
-          </View>
-        )}
-        {incident.resolvedDate && (
-          <View style={styles.detailItem}>
-            <Text style={styles.detailLabel}>Résolu le</Text>
-            <Text style={styles.detailValue}>{incident.resolvedDate}</Text>
-          </View>
-        )}
       </View>
     </View>
   );

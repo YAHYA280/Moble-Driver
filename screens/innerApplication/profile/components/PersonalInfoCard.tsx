@@ -1,4 +1,3 @@
-// screens/innerApplication/profile/components/PersonalInfoCard.tsx
 import { FontAwesome } from "@expo/vector-icons";
 import React from "react";
 import { Platform, StyleSheet, Text, View, ViewStyle } from "react-native";
@@ -18,30 +17,12 @@ interface InfoItemProps {
   isStatus?: boolean;
 }
 
-const InfoItem: React.FC<InfoItemProps> = ({
-  icon,
-  label,
-  value,
-  isStatus = false,
-}) => {
-  const colors = useThemeColors();
-
-  const getStatusColor = () => {
-    if (!isStatus) return colors.text;
-
-    switch (value) {
-      case "Actif":
-        return colors.success;
-      case "En congé":
-        return colors.warning;
-      case "Inactif":
-        return colors.error;
-      default:
-        return colors.text;
-    }
-  };
-
-  const styles = StyleSheet.create({
+const createInfoItemStyles = (
+  colors: any,
+  statusColor: string,
+  isStatus: boolean
+) =>
+  StyleSheet.create({
     container: {
       flexDirection: "row",
       alignItems: "center",
@@ -68,13 +49,13 @@ const InfoItem: React.FC<InfoItemProps> = ({
     value: {
       fontSize: 16,
       fontWeight: "600",
-      color: getStatusColor(),
+      color: statusColor,
     },
     statusIndicator: {
       width: 8,
       height: 8,
       borderRadius: 4,
-      backgroundColor: getStatusColor(),
+      backgroundColor: statusColor,
       marginRight: 8,
     },
     valueRow: {
@@ -83,51 +64,8 @@ const InfoItem: React.FC<InfoItemProps> = ({
     },
   });
 
-  return (
-    <View style={styles.container}>
-      <View style={styles.iconContainer}>
-        <FontAwesome name={icon} size={16} color={colors.primary} />
-      </View>
-      <View style={styles.textContainer}>
-        <Text style={styles.label}>{label}</Text>
-        <View style={styles.valueRow}>
-          <ConditionalComponent isValid={isStatus}>
-            <View style={styles.statusIndicator} />
-          </ConditionalComponent>
-          <Text style={styles.value}>{value}</Text>
-        </View>
-      </View>
-    </View>
-  );
-};
-
-export const PersonalInfoCard: React.FC<PersonalInfoCardProps> = ({
-  profile,
-  style,
-}) => {
-  const colors = useThemeColors();
-
-  const calculateAge = (birthDate: string) => {
-    const today = new Date();
-    const birth = new Date(birthDate.split("/").reverse().join("-"));
-    let age = today.getFullYear() - birth.getFullYear();
-    const monthDiff = today.getMonth() - birth.getMonth();
-
-    if (
-      monthDiff < 0 ||
-      (monthDiff === 0 && today.getDate() < birth.getDate())
-    ) {
-      age--;
-    }
-
-    return age;
-  };
-
-  const age = profile.personalInfo.dateOfBirth
-    ? calculateAge(profile.personalInfo.dateOfBirth)
-    : null;
-
-  const styles = StyleSheet.create({
+const createCardStyles = (colors: any) =>
+  StyleSheet.create({
     container: {
       backgroundColor: colors.card,
       borderRadius: 16,
@@ -169,6 +107,78 @@ export const PersonalInfoCard: React.FC<PersonalInfoCardProps> = ({
       marginVertical: 8,
     },
   });
+
+const InfoItem: React.FC<InfoItemProps> = ({
+  icon,
+  label,
+  value,
+  isStatus = false,
+}) => {
+  const colors = useThemeColors();
+
+  const getStatusColor = () => {
+    if (!isStatus) return colors.text;
+
+    switch (value) {
+      case "Actif":
+        return colors.success;
+      case "En congé":
+        return colors.warning;
+      case "Inactif":
+        return colors.error;
+      default:
+        return colors.text;
+    }
+  };
+
+  const statusColor = getStatusColor();
+  const styles = createInfoItemStyles(colors, statusColor, isStatus);
+
+  return (
+    <View style={styles.container}>
+      <View style={styles.iconContainer}>
+        <FontAwesome name={icon} size={16} color={colors.primary} />
+      </View>
+      <View style={styles.textContainer}>
+        <Text style={styles.label}>{label}</Text>
+        <View style={styles.valueRow}>
+          <ConditionalComponent isValid={isStatus}>
+            <View style={styles.statusIndicator} />
+          </ConditionalComponent>
+          <Text style={styles.value}>{value}</Text>
+        </View>
+      </View>
+    </View>
+  );
+};
+
+export const PersonalInfoCard: React.FC<PersonalInfoCardProps> = ({
+  profile,
+  style,
+}) => {
+  const colors = useThemeColors();
+
+  const styles = createCardStyles(colors);
+
+  const calculateAge = (birthDate: string) => {
+    const today = new Date();
+    const birth = new Date(birthDate.split("/").reverse().join("-"));
+    let age = today.getFullYear() - birth.getFullYear();
+    const monthDiff = today.getMonth() - birth.getMonth();
+
+    if (
+      monthDiff < 0 ||
+      (monthDiff === 0 && today.getDate() < birth.getDate())
+    ) {
+      age--;
+    }
+
+    return age;
+  };
+
+  const age = profile.personalInfo.dateOfBirth
+    ? calculateAge(profile.personalInfo.dateOfBirth)
+    : null;
 
   return (
     <View style={[styles.container, style]}>

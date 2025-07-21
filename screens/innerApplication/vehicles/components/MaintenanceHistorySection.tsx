@@ -140,21 +140,23 @@ const AnimatedMaintenanceItem: React.FC<{
           <Text style={styles.maintenanceTitle} numberOfLines={1}>
             {maintenance.type}
           </Text>
-          {maintenance.description && (
+
+          <ConditionalComponent isValid={!!maintenance.description}>
             <Text style={styles.maintenanceDescription} numberOfLines={1}>
               {maintenance.description}
             </Text>
-          )}
+          </ConditionalComponent>
         </View>
 
         {/* Right Section */}
         <View style={styles.rightSection}>
           <Text style={styles.maintenanceDate}>{maintenance.date}</Text>
-          {maintenance.cost && (
+
+          <ConditionalComponent isValid={!!maintenance.cost}>
             <Text style={styles.maintenanceDescription}>
               {maintenance.cost}€
             </Text>
-          )}
+          </ConditionalComponent>
         </View>
       </TouchableOpacity>
     </Animated.View>

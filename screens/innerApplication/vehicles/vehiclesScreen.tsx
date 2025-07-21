@@ -177,7 +177,7 @@ export const VehiclesScreen: React.FC = () => {
     },
     {
       id: "incidents",
-      label: "Incidents",
+      label: "Créer Incidents",
       icon: "exclamation-triangle" as const,
       onPress: () => {
         setShowSidebar(false);
@@ -190,7 +190,7 @@ export const VehiclesScreen: React.FC = () => {
     },
     {
       id: "history",
-      label: "Historique incidents",
+      label: "Liste des incidents",
       icon: "history" as const,
       onPress: () => {
         setShowSidebar(false);

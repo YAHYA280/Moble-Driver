@@ -1,8 +1,8 @@
-// screens/innerApplication/incidents/components/IncidentStatusCard.tsx
 import { FontAwesome } from "@expo/vector-icons";
 import React from "react";
 import { Platform, StyleSheet, Text, View, ViewStyle } from "react-native";
 import { useThemeColors } from "../../../../hooks/useTheme";
+import ConditionalComponent from "../../../../shared/components/conditionalComponent/conditionalComponent";
 import { Incident } from "../../../../shared/types/incident";
 
 interface IncidentStatusCardProps {
@@ -60,7 +60,7 @@ export const IncidentStatusCard: React.FC<IncidentStatusCardProps> = ({
       },
       {
         title: "Prise en charge",
-        date: incident.reportDate, // In real app, this would be a separate date
+        date: incident.reportDate,
         completed: true,
         icon: "user" as const,
       },
@@ -259,9 +259,9 @@ export const IncidentStatusCard: React.FC<IncidentStatusCardProps> = ({
                 size={14}
                 color={step.completed ? "white" : colors.textTertiary}
               />
-              {index < timelineSteps.length - 1 && (
+              <ConditionalComponent isValid={index < timelineSteps.length - 1}>
                 <View style={styles.timelineLine} />
-              )}
+              </ConditionalComponent>
             </View>
             <View style={styles.timelineStepContent}>
               <Text
@@ -274,9 +274,9 @@ export const IncidentStatusCard: React.FC<IncidentStatusCardProps> = ({
               >
                 {step.title}
               </Text>
-              {step.date && (
+              <ConditionalComponent isValid={!!step.date}>
                 <Text style={styles.timelineStepDate}>{step.date}</Text>
-              )}
+              </ConditionalComponent>
             </View>
           </View>
         ))}

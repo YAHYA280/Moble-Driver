@@ -1,6 +1,6 @@
-// screens/innerApplication/incidents/incidentHistoryScreen.tsx (Fixed)
+import ConditionalComponent from "@/shared/components/conditionalComponent/conditionalComponent";
 import { FontAwesome } from "@expo/vector-icons";
-import { router } from "expo-router";
+import { router, useLocalSearchParams } from "expo-router";
 import React, { useEffect, useRef } from "react";
 import {
   Animated,
@@ -44,41 +44,22 @@ const AnimatedIncidentCard: React.FC<{
       case "En Cours":
         return {
           label: "En Cours",
-          color: colors.warning,
-          backgroundColor: colors.warning + "15",
-          icon: "clock-o" as const,
+          color: "#F59E0B", // Orange color
         };
       case "Résolu":
         return {
           label: "Résolu",
-          color: colors.success,
-          backgroundColor: colors.success + "15",
-          icon: "check" as const,
+          color: "#10B981", // Green color
         };
-      case "En attente":
+      default:
         return {
-          label: "En attente",
-          color: colors.error,
-          backgroundColor: colors.error + "15",
-          icon: "times" as const,
+          label: item.status,
+          color: "#6B7280",
         };
     }
   };
 
   const statusConfig = getStatusConfig();
-
-  const getIconBackgroundColor = () => {
-    switch (item.status) {
-      case "En Cours":
-        return "#f59e0b";
-      case "Résolu":
-        return "#22c55e";
-      case "En attente":
-        return "#ef4444";
-      default:
-        return "#6366f1";
-    }
-  };
 
   const styles = StyleSheet.create({
     container: {
@@ -112,11 +93,11 @@ const AnimatedIncidentCard: React.FC<{
     iconContainer: {
       width: 48,
       height: 48,
-      borderRadius: 12,
+      borderRadius: 24,
       alignItems: "center",
       justifyContent: "center",
       marginRight: 12,
-      backgroundColor: getIconBackgroundColor(),
+      backgroundColor: colors.primary, // Primary purple color
     },
     contentContainer: {
       flex: 1,
@@ -128,18 +109,30 @@ const AnimatedIncidentCard: React.FC<{
       color: colors.text,
       marginBottom: 4,
     },
-    vehicleRow: {
-      flexDirection: "row",
-      alignItems: "center",
-      marginBottom: 4,
-    },
     vehicleText: {
       fontSize: 14,
       color: colors.textSecondary,
       fontWeight: "400",
+      marginBottom: 8,
     },
-    statusLabel: {
-      fontSize: 14,
+    dateText: {
+      fontSize: 12,
+      color: colors.textTertiary,
+      fontWeight: "400",
+    },
+    statusContainer: {
+      alignItems: "flex-end",
+      justifyContent: "center",
+    },
+    statusBadge: {
+      paddingHorizontal: 12,
+      paddingVertical: 6,
+      borderRadius: 16,
+      alignItems: "center",
+      justifyContent: "center",
+    },
+    statusText: {
+      fontSize: 12,
       fontWeight: "600",
       color: statusConfig.color,
     },
@@ -169,19 +162,22 @@ const AnimatedIncidentCard: React.FC<{
           <FontAwesome name="exclamation-triangle" size={20} color="white" />
         </View>
 
-        {/* Content - Full width clickable area */}
+        {/* Content - Main information */}
         <View style={styles.contentContainer}>
           <Text style={styles.incidentTitle} numberOfLines={1}>
             {item.type}
           </Text>
+          <Text style={styles.vehicleText} numberOfLines={1}>
+            {item.vehiclePlateNumber}
+          </Text>
+          <Text style={styles.dateText}>{item.reportDate}</Text>
+        </View>
 
-          <View style={styles.vehicleRow}>
-            <Text style={styles.vehicleText}>
-              {item.reportDate} • {item.vehiclePlateNumber}
-            </Text>
+        {/* Right Status */}
+        <View style={styles.statusContainer}>
+          <View style={styles.statusBadge}>
+            <Text style={styles.statusText}>{statusConfig.label}</Text>
           </View>
-
-          <Text style={styles.statusLabel}>{statusConfig.label}</Text>
         </View>
       </TouchableOpacity>
     </Animated.View>
@@ -191,6 +187,7 @@ const AnimatedIncidentCard: React.FC<{
 export const IncidentHistoryScreen: React.FC = () => {
   const { colors } = useTheme();
   const headerAnim = useRef(new Animated.Value(0)).current;
+  const params = useLocalSearchParams();
 
   const {
     filteredIncidents,
@@ -215,12 +212,14 @@ export const IncidentHistoryScreen: React.FC = () => {
     router.push(`./details/${incident.id}`);
   };
 
-  // const handleBackPress = () => {
-  //   router.replace("/(tabs)/vehicles");
-  // };
-
   const handleBackPress = () => {
-    router.back();
+    const returnTo = params.returnTo as string;
+
+    if (returnTo) {
+      router.push(returnTo as any);
+    } else {
+      router.push("/(tabs)/vehicles");
+    }
   };
 
   const handleRefresh = () => {
@@ -239,17 +238,6 @@ export const IncidentHistoryScreen: React.FC = () => {
       index={index}
       onPress={() => handleIncidentPress(item)}
     />
-  );
-
-  const renderHeader = () => (
-    <View style={styles.headerContainer}>
-      <Text style={[styles.historyTitle, { color: colors.text }]}>
-        Historique des incidents
-      </Text>
-      <Text style={[styles.historySubtitle, { color: colors.textSecondary }]}>
-        Appuyez sur un incident pour voir les détails
-      </Text>
-    </View>
   );
 
   const renderEmptyState = () => (
@@ -274,20 +262,6 @@ export const IncidentHistoryScreen: React.FC = () => {
     container: {
       flex: 1,
       backgroundColor: colors.backgroundSecondary,
-    },
-    headerContainer: {
-      paddingHorizontal: 16,
-      paddingVertical: 16,
-      paddingBottom: 8,
-    },
-    historyTitle: {
-      fontSize: 18,
-      fontWeight: "600",
-      marginBottom: 4,
-    },
-    historySubtitle: {
-      fontSize: 14,
-      fontWeight: "400",
     },
     emptyState: {
       flex: 1,
@@ -350,18 +324,19 @@ export const IncidentHistoryScreen: React.FC = () => {
         <Header
           leftIcon={{
             icon: "chevron-left",
-            onPress: handleBackPress, // Fixed navigation
+            onPress: handleBackPress,
           }}
-          title="Historique des incidents"
+          title="Liste des incidents"
         />
       </Animated.View>
 
       {/* Error Display */}
-      {error && (
+
+      <ConditionalComponent isValid={Boolean(error)}>
         <View style={styles.errorContainer}>
           <Text style={styles.errorText}>{error}</Text>
         </View>
-      )}
+      </ConditionalComponent>
 
       {/* Main Content */}
       <Animated.View style={[{ flex: 1 }, { opacity: headerAnim }]}>
@@ -369,12 +344,11 @@ export const IncidentHistoryScreen: React.FC = () => {
           data={filteredIncidents}
           renderItem={renderIncidentItem}
           keyExtractor={(item) => item.id}
-          ListHeaderComponent={renderHeader}
           showsVerticalScrollIndicator={false}
           contentContainerStyle={
             filteredIncidents.length === 0
               ? { flex: 1 }
-              : { paddingBottom: 100 }
+              : { paddingBottom: 100, paddingTop: 16 }
           }
           ListEmptyComponent={renderEmptyState}
           refreshControl={

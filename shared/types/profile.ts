@@ -94,18 +94,3 @@ export interface FormField {
   editable?: boolean;
   error?: string;
 }
-
-export interface EditProfileFormSectionProps {
-  fields: FormField[];
-  onFieldChange: (
-    field:
-      | "fullName"
-      | "email"
-      | "phoneNumber"
-      | "driverId"
-      | "dateOfBirth"
-      | "address"
-      | "status",
-    value: string
-  ) => void;
-}

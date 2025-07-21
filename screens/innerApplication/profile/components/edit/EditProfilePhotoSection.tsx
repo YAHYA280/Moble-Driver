@@ -16,20 +16,16 @@ interface EditProfilePhotoSectionProps {
   onPhotoPress: () => void;
 }
 
-export const EditProfilePhotoSection: React.FC<
-  EditProfilePhotoSectionProps
-> = ({ profilePhoto, isVerified, onPhotoPress }) => {
-  const colors = useThemeColors();
-
-  const styles = StyleSheet.create({
+const createStyles = (colors: any) =>
+  StyleSheet.create({
     container: {
       alignItems: "center",
-      paddingVertical: 24, // Reduced from 30 to 24
+      paddingVertical: 24,
       paddingHorizontal: 20,
     },
     photoContainer: {
       position: "relative",
-      marginBottom: 16, // Reduced from 20 to 16
+      marginBottom: 16,
     },
     profilePhoto: {
       width: 100,
@@ -84,6 +80,13 @@ export const EditProfilePhotoSection: React.FC<
       borderColor: colors.backgroundSecondary,
     },
   });
+
+export const EditProfilePhotoSection: React.FC<
+  EditProfilePhotoSectionProps
+> = ({ profilePhoto, isVerified, onPhotoPress }) => {
+  const colors = useThemeColors();
+
+  const styles = createStyles(colors);
 
   return (
     <View style={styles.container}>

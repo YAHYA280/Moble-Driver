@@ -1,4 +1,3 @@
-// shared/types/incident.ts - Updated version with new properties
 export type IncidentStatus = "En Cours" | "Résolu" | "En attente";
 export type IncidentPriority = "Faible" | "Moyenne" | "Élevée";
 export type IncidentType =
@@ -40,16 +39,15 @@ export interface Incident {
   photos?: string[];
   videos?: string[];
 
-  // New properties for detailed tracking
   comments?: IncidentComment[];
   updates?: IncidentUpdate[];
   assignedTechnician?: string;
   estimatedResolutionDate?: string;
-  actualResolutionTime?: number; // in hours
-  customerSatisfactionRating?: number; // 1-5 scale
+  actualResolutionTime?: number;
+  customerSatisfactionRating?: number;
   internalNotes?: string;
   tags?: string[];
-  relatedIncidents?: string[]; // IDs of related incidents
+  relatedIncidents?: string[];
 }
 
 export interface IncidentFilters {

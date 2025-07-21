@@ -1,4 +1,3 @@
-// store/incidentStore.ts - Enhanced version with detailed tracking
 import { create } from "zustand";
 import {
   Incident,
@@ -216,11 +215,11 @@ const mockIncidents: Incident[] = [
     description:
       "Problème de fonctionnement du tapis roulant - Déploiement partiel uniquement",
     priority: "Faible",
-    status: "En attente",
+    status: "En Cours",
     reportDate: "14/08/2025",
     reportedBy: "Jane Smith",
     location: "Parking central",
-    tags: ["en-attente", "tapis-roulant"],
+    tags: ["en-cours", "tapis-roulant"],
     comments: [
       {
         id: "c1",
@@ -235,14 +234,13 @@ const mockIncidents: Incident[] = [
       {
         id: "u1",
         timestamp: "14/08/2025 16:45",
-        status: "En attente",
-        comment: "Incident en attente d'attribution à un technicien",
+        status: "En Cours",
+        comment: "Incident En cours d'attribution à un technicien",
         updatedBy: "Système",
         role: "support",
       },
     ],
   },
-  // Additional incidents with various statuses...
   {
     id: "4",
     vehicleId: "98765ABC",

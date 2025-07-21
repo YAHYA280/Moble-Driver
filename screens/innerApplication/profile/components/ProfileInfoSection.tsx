@@ -1,4 +1,3 @@
-// screens/innerApplication/profile/components/ProfileInfoSection.tsx
 import ConditionalComponent from "@/shared/components/conditionalComponent/conditionalComponent";
 import { FontAwesome } from "@expo/vector-icons";
 import React from "react";
@@ -35,110 +34,8 @@ interface ProfileInfoSectionProps {
   style?: ViewStyle;
 }
 
-export const ProfileInfoSection: React.FC<ProfileInfoSectionProps> = ({
-  title,
-  personalInfo,
-  isEditMode = false,
-  pendingChanges = {},
-  onValueChange,
-  onEditPress,
-  style,
-}) => {
-  const colors = useThemeColors();
-
-  const infoItems: InfoItem[] = [
-    {
-      id: "fullName",
-      label: "Nom et prénom",
-      value: pendingChanges.fullName || personalInfo.fullName,
-      icon: "user",
-      editable: true,
-    },
-    {
-      id: "phoneNumber",
-      label: "Numéro du téléphone",
-      value: pendingChanges.phoneNumber || personalInfo.phoneNumber,
-      icon: "phone",
-      editable: true,
-      type: "phone",
-    },
-    {
-      id: "email",
-      label: "E-mail",
-      value: pendingChanges.email || personalInfo.email,
-      icon: "envelope",
-      editable: true,
-      type: "email",
-    },
-    {
-      id: "driverId",
-      label: "Numéro du permis",
-      value: "836579376558449", // From professional info
-      icon: "credit-card",
-      editable: false,
-    },
-    {
-      id: "yearsExperience",
-      label: "Années d'expériences",
-      value: "10",
-      icon: "calendar",
-      editable: false,
-    },
-  ];
-
-  const renderInfoItem = (item: InfoItem) => {
-    const getValue = () => {
-      if (item.id === "fullName")
-        return pendingChanges.fullName || personalInfo.fullName;
-      if (item.id === "phoneNumber")
-        return pendingChanges.phoneNumber || personalInfo.phoneNumber;
-      if (item.id === "email")
-        return pendingChanges.email || personalInfo.email;
-      return item.value;
-    };
-
-    return (
-      <View key={item.id} style={styles.infoItem}>
-        <View style={styles.infoHeader}>
-          <View style={styles.iconContainer}>
-            <FontAwesome name={item.icon} size={16} color={colors.primary} />
-          </View>
-          <Text style={styles.infoLabel}>{item.label}</Text>
-        </View>
-
-        <ConditionalComponent
-          isValid={Boolean(isEditMode && item.editable)}
-          defaultComponent={
-            <View style={styles.valueContainer}>
-              <Text style={styles.infoValue}>{getValue()}</Text>
-            </View>
-          }
-        >
-          <Input
-            value={getValue()}
-            onChangeText={(value) => {
-              if (onValueChange && item.editable) {
-                const field = item.id as keyof PersonalInfo;
-                onValueChange(field, value);
-              }
-            }}
-            size="small"
-            placeholder={item.label}
-            keyboardType={
-              item.type === "email"
-                ? "email-address"
-                : item.type === "phone"
-                ? "phone-pad"
-                : "default"
-            }
-            editable={item.editable}
-          />
-        </ConditionalComponent>
-      </View>
-    );
-  };
-
-  const styles = StyleSheet.create({
+const createStyles = (colors: any) =>
+  StyleSheet.create({
     container: {
       backgroundColor: colors.card,
       borderRadius: 16,
@@ -224,6 +121,111 @@ export const ProfileInfoSection: React.FC<ProfileInfoSectionProps> = ({
       letterSpacing: 0.3,
     },
   });
+
+export const ProfileInfoSection: React.FC<ProfileInfoSectionProps> = ({
+  title,
+  personalInfo,
+  isEditMode = false,
+  pendingChanges = {},
+  onValueChange,
+  onEditPress,
+  style,
+}) => {
+  const colors = useThemeColors();
+
+  const styles = createStyles(colors);
+
+  const infoItems: InfoItem[] = [
+    {
+      id: "fullName",
+      label: "Nom et prénom",
+      value: pendingChanges.fullName || personalInfo.fullName,
+      icon: "user",
+      editable: true,
+    },
+    {
+      id: "phoneNumber",
+      label: "Numéro du téléphone",
+      value: pendingChanges.phoneNumber || personalInfo.phoneNumber,
+      icon: "phone",
+      editable: true,
+      type: "phone",
+    },
+    {
+      id: "email",
+      label: "E-mail",
+      value: pendingChanges.email || personalInfo.email,
+      icon: "envelope",
+      editable: true,
+      type: "email",
+    },
+    {
+      id: "driverId",
+      label: "Numéro du permis",
+      value: "836579376558449",
+      icon: "credit-card",
+      editable: false,
+    },
+    {
+      id: "yearsExperience",
+      label: "Années d'expériences",
+      value: "10",
+      icon: "calendar",
+      editable: false,
+    },
+  ];
+
+  const renderInfoItem = (item: InfoItem) => {
+    const getValue = () => {
+      if (item.id === "fullName")
+        return pendingChanges.fullName || personalInfo.fullName;
+      if (item.id === "phoneNumber")
+        return pendingChanges.phoneNumber || personalInfo.phoneNumber;
+      if (item.id === "email")
+        return pendingChanges.email || personalInfo.email;
+      return item.value;
+    };
+
+    return (
+      <View key={item.id} style={styles.infoItem}>
+        <View style={styles.infoHeader}>
+          <View style={styles.iconContainer}>
+            <FontAwesome name={item.icon} size={16} color={colors.primary} />
+          </View>
+          <Text style={styles.infoLabel}>{item.label}</Text>
+        </View>
+
+        <ConditionalComponent
+          isValid={Boolean(isEditMode && item.editable)}
+          defaultComponent={
+            <View style={styles.valueContainer}>
+              <Text style={styles.infoValue}>{getValue()}</Text>
+            </View>
+          }
+        >
+          <Input
+            value={getValue()}
+            onChangeText={(value) => {
+              if (onValueChange && item.editable) {
+                const field = item.id as keyof PersonalInfo;
+                onValueChange(field, value);
+              }
+            }}
+            size="small"
+            placeholder={item.label}
+            keyboardType={
+              item.type === "email"
+                ? "email-address"
+                : item.type === "phone"
+                ? "phone-pad"
+                : "default"
+            }
+            editable={item.editable}
+          />
+        </ConditionalComponent>
+      </View>
+    );
+  };
 
   return (
     <View style={[styles.container, style]}>

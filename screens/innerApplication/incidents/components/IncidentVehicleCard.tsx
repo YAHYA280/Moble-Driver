@@ -1,15 +1,8 @@
-// screens/innerApplication/incidents/components/IncidentVehicleCard.tsx
 import { FontAwesome } from "@expo/vector-icons";
 import React from "react";
-import {
-  Platform,
-  StyleSheet,
-  Text,
-  TouchableOpacity,
-  View,
-  ViewStyle,
-} from "react-native";
+import { Platform, StyleSheet, Text, View, ViewStyle } from "react-native";
 import { useThemeColors } from "../../../../hooks/useTheme";
+import ConditionalComponent from "../../../../shared/components/conditionalComponent/conditionalComponent";
 import { Incident } from "../../../../shared/types/incident";
 import { useVehicleStore } from "../../../../store/vehicleStore";
 
@@ -25,13 +18,7 @@ export const IncidentVehicleCard: React.FC<IncidentVehicleCardProps> = ({
   const colors = useThemeColors();
   const { vehicles } = useVehicleStore();
 
-  // Find the vehicle associated with this incident
   const associatedVehicle = vehicles.find((v) => v.id === incident.vehicleId);
-
-  const handleViewVehicleDetails = () => {
-    // In a real app, this would navigate to vehicle details
-    console.log("Navigate to vehicle details:", incident.vehicleId);
-  };
 
   const styles = StyleSheet.create({
     container: {
@@ -63,13 +50,7 @@ export const IncidentVehicleCard: React.FC<IncidentVehicleCardProps> = ({
     header: {
       flexDirection: "row",
       alignItems: "center",
-      justifyContent: "space-between",
       marginBottom: 16,
-    },
-    headerLeft: {
-      flexDirection: "row",
-      alignItems: "center",
-      flex: 1,
     },
     vehicleIcon: {
       width: 48,
@@ -99,20 +80,6 @@ export const IncidentVehicleCard: React.FC<IncidentVehicleCardProps> = ({
       fontSize: 14,
       color: colors.textSecondary,
       fontWeight: "500",
-    },
-    viewButton: {
-      paddingHorizontal: 16,
-      paddingVertical: 8,
-      borderRadius: 20,
-      backgroundColor: colors.primary + "15",
-      flexDirection: "row",
-      alignItems: "center",
-    },
-    viewButtonText: {
-      fontSize: 13,
-      fontWeight: "600",
-      color: colors.primary,
-      marginRight: 6,
     },
     divider: {
       height: 1,
@@ -158,33 +125,31 @@ export const IncidentVehicleCard: React.FC<IncidentVehicleCardProps> = ({
     <View style={[styles.container, style]}>
       {/* Header */}
       <View style={styles.header}>
-        <View style={styles.headerLeft}>
-          <View style={styles.vehicleIcon}>
-            <FontAwesome name="car" size={20} color={colors.primary} />
-          </View>
-          <View style={styles.headerContent}>
-            <Text style={styles.title}>Véhicule concerné</Text>
-            <Text style={styles.plateNumber}>
-              {incident.vehiclePlateNumber}
-            </Text>
-            {associatedVehicle && (
-              <Text style={styles.subtitle}>
-                {associatedVehicle.brand} {associatedVehicle.model}
-              </Text>
-            )}
-          </View>
+        <View style={styles.vehicleIcon}>
+          <FontAwesome name="car" size={20} color={colors.primary} />
         </View>
-        <TouchableOpacity
-          style={styles.viewButton}
-          onPress={handleViewVehicleDetails}
-          activeOpacity={0.7}
-        >
-          <Text style={styles.viewButtonText}>Voir détails</Text>
-          <FontAwesome name="chevron-right" size={12} color={colors.primary} />
-        </TouchableOpacity>
+        <View style={styles.headerContent}>
+          <Text style={styles.title}>Véhicule concerné</Text>
+          <Text style={styles.plateNumber}>{incident.vehiclePlateNumber}</Text>
+          <ConditionalComponent isValid={!!associatedVehicle}>
+            <Text style={styles.subtitle}>
+              {associatedVehicle?.brand} {associatedVehicle?.model}
+            </Text>
+          </ConditionalComponent>
+        </View>
       </View>
 
-      {associatedVehicle && (
+      <ConditionalComponent
+        isValid={!!associatedVehicle}
+        defaultComponent={
+          <View style={styles.warningNote}>
+            <Text style={styles.warningText}>
+              ℹ️ Les informations détaillées du véhicule ne sont pas disponibles
+              actuellement.
+            </Text>
+          </View>
+        }
+      >
         <>
           <View style={styles.divider} />
 
@@ -193,67 +158,62 @@ export const IncidentVehicleCard: React.FC<IncidentVehicleCardProps> = ({
             <View style={styles.detailItem}>
               <Text style={styles.detailLabel}>Matricule</Text>
               <Text style={styles.detailValue}>
-                {associatedVehicle.plateNumber}
+                {associatedVehicle?.plateNumber}
               </Text>
             </View>
             <View style={styles.detailItem}>
               <Text style={styles.detailLabel}>Statut actuel</Text>
-              <Text style={styles.detailValue}>{associatedVehicle.status}</Text>
+              <Text style={styles.detailValue}>
+                {associatedVehicle?.status}
+              </Text>
             </View>
             <View style={styles.detailItem}>
               <Text style={styles.detailLabel}>Marque</Text>
-              <Text style={styles.detailValue}>{associatedVehicle.brand}</Text>
+              <Text style={styles.detailValue}>{associatedVehicle?.brand}</Text>
             </View>
             <View style={styles.detailItem}>
               <Text style={styles.detailLabel}>Modèle</Text>
-              <Text style={styles.detailValue}>{associatedVehicle.model}</Text>
+              <Text style={styles.detailValue}>{associatedVehicle?.model}</Text>
             </View>
             <View style={styles.detailItem}>
               <Text style={styles.detailLabel}>Année</Text>
-              <Text style={styles.detailValue}>{associatedVehicle.year}</Text>
+              <Text style={styles.detailValue}>{associatedVehicle?.year}</Text>
             </View>
             <View style={styles.detailItem}>
               <Text style={styles.detailLabel}>Kilométrage</Text>
               <Text style={styles.detailValue}>
-                {associatedVehicle.mileage.toLocaleString()} km
+                {associatedVehicle?.mileage.toLocaleString()} km
               </Text>
             </View>
-            {associatedVehicle.assignedDriver && (
+            <ConditionalComponent isValid={!!associatedVehicle?.assignedDriver}>
               <View style={styles.detailItem}>
                 <Text style={styles.detailLabel}>Conducteur assigné</Text>
                 <Text style={styles.detailValue}>
-                  {associatedVehicle.assignedDriver}
+                  {associatedVehicle?.assignedDriver}
                 </Text>
               </View>
-            )}
+            </ConditionalComponent>
             <View style={styles.detailItem}>
               <Text style={styles.detailLabel}>Dernier entretien</Text>
               <Text style={styles.detailValue}>
-                {associatedVehicle.lastMaintenanceDate}
+                {associatedVehicle?.lastMaintenanceDate}
               </Text>
             </View>
           </View>
 
           {/* Warning note if vehicle is out of service */}
-          {associatedVehicle.status === "Hors service" && (
+          <ConditionalComponent
+            isValid={associatedVehicle?.status === "Hors service"}
+          >
             <View style={styles.warningNote}>
               <Text style={styles.warningText}>
                 ⚠️ Ce véhicule est actuellement hors service. L&apos;incident
                 pourrait être lié à cette situation.
               </Text>
             </View>
-          )}
+          </ConditionalComponent>
         </>
-      )}
-
-      {!associatedVehicle && (
-        <View style={styles.warningNote}>
-          <Text style={styles.warningText}>
-            ℹ️ Les informations détaillées du véhicule ne sont pas disponibles
-            actuellement.
-          </Text>
-        </View>
-      )}
+      </ConditionalComponent>
     </View>
   );
 };

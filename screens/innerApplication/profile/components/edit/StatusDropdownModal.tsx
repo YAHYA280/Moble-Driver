@@ -25,42 +25,8 @@ interface StatusDropdownModalProps {
   onClose: () => void;
 }
 
-export const StatusDropdownModal: React.FC<StatusDropdownModalProps> = ({
-  visible,
-  currentStatus,
-  options,
-  onSelect,
-  onClose,
-}) => {
-  const colors = useThemeColors();
-
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case "Actif":
-        return "#4CAF50";
-      case "En congé":
-        return "#FF9800";
-      case "Inactif":
-        return "#F44336";
-      default:
-        return colors.textSecondary;
-    }
-  };
-
-  const getStatusIcon = (status: string) => {
-    switch (status) {
-      case "Actif":
-        return "checkmark-circle";
-      case "En congé":
-        return "time";
-      case "Inactif":
-        return "close-circle";
-      default:
-        return "radio-button-off";
-    }
-  };
-
-  const styles = StyleSheet.create({
+const createStyles = (colors: any) =>
+  StyleSheet.create({
     modalOverlay: {
       flex: 1,
       backgroundColor: "rgba(0, 0, 0, 0.5)",
@@ -191,18 +157,55 @@ export const StatusDropdownModal: React.FC<StatusDropdownModalProps> = ({
     },
   });
 
-  const getStatusDescription = (status: string) => {
-    switch (status) {
-      case "Actif":
-        return "Disponible pour les trajets";
-      case "En congé":
-        return "Temporairement indisponible";
-      case "Inactif":
-        return "Non disponible";
-      default:
-        return "";
-    }
-  };
+const getStatusColor = (status: string) => {
+  switch (status) {
+    case "Actif":
+      return "#4CAF50";
+    case "En congé":
+      return "#FF9800";
+    case "Inactif":
+      return "#F44336";
+    default:
+      return "#666666";
+  }
+};
+
+const getStatusIcon = (status: string) => {
+  switch (status) {
+    case "Actif":
+      return "checkmark-circle";
+    case "En congé":
+      return "time";
+    case "Inactif":
+      return "close-circle";
+    default:
+      return "radio-button-off";
+  }
+};
+
+const getStatusDescription = (status: string) => {
+  switch (status) {
+    case "Actif":
+      return "Disponible pour les trajets";
+    case "En congé":
+      return "Temporairement indisponible";
+    case "Inactif":
+      return "Non disponible";
+    default:
+      return "";
+  }
+};
+
+export const StatusDropdownModal: React.FC<StatusDropdownModalProps> = ({
+  visible,
+  currentStatus,
+  options,
+  onSelect,
+  onClose,
+}) => {
+  const colors = useThemeColors();
+
+  const styles = createStyles(colors);
 
   return (
     <Modal

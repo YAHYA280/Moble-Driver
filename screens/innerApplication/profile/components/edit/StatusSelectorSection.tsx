@@ -1,4 +1,3 @@
-// screens/innerApplication/profile/components/edit/StatusSelectorSection.tsx
 import { FontAwesome, Ionicons } from "@expo/vector-icons";
 import React from "react";
 import {
@@ -15,55 +14,9 @@ interface StatusSelectorSectionProps {
   onPress: () => void;
 }
 
-export const StatusSelectorSection: React.FC<StatusSelectorSectionProps> = ({
-  status,
-  onPress,
-}) => {
-  const colors = useThemeColors();
-
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case "Actif":
-        return "#4CAF50";
-      case "En congé":
-        return "#FF9800";
-      case "Inactif":
-        return "#F44336";
-      default:
-        return colors.textSecondary;
-    }
-  };
-
-  const getStatusIcon = (status: string) => {
-    switch (status) {
-      case "Actif":
-        return "checkmark-circle";
-      case "En congé":
-        return "time";
-      case "Inactif":
-        return "close-circle";
-      default:
-        return "radio-button-off";
-    }
-  };
-
-  const getStatusDescription = (status: string) => {
-    switch (status) {
-      case "Actif":
-        return "Disponible pour les trajets";
-      case "En congé":
-        return "Temporairement indisponible";
-      case "Inactif":
-        return "Non disponible";
-      default:
-        return "";
-    }
-  };
-
-  const styles = StyleSheet.create({
-    container: {
-      // No padding needed as it's now inside a card
-    },
+const createStyles = (colors: any) =>
+  StyleSheet.create({
+    container: {},
     statusLabel: {
       fontSize: 14,
       fontWeight: "600",
@@ -133,6 +86,52 @@ export const StatusSelectorSection: React.FC<StatusSelectorSectionProps> = ({
       borderRadius: 12,
     },
   });
+
+const getStatusColor = (status: string) => {
+  switch (status) {
+    case "Actif":
+      return "#4CAF50";
+    case "En congé":
+      return "#FF9800";
+    case "Inactif":
+      return "#F44336";
+    default:
+      return "#666";
+  }
+};
+
+const getStatusIcon = (status: string) => {
+  switch (status) {
+    case "Actif":
+      return "checkmark-circle";
+    case "En congé":
+      return "time";
+    case "Inactif":
+      return "close-circle";
+    default:
+      return "radio-button-off";
+  }
+};
+
+const getStatusDescription = (status: string) => {
+  switch (status) {
+    case "Actif":
+      return "Disponible pour les trajets";
+    case "En congé":
+      return "Temporairement indisponible";
+    case "Inactif":
+      return "Non disponible";
+    default:
+      return "";
+  }
+};
+
+export const StatusSelectorSection: React.FC<StatusSelectorSectionProps> = ({
+  status,
+  onPress,
+}) => {
+  const colors = useThemeColors();
+  const styles = createStyles(colors);
 
   return (
     <View style={styles.container}>

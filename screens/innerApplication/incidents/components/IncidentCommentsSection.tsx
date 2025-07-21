@@ -1,8 +1,8 @@
-// screens/innerApplication/incidents/components/IncidentCommentsSection.tsx
 import { FontAwesome } from "@expo/vector-icons";
 import React from "react";
 import { Platform, StyleSheet, Text, View, ViewStyle } from "react-native";
 import { useThemeColors } from "../../../../hooks/useTheme";
+import ConditionalComponent from "../../../../shared/components/conditionalComponent/conditionalComponent";
 import { Incident } from "../../../../shared/types/incident";
 
 interface Comment {
@@ -24,17 +24,9 @@ export const IncidentCommentsSection: React.FC<
 > = ({ incident, style }) => {
   const colors = useThemeColors();
 
-  // Mock comments data based on incident status
+  // Mock comments data based on incident status - Filter out reporter comments
   const getCommentsForIncident = (incident: Incident): Comment[] => {
-    const baseComments: Comment[] = [
-      {
-        id: "1",
-        author: incident.reportedBy,
-        role: "reporter",
-        content: incident.description,
-        timestamp: incident.reportDate,
-      },
-    ];
+    const baseComments: Comment[] = [];
 
     // Add support/agent responses based on status
     if (incident.status === "En Cours") {
@@ -82,17 +74,8 @@ export const IncidentCommentsSection: React.FC<
     return baseComments;
   };
 
-  const comments = getCommentsForIncident(incident);
-
   const getRoleConfig = (role: Comment["role"]) => {
     switch (role) {
-      case "reporter":
-        return {
-          color: colors.primary,
-          backgroundColor: colors.primary + "15",
-          icon: "user" as const,
-          label: "Signalement initial",
-        };
       case "support":
         return {
           color: colors.info,
@@ -107,8 +90,17 @@ export const IncidentCommentsSection: React.FC<
           icon: "wrench" as const,
           label: "Technicien",
         };
+      default:
+        return {
+          color: colors.primary,
+          backgroundColor: colors.primary + "15",
+          icon: "user" as const,
+          label: "Signalement initial",
+        };
     }
   };
+
+  const comments = getCommentsForIncident(incident);
 
   const styles = StyleSheet.create({
     container: {
@@ -301,7 +293,9 @@ export const IncidentCommentsSection: React.FC<
         })}
 
         {/* No agent response message for pending incidents */}
-        {incident.status === "En attente" && !hasAgentResponse && (
+        <ConditionalComponent
+          isValid={incident.status === "En attente" && !hasAgentResponse}
+        >
           <View style={styles.noResponseCard}>
             <View style={styles.noResponseIcon}>
               <FontAwesome name="clock-o" size={20} color={colors.warning} />
@@ -313,7 +307,7 @@ export const IncidentCommentsSection: React.FC<
               entreprise.
             </Text>
           </View>
-        )}
+        </ConditionalComponent>
       </View>
     </View>
   );

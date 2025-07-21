@@ -1,4 +1,3 @@
-// screens/innerApplication/profile/editProfileScreen.tsx
 import { Input } from "@/shared/components/ui/Input";
 import * as ImagePicker from "expo-image-picker";
 import { router } from "expo-router";
@@ -48,6 +47,115 @@ interface FormField {
   error?: string;
 }
 
+const statusOptions: StatusOption[] = [
+  { label: "Actif", value: "Actif" },
+  { label: "En congé", value: "En congé" },
+  { label: "Inactif", value: "Inactif" },
+];
+
+const createStyles = (colors: any) =>
+  StyleSheet.create({
+    container: {
+      flex: 1,
+      backgroundColor: colors.backgroundSecondary,
+    },
+    keyboardView: {
+      flex: 1,
+    },
+    content: {
+      flex: 1,
+    },
+    scrollContent: {
+      flexGrow: 1,
+      paddingHorizontal: 16,
+      paddingTop: 20,
+      paddingBottom: Platform.OS === "ios" ? 60 : 50,
+    },
+    photoCard: {
+      backgroundColor: colors.card,
+      borderRadius: 16,
+      marginBottom: 16,
+      ...Platform.select({
+        ios: {
+          shadowColor: colors.isDark ? "#000000" : colors.shadow,
+          shadowOffset: {
+            width: 0,
+            height: 4,
+          },
+          shadowOpacity: colors.isDark ? 0.3 : 0.1,
+          shadowRadius: 12,
+        },
+        android: {
+          elevation: 8,
+        },
+        web: {
+          boxShadow: colors.isDark
+            ? "0 4px 12px rgba(0, 0, 0, 0.3)"
+            : "0 4px 12px rgba(0, 0, 0, 0.1)",
+        },
+      }),
+    },
+    formCard: {
+      backgroundColor: colors.card,
+      borderRadius: 16,
+      padding: 24,
+      marginBottom: 16,
+      ...Platform.select({
+        ios: {
+          shadowColor: colors.isDark ? "#000000" : colors.shadow,
+          shadowOffset: {
+            width: 0,
+            height: 4,
+          },
+          shadowOpacity: colors.isDark ? 0.3 : 0.1,
+          shadowRadius: 12,
+        },
+        android: {
+          elevation: 8,
+        },
+        web: {
+          boxShadow: colors.isDark
+            ? "0 4px 12px rgba(0, 0, 0, 0.3)"
+            : "0 4px 12px rgba(0, 0, 0, 0.1)",
+        },
+      }),
+    },
+    cardTitle: {
+      fontSize: 20,
+      fontWeight: "700",
+      color: colors.text,
+      marginBottom: 8,
+      textAlign: "center",
+    },
+    cardSubtitle: {
+      fontSize: 14,
+      color: colors.textSecondary,
+      marginBottom: 24,
+      textAlign: "center",
+      lineHeight: 20,
+    },
+    globalError: {
+      backgroundColor: colors.error + "15",
+      padding: 12,
+      borderRadius: 8,
+      marginBottom: 16,
+      borderLeftWidth: 4,
+      borderLeftColor: colors.error,
+    },
+    globalErrorText: {
+      color: colors.error,
+      fontSize: 14,
+      fontWeight: "500",
+      textAlign: "center",
+    },
+    inputContainer: {
+      marginBottom: 16,
+    },
+    buttonContainer: {
+      paddingTop: 8,
+    },
+  });
+
 export const EditProfileScreen: React.FC = () => {
   const { colors } = useTheme();
   const {
@@ -61,6 +169,9 @@ export const EditProfileScreen: React.FC = () => {
   const fadeAnim = useRef(new Animated.Value(0)).current;
   const photoAnim = useRef(new Animated.Value(0)).current;
   const slideInAnim = useRef(new Animated.Value(50)).current;
+
+  // Create styles once per theme change
+  const styles = createStyles(colors);
 
   const [formData, setFormData] = useState({
     fullName: "",
@@ -84,12 +195,6 @@ export const EditProfileScreen: React.FC = () => {
 
   const [showStatusDropdown, setShowStatusDropdown] = useState(false);
 
-  const statusOptions: StatusOption[] = [
-    { label: "Actif", value: "Actif" },
-    { label: "En congé", value: "En congé" },
-    { label: "Inactif", value: "Inactif" },
-  ];
-
   useEffect(() => {
     if (profile) {
       setFormData({
@@ -103,7 +208,6 @@ export const EditProfileScreen: React.FC = () => {
       });
     }
 
-    // Entry animation
     Animated.parallel([
       Animated.timing(fadeAnim, {
         toValue: 1,
@@ -271,7 +375,6 @@ export const EditProfileScreen: React.FC = () => {
     return null;
   }
 
-  // Form fields configuration
   const formFields: FormField[] = [
     {
       key: "fullName",
@@ -326,108 +429,6 @@ export const EditProfileScreen: React.FC = () => {
       editable: false,
     },
   ];
-
-  const styles = StyleSheet.create({
-    container: {
-      flex: 1,
-      backgroundColor: colors.backgroundSecondary,
-    },
-    keyboardView: {
-      flex: 1,
-    },
-    content: {
-      flex: 1,
-    },
-    scrollContent: {
-      flexGrow: 1,
-      paddingHorizontal: 16,
-      paddingTop: 20,
-      paddingBottom: Platform.OS === "ios" ? 60 : 50,
-    },
-    photoCard: {
-      backgroundColor: colors.card,
-      borderRadius: 16,
-      marginBottom: 16,
-      ...Platform.select({
-        ios: {
-          shadowColor: colors.isDark ? "#000000" : colors.shadow,
-          shadowOffset: {
-            width: 0,
-            height: 4,
-          },
-          shadowOpacity: colors.isDark ? 0.3 : 0.1,
-          shadowRadius: 12,
-        },
-        android: {
-          elevation: 8,
-        },
-        web: {
-          boxShadow: colors.isDark
-            ? "0 4px 12px rgba(0, 0, 0, 0.3)"
-            : "0 4px 12px rgba(0, 0, 0, 0.1)",
-        },
-      }),
-    },
-    formCard: {
-      backgroundColor: colors.card,
-      borderRadius: 16,
-      padding: 24,
-      marginBottom: 16,
-      ...Platform.select({
-        ios: {
-          shadowColor: colors.isDark ? "#000000" : colors.shadow,
-          shadowOffset: {
-            width: 0,
-            height: 4,
-          },
-          shadowOpacity: colors.isDark ? 0.3 : 0.1,
-          shadowRadius: 12,
-        },
-        android: {
-          elevation: 8,
-        },
-        web: {
-          boxShadow: colors.isDark
-            ? "0 4px 12px rgba(0, 0, 0, 0.3)"
-            : "0 4px 12px rgba(0, 0, 0, 0.1)",
-        },
-      }),
-    },
-    cardTitle: {
-      fontSize: 20,
-      fontWeight: "700",
-      color: colors.text,
-      marginBottom: 8,
-      textAlign: "center",
-    },
-    cardSubtitle: {
-      fontSize: 14,
-      color: colors.textSecondary,
-      marginBottom: 24,
-      textAlign: "center",
-      lineHeight: 20,
-    },
-    globalError: {
-      backgroundColor: colors.error + "15",
-      padding: 12,
-      borderRadius: 8,
-      marginBottom: 16,
-      borderLeftWidth: 4,
-      borderLeftColor: colors.error,
-    },
-    globalErrorText: {
-      color: colors.error,
-      fontSize: 14,
-      fontWeight: "500",
-      textAlign: "center",
-    },
-    inputContainer: {
-      marginBottom: 16,
-    },
-    buttonContainer: {
-      paddingTop: 8,
-    },
-  });
 
   return (
     <SafeAreaView style={styles.container}>
