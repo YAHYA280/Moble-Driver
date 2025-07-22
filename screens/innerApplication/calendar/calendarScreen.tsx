@@ -1,83 +1,42 @@
-// screens/innerApplication/calendar/calendarScreen.tsx
 import ConditionalComponent from "@/shared/components/conditionalComponent/conditionalComponent";
 import { SearchModal } from "@/shared/components/ui/SearchModal";
 import { useCalendarStore } from "@/store/calendarStore";
 import { router } from "expo-router";
 import React, { useEffect, useRef, useState } from "react";
-import {
-  Animated,
-  Dimensions,
-  FlatList,
-  Platform,
-  RefreshControl,
-  StyleSheet,
-  Text,
-  View,
-} from "react-native";
-import { Calendar, DateData } from "react-native-calendars";
+import { Animated, StyleSheet, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useTheme } from "../../../contexts/ThemeContext";
 import { Appointment } from "../../../shared/types/calendar";
-import { AppointmentCard } from "./components/AppointmentCard";
+import { CalendarContent } from "./components/CalendarContent";
 import { CalendarFilterBar } from "./components/CalendarFilterBar";
 import { CalendarHeader } from "./components/CalendarHeader";
+import { CALENDAR_CONFIG } from "./constants/calendarConstants";
 
-const { height: screenHeight } = Dimensions.get("window");
-
-// Enhanced Appointment Card with improved animations
-const AnimatedAppointmentCard: React.FC<{
-  item: Appointment;
-  index: number;
-  onPress: () => void;
-  showDate: boolean;
-}> = ({ item, index, onPress, showDate }) => {
-  const animValue = useRef(new Animated.Value(0)).current;
-  const scaleValue = useRef(new Animated.Value(0.8)).current;
-
-  useEffect(() => {
-    const delay = index * 100;
-    const timer = setTimeout(() => {
-      Animated.parallel([
-        Animated.timing(animValue, {
-          toValue: 1,
-          duration: 600,
-          useNativeDriver: true,
-        }),
-        Animated.spring(scaleValue, {
-          toValue: 1,
-          tension: 100,
-          friction: 8,
-          useNativeDriver: true,
-        }),
-      ]).start();
-    }, delay);
-
-    return () => clearTimeout(timer);
-  }, [index, animValue, scaleValue]);
-
-  return (
-    <Animated.View
-      style={{
-        opacity: animValue,
-        transform: [
-          {
-            translateY: animValue.interpolate({
-              inputRange: [0, 1],
-              outputRange: [30, 0],
-            }),
-          },
-          { scale: scaleValue },
-        ],
-      }}
-    >
-      <AppointmentCard
-        appointment={item}
-        onPress={onPress}
-        showDate={showDate}
-      />
-    </Animated.View>
-  );
-};
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+  },
+  headerContainer: {
+    zIndex: 10,
+  },
+  content: {
+    flex: 1,
+  },
+  contentContainer: {
+    flex: 1,
+    position: "relative",
+  },
+  errorContainer: {
+    margin: 16,
+    padding: 16,
+    borderRadius: 8,
+    borderLeftWidth: 4,
+  },
+  errorText: {
+    fontSize: 14,
+    fontWeight: "500",
+  },
+});
 
 export const CalendarScreen: React.FC = () => {
   const { colors } = useTheme();
@@ -86,12 +45,11 @@ export const CalendarScreen: React.FC = () => {
   const [refreshing, setRefreshing] = useState(false);
   const [isTransitioning, setIsTransitioning] = useState(false);
 
-  // Enhanced animation refs for smoother transitions
+  // Animation refs
   const headerAnim = useRef(new Animated.Value(0)).current;
   const calendarContentAnim = useRef(new Animated.Value(1)).current;
   const listContentAnim = useRef(new Animated.Value(0)).current;
   const calendarOpacity = useRef(new Animated.Value(0)).current;
-  const fadeAnim = useRef(new Animated.Value(0)).current;
 
   const {
     appointments,
@@ -113,29 +71,26 @@ export const CalendarScreen: React.FC = () => {
 
   useEffect(() => {
     fetchAppointments();
+    initializeAnimations();
+    setupInitialView();
+  }, []);
 
-    // Enhanced animation sequence
+  const initializeAnimations = () => {
     Animated.sequence([
       Animated.timing(headerAnim, {
         toValue: 1,
-        duration: 600,
+        duration: CALENDAR_CONFIG.ANIMATION_DURATION,
         useNativeDriver: true,
       }),
-      Animated.parallel([
-        Animated.timing(fadeAnim, {
-          toValue: 1,
-          duration: 400,
-          useNativeDriver: true,
-        }),
-        Animated.timing(calendarOpacity, {
-          toValue: 1,
-          duration: 600,
-          useNativeDriver: true,
-        }),
-      ]),
+      Animated.timing(calendarOpacity, {
+        toValue: 1,
+        duration: CALENDAR_CONFIG.ANIMATION_DURATION,
+        useNativeDriver: true,
+      }),
     ]).start();
+  };
 
-    // Initialize view-specific animations
+  const setupInitialView = () => {
     if (currentView === "month") {
       calendarContentAnim.setValue(1);
       listContentAnim.setValue(0);
@@ -143,14 +98,12 @@ export const CalendarScreen: React.FC = () => {
       calendarContentAnim.setValue(0);
       listContentAnim.setValue(1);
     }
-  }, []);
+  };
 
-  // Create marked dates with dots for appointments - Following react-native-calendars format
   const getMarkedDates = () => {
     const marked: any = {};
-
-    // Group appointments by date
     const appointmentsByDate: Record<string, Appointment[]> = {};
+
     filteredAppointments.forEach((appointment) => {
       if (!appointmentsByDate[appointment.date]) {
         appointmentsByDate[appointment.date] = [];
@@ -158,16 +111,12 @@ export const CalendarScreen: React.FC = () => {
       appointmentsByDate[appointment.date].push(appointment);
     });
 
-    // Create marked dates with dots
     Object.keys(appointmentsByDate).forEach((date) => {
       const dayAppointments = appointmentsByDate[date];
-
-      // Get unique appointment types for this day (max 3 dots)
       const uniqueTypes = [
         ...new Set(dayAppointments.map((a) => a.type)),
       ].slice(0, 3);
 
-      // Create dots array
       const dots = uniqueTypes.map((type) => {
         const typeColors = {
           "visite-medicale": "#22c55e",
@@ -185,13 +134,9 @@ export const CalendarScreen: React.FC = () => {
         };
       });
 
-      marked[date] = {
-        dots: dots,
-        marked: true,
-      };
+      marked[date] = { dots: dots, marked: true };
     });
 
-    // Mark selected date
     if (selectedDate && marked[selectedDate]) {
       marked[selectedDate].selected = true;
       marked[selectedDate].selectedColor = colors.primary;
@@ -207,143 +152,10 @@ export const CalendarScreen: React.FC = () => {
     return marked;
   };
 
-  const handleDayPress = (day: DateData) => {
-    const date = day.dateString;
-    setSelectedDate(date);
-    const dayAppointments = getAppointmentsForDate(date);
-
-    if (dayAppointments.length === 0) {
-      // No appointments for this day - still navigate to agenda view to show empty state
-      router.push(`/(tabs)/calendar/agenda/${date}`);
-    } else if (dayAppointments.length === 1) {
-      // Single appointment - navigate to agenda view (not directly to details)
-      router.push(`/(tabs)/calendar/agenda/${date}`);
-    } else {
-      // Multiple appointments - navigate to agenda view
-      router.push(`/(tabs)/calendar/agenda/${date}`);
-    }
-  };
-
-  const handleAppointmentPress = (appointment: Appointment) => {
-    selectAppointment(appointment);
-    router.push(`/(tabs)/calendar/appointment/${appointment.id}`);
-  };
-
-  const renderAppointmentItem = ({
-    item,
-    index,
-  }: {
-    item: Appointment;
-    index: number;
-  }) => (
-    <AnimatedAppointmentCard
-      item={item}
-      index={index}
-      onPress={() => handleAppointmentPress(item)}
-      showDate={currentView === "list"}
-    />
-  );
-
-  const renderEmptyState = () => (
-    <Animated.View
-      style={[
-        styles.emptyState,
-        {
-          opacity: fadeAnim,
-          transform: [
-            {
-              translateY: fadeAnim.interpolate({
-                inputRange: [0, 1],
-                outputRange: [50, 0],
-              }),
-            },
-          ],
-        },
-      ]}
-    >
-      <View style={styles.emptyIcon}>
-        <Text style={styles.emptyIconText}>📅</Text>
-      </View>
-      <Text style={[styles.emptyTitle, { color: colors.text }]}>
-        Aucun rendez-vous trouvé
-      </Text>
-      <Text style={[styles.emptySubtitle, { color: colors.textSecondary }]}>
-        {Object.keys(filters).length > 0
-          ? "Aucun rendez-vous ne correspond à vos critères de recherche."
-          : "Vos rendez-vous apparaîtront ici."}
-      </Text>
-    </Animated.View>
-  );
-
-  // Enhanced view toggle with smoother transitions
-  const handleViewToggle = () => {
-    if (isTransitioning) return; // Prevent multiple rapid toggles
-
-    setIsTransitioning(true);
-
-    const newView = currentView === "month" ? "list" : "month";
-
-    if (newView === "list") {
-      // Transitioning from calendar to list
-      Animated.parallel([
-        Animated.timing(calendarContentAnim, {
-          toValue: 0,
-          duration: 250,
-          useNativeDriver: true,
-        }),
-        Animated.timing(listContentAnim, {
-          toValue: 1,
-          duration: 300,
-          useNativeDriver: true,
-        }),
-      ]).start(() => {
-        setCurrentView(newView);
-        setIsTransitioning(false);
-      });
-    } else {
-      // Transitioning from list to calendar
-      Animated.parallel([
-        Animated.timing(listContentAnim, {
-          toValue: 0,
-          duration: 250,
-          useNativeDriver: true,
-        }),
-        Animated.timing(calendarContentAnim, {
-          toValue: 1,
-          duration: 300,
-          useNativeDriver: true,
-        }),
-      ]).start(() => {
-        setCurrentView(newView);
-        setIsTransitioning(false);
-      });
-    }
-  };
-
-  const handleRefresh = async () => {
-    setRefreshing(true);
-    await fetchAppointments();
-    setRefreshing(false);
-  };
-
-  const handleNotificationPress = () => {
-    router.push("/notifications?returnTo=/calendar");
-  };
-
-  const handleSearchPress = () => {
-    setShowSearchModal(true);
-  };
-
-  const handleSearch = (query: string) => {
-    setFilters({ searchQuery: query });
-  };
-
-  // Improved calendar theme with better dark/light mode support
   const calendarTheme = {
     backgroundColor: colors.surface,
     calendarBackground: colors.surface,
     textSectionTitleColor: colors.textSecondary,
-    textSectionTitleDisabledColor: colors.textTertiary,
     selectedDayBackgroundColor: colors.primary,
     selectedDayTextColor: "#ffffff",
     todayTextColor: colors.primary,
@@ -361,148 +173,82 @@ export const CalendarScreen: React.FC = () => {
     textDayFontSize: 16,
     textMonthFontSize: 18,
     textDayHeaderFontSize: 14,
-    // Additional theme properties for better mode switching
-    textDayStyle: { color: colors.text },
-    textMonthStyle: { color: colors.text },
-    textDayHeaderStyle: { color: colors.textSecondary },
-    weekVerticalMargin: 8,
   };
 
-  const styles = StyleSheet.create({
+  const handleDayPress = (day: any) => {
+    const date = day.dateString;
+    setSelectedDate(date);
+    router.push(`/(tabs)/calendar/agenda/${date}`);
+  };
+
+  const handleAppointmentPress = (appointment: Appointment) => {
+    selectAppointment(appointment);
+    router.push(`/(tabs)/calendar/appointment/${appointment.id}`);
+  };
+
+  const handleViewToggle = () => {
+    if (isTransitioning) return;
+
+    setIsTransitioning(true);
+    const newView = currentView === "month" ? "list" : "month";
+
+    const animations =
+      newView === "list"
+        ? [
+            Animated.timing(calendarContentAnim, {
+              toValue: 0,
+              duration: 250,
+              useNativeDriver: true,
+            }),
+            Animated.timing(listContentAnim, {
+              toValue: 1,
+              duration: 300,
+              useNativeDriver: true,
+            }),
+          ]
+        : [
+            Animated.timing(listContentAnim, {
+              toValue: 0,
+              duration: 250,
+              useNativeDriver: true,
+            }),
+            Animated.timing(calendarContentAnim, {
+              toValue: 1,
+              duration: 300,
+              useNativeDriver: true,
+            }),
+          ];
+
+    Animated.parallel(animations).start(() => {
+      setCurrentView(newView);
+      setIsTransitioning(false);
+    });
+  };
+
+  const handleRefresh = async () => {
+    setRefreshing(true);
+    await fetchAppointments();
+    setRefreshing(false);
+  };
+
+  const dynamicStyles = {
     container: {
-      flex: 1,
+      ...styles.container,
       backgroundColor: colors.backgroundSecondary,
     },
-    headerContainer: {
-      zIndex: 10,
-    },
-    content: {
-      flex: 1,
-    },
-    calendarContainer: {
-      backgroundColor: colors.surface,
-      marginHorizontal: 16,
-      marginTop: 8,
-      marginBottom: 16,
-      borderRadius: 16,
-      overflow: "hidden",
-      ...Platform.select({
-        ios: {
-          shadowColor: colors.shadow,
-          shadowOffset: { width: 0, height: 4 },
-          shadowOpacity: colors.isDark ? 0.3 : 0.12,
-          shadowRadius: 16,
-        },
-        android: {
-          elevation: 8,
-        },
-        web: {
-          boxShadow: colors.isDark
-            ? "0 4px 16px rgba(0, 0, 0, 0.3)"
-            : "0 4px 16px rgba(0, 0, 0, 0.12)",
-        },
-      }),
-    },
-    listContainer: {
-      flex: 1,
-      paddingTop: 8,
-    },
-    // Enhanced view containers for smooth transitions
-    calendarView: {
-      position: "absolute",
-      top: 0,
-      left: 0,
-      right: 0,
-      bottom: 0,
-    },
-    listView: {
-      position: "absolute",
-      top: 0,
-      left: 0,
-      right: 0,
-      bottom: 0,
-    },
-    contentContainer: {
-      flex: 1,
-      position: "relative",
-    },
-    emptyState: {
-      flex: 1,
-      alignItems: "center",
-      justifyContent: "center",
-      paddingHorizontal: 32,
-      paddingTop: 100,
-    },
-    emptyIcon: {
-      marginBottom: 16,
-    },
-    emptyIconText: {
-      fontSize: 48,
-      opacity: 0.5,
-    },
-    emptyTitle: {
-      fontSize: 20,
-      fontWeight: "600",
-      textAlign: "center",
-      marginBottom: 8,
-    },
-    emptySubtitle: {
-      fontSize: 16,
-      textAlign: "center",
-      lineHeight: 22,
-    },
     errorContainer: {
+      ...styles.errorContainer,
       backgroundColor: colors.error + "15",
-      margin: 16,
-      padding: 16,
-      borderRadius: 8,
-      borderLeftWidth: 4,
       borderLeftColor: colors.error,
     },
     errorText: {
+      ...styles.errorText,
       color: colors.error,
-      fontSize: 14,
-      fontWeight: "500",
     },
-    infoContainer: {
-      backgroundColor: colors.surface,
-      marginHorizontal: 16,
-      marginBottom: 16,
-      padding: 20,
-      borderRadius: 16,
-      ...Platform.select({
-        ios: {
-          shadowColor: colors.shadow,
-          shadowOffset: { width: 0, height: 2 },
-          shadowOpacity: colors.isDark ? 0.3 : 0.08,
-          shadowRadius: 8,
-        },
-        android: {
-          elevation: 4,
-        },
-        web: {
-          boxShadow: colors.isDark
-            ? "0 2px 8px rgba(0, 0, 0, 0.3)"
-            : "0 2px 8px rgba(0, 0, 0, 0.08)",
-        },
-      }),
-    },
-    infoTitle: {
-      fontSize: 18,
-      fontWeight: "600",
-      color: colors.text,
-      marginBottom: 8,
-    },
-    infoText: {
-      fontSize: 14,
-      color: colors.textSecondary,
-      lineHeight: 20,
-    },
-  });
+  };
 
   return (
-    <SafeAreaView style={styles.container}>
-      {/* Fixed Header - Removed leftIcon */}
+    <SafeAreaView style={dynamicStyles.container}>
       <Animated.View
         style={[
           styles.headerContainer,
@@ -523,20 +269,16 @@ export const CalendarScreen: React.FC = () => {
           title="RDV Annuel"
           subtitle={`${filteredAppointments.length} rendez-vous`}
           rightIcons={[
-            {
-              icon: "search",
-              onPress: handleSearchPress,
-            },
+            { icon: "search", onPress: () => setShowSearchModal(true) },
             {
               icon: "bell",
-              onPress: handleNotificationPress,
+              onPress: () => router.push("/notifications?returnTo=/calendar"),
               badge: 3,
             },
           ]}
         />
       </Animated.View>
 
-      {/* Filter Bar */}
       <CalendarFilterBar
         filters={filters}
         onFiltersChange={setFilters}
@@ -545,156 +287,38 @@ export const CalendarScreen: React.FC = () => {
         currentView={currentView}
       />
 
-      {/* Error Display */}
       <ConditionalComponent isValid={!!error}>
-        <View style={styles.errorContainer}>
-          <Text style={styles.errorText}>{error}</Text>
+        <View style={dynamicStyles.errorContainer}>
+          <Text style={dynamicStyles.errorText}>{error}</Text>
         </View>
       </ConditionalComponent>
 
-      {/* Enhanced Content with smooth view transitions */}
       <View style={styles.contentContainer}>
-        {/* Calendar View */}
-        <Animated.View
-          style={[
-            styles.calendarView,
-            {
-              opacity: calendarContentAnim,
-              transform: [
-                {
-                  translateX: calendarContentAnim.interpolate({
-                    inputRange: [0, 1],
-                    outputRange: [-50, 0],
-                  }),
-                },
-              ],
-            },
-          ]}
-          pointerEvents={currentView === "month" ? "auto" : "none"}
-        >
-          <RefreshControl
-            refreshing={refreshing}
-            onRefresh={handleRefresh}
-            colors={[colors.primary]}
-            tintColor={colors.primary}
-            style={{ flex: 0 }}
-          />
-
-          <Animated.View
-            style={[styles.calendarContainer, { opacity: calendarOpacity }]}
-          >
-            <Calendar
-              key={colors.isDark ? "dark" : "light"} // Force re-render on theme change
-              current={currentDate.toISOString().split("T")[0]}
-              onDayPress={handleDayPress}
-              markedDates={getMarkedDates()}
-              markingType="multi-dot"
-              theme={calendarTheme}
-              enableSwipeMonths={true}
-              hideExtraDays={false}
-              disableMonthChange={false}
-              firstDay={1}
-              onMonthChange={(month) => {
-                setCurrentDate(
-                  new Date(month.year, month.month - 1, month.day)
-                );
-              }}
-              renderHeader={(date) => {
-                const monthNames = [
-                  "Janvier",
-                  "Février",
-                  "Mars",
-                  "Avril",
-                  "Mai",
-                  "Juin",
-                  "Juillet",
-                  "Août",
-                  "Septembre",
-                  "Octobre",
-                  "Novembre",
-                  "Décembre",
-                ];
-
-                return (
-                  <View
-                    style={{
-                      flexDirection: "row",
-                      justifyContent: "center",
-                      alignItems: "center",
-                      paddingVertical: 16,
-                    }}
-                  >
-                    <Text
-                      style={{
-                        fontSize: 20,
-                        fontWeight: "700",
-                        color: colors.text,
-                      }}
-                    >
-                      {monthNames[date.getMonth()]} {date.getFullYear()}
-                    </Text>
-                  </View>
-                );
-              }}
-              style={{
-                borderRadius: 16,
-                overflow: "hidden",
-              }}
-            />
-          </Animated.View>
-
-          {/* Information Card - Only show in calendar view */}
-        </Animated.View>
-
-        {/* List View */}
-        <Animated.View
-          style={[
-            styles.listView,
-            {
-              opacity: listContentAnim,
-              transform: [
-                {
-                  translateX: listContentAnim.interpolate({
-                    inputRange: [0, 1],
-                    outputRange: [50, 0],
-                  }),
-                },
-              ],
-            },
-          ]}
-          pointerEvents={currentView === "list" ? "auto" : "none"}
-        >
-          <View style={styles.listContainer}>
-            <FlatList
-              data={filteredAppointments}
-              renderItem={renderAppointmentItem}
-              keyExtractor={(item) => item.id}
-              showsVerticalScrollIndicator={false}
-              contentContainerStyle={
-                filteredAppointments.length === 0
-                  ? { flex: 1 }
-                  : { paddingBottom: 100 }
-              }
-              ListEmptyComponent={renderEmptyState}
-              refreshControl={
-                <RefreshControl
-                  refreshing={refreshing}
-                  onRefresh={handleRefresh}
-                  colors={[colors.primary]}
-                  tintColor={colors.primary}
-                />
-              }
-              ItemSeparatorComponent={() => <View style={{ height: 4 }} />}
-            />
-          </View>
-        </Animated.View>
+        <CalendarContent
+          currentView={currentView}
+          currentDate={currentDate}
+          selectedDate={selectedDate}
+          filteredAppointments={filteredAppointments}
+          markedDates={getMarkedDates()}
+          calendarTheme={calendarTheme}
+          filters={filters}
+          refreshing={refreshing}
+          calendarContentAnim={calendarContentAnim}
+          listContentAnim={listContentAnim}
+          calendarOpacity={calendarOpacity}
+          onDayPress={handleDayPress}
+          onAppointmentPress={handleAppointmentPress}
+          onRefresh={handleRefresh}
+          onMonthChange={(month) =>
+            setCurrentDate(new Date(month.year, month.month - 1, month.day))
+          }
+        />
       </View>
 
-      {/* Search Modal */}
       <SearchModal
         visible={showSearchModal}
         onClose={() => setShowSearchModal(false)}
-        onSearch={handleSearch}
+        onSearch={(query) => setFilters({ searchQuery: query })}
         placeholder="Rechercher par titre, lieu, médecin..."
         initialQuery={filters.searchQuery || ""}
         title="Rechercher rendez-vous"
