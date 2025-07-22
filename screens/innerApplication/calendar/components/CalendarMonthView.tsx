@@ -3,6 +3,7 @@ import React from "react";
 import { StyleSheet, Text, View, ViewStyle } from "react-native";
 import { useThemeColors } from "../../../../hooks/useTheme";
 import { Appointment } from "../../../../shared/types/calendar";
+import { WEEK_DAYS_DISPLAY } from "../constants/calendarConstants";
 import { CalendarDay } from "./CalendarDay";
 
 interface CalendarMonthViewProps {
@@ -12,8 +13,6 @@ interface CalendarMonthViewProps {
   onDayPress: (date: string) => void;
   style?: ViewStyle;
 }
-
-const WEEK_DAYS = ["Lun", "Mar", "Mer", "Jeu", "Ven", "Sam", "Dim"];
 
 const CalendarMonthView: React.FC<CalendarMonthViewProps> = ({
   currentDate,
@@ -114,7 +113,7 @@ const CalendarMonthView: React.FC<CalendarMonthViewProps> = ({
     <View style={[styles.container, style]}>
       {/* Week days header */}
       <View style={styles.weekDaysContainer}>
-        {WEEK_DAYS.map((day) => (
+        {WEEK_DAYS_DISPLAY.map((day) => (
           <Text key={day} style={styles.weekDayText}>
             {day}
           </Text>

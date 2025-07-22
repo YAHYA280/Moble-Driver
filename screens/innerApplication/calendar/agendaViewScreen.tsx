@@ -20,42 +20,8 @@ import {
   Appointment,
 } from "../../../shared/types/calendar";
 import { useCalendarStore } from "../../../store/calendarStore";
-
-const DAY_NAMES = ["Dim", "Lun", "Mar", "Mer", "Jeu", "Ven", "Sam"] as const;
-const ANIMATION_DURATION = 600;
-const TIME_CONTAINER_WIDTH = 60;
-const MENU_BUTTON_SIZE = 32;
-const EMPTY_ICON_SIZE = 48;
-
-const formatDate = (dateString: string) => {
-  if (!dateString) return { day: "", dayName: "" };
-
-  const dateObj = new Date(dateString);
-  const day = dateObj.getDate().toString().padStart(2, "0");
-  const dayName = DAY_NAMES[dateObj.getDay()];
-
-  return { day, dayName };
-};
-
-const formatTime = (time: string) => {
-  return time.substring(0, 5);
-};
-
-const getWeekDays = (selectedDate: string) => {
-  const date = new Date(selectedDate);
-  const currentDay = date.getDay();
-  const monday = new Date(date);
-  monday.setDate(date.getDate() - currentDay + 1);
-
-  const weekDays = [];
-  for (let i = 0; i < 7; i++) {
-    const day = new Date(monday);
-    day.setDate(monday.getDate() + i);
-    weekDays.push(day);
-  }
-
-  return weekDays;
-};
+import { CALENDAR_CONFIG, LAYOUT_CONFIG } from "./constants/calendarConstants";
+import { formatDate, formatTime, getWeekDays } from "./utils/calendarUtils";
 
 const createStyles = (colors: any) =>
   StyleSheet.create({
@@ -161,9 +127,9 @@ const createStyles = (colors: any) =>
       color: colors.text,
     },
     menuButton: {
-      width: MENU_BUTTON_SIZE,
-      height: MENU_BUTTON_SIZE,
-      borderRadius: MENU_BUTTON_SIZE / 2,
+      width: LAYOUT_CONFIG.MENU_BUTTON_SIZE,
+      height: LAYOUT_CONFIG.MENU_BUTTON_SIZE,
+      borderRadius: LAYOUT_CONFIG.MENU_BUTTON_SIZE / 2,
       alignItems: "center",
       justifyContent: "center",
       backgroundColor: colors.backgroundSecondary,
@@ -180,7 +146,7 @@ const createStyles = (colors: any) =>
       borderBottomColor: colors.border + "20",
     },
     timeContainer: {
-      width: TIME_CONTAINER_WIDTH,
+      width: LAYOUT_CONFIG.TIME_CONTAINER_WIDTH,
       alignItems: "flex-start",
       paddingTop: 4,
     },
@@ -263,7 +229,7 @@ const createStyles = (colors: any) =>
       paddingVertical: 60,
     },
     emptyIcon: {
-      fontSize: EMPTY_ICON_SIZE,
+      fontSize: LAYOUT_CONFIG.EMPTY_ICON_SIZE,
       marginBottom: 16,
       opacity: 0.5,
     },
@@ -297,7 +263,7 @@ export const AgendaViewScreen: React.FC = () => {
   useEffect(() => {
     Animated.timing(fadeAnim, {
       toValue: 1,
-      duration: ANIMATION_DURATION,
+      duration: CALENDAR_CONFIG.ANIMATION_DURATION,
       useNativeDriver: true,
     }).start();
   }, [fadeAnim]);
