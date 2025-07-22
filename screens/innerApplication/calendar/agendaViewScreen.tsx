@@ -1,4 +1,3 @@
-// screens/innerApplication/calendar/agendaViewScreen.tsx
 import ConditionalComponent from "@/shared/components/conditionalComponent/conditionalComponent";
 import { FontAwesome } from "@expo/vector-icons";
 import { router, useLocalSearchParams } from "expo-router";
@@ -22,66 +21,44 @@ import {
 } from "../../../shared/types/calendar";
 import { useCalendarStore } from "../../../store/calendarStore";
 
-export const AgendaViewScreen: React.FC = () => {
-  const { colors } = useTheme();
-  const { date } = useLocalSearchParams<{ date: string }>();
-  const fadeAnim = useRef(new Animated.Value(0)).current;
+const DAY_NAMES = ["Dim", "Lun", "Mar", "Mer", "Jeu", "Ven", "Sam"] as const;
+const ANIMATION_DURATION = 600;
+const TIME_CONTAINER_WIDTH = 60;
+const MENU_BUTTON_SIZE = 32;
+const EMPTY_ICON_SIZE = 48;
 
-  const { getAppointmentsForDate, selectAppointment, isLoading } =
-    useCalendarStore();
+const formatDate = (dateString: string) => {
+  if (!dateString) return { day: "", dayName: "" };
 
-  const appointments = date ? getAppointmentsForDate(date) : [];
+  const dateObj = new Date(dateString);
+  const day = dateObj.getDate().toString().padStart(2, "0");
+  const dayName = DAY_NAMES[dateObj.getDay()];
 
-  useEffect(() => {
-    Animated.timing(fadeAnim, {
-      toValue: 1,
-      duration: 600,
-      useNativeDriver: true,
-    }).start();
-  }, []);
+  return { day, dayName };
+};
 
-  const formatDate = (dateString: string) => {
-    if (!dateString) return { day: "", dayName: "" };
+const formatTime = (time: string) => {
+  return time.substring(0, 5);
+};
 
-    const dateObj = new Date(dateString);
-    const day = dateObj.getDate().toString().padStart(2, "0");
-    const dayNames = ["Dim", "Lun", "Mar", "Mer", "Jeu", "Ven", "Sam"];
-    const dayName = dayNames[dateObj.getDay()];
+const getWeekDays = (selectedDate: string) => {
+  const date = new Date(selectedDate);
+  const currentDay = date.getDay();
+  const monday = new Date(date);
+  monday.setDate(date.getDate() - currentDay + 1);
 
-    return { day, dayName };
-  };
+  const weekDays = [];
+  for (let i = 0; i < 7; i++) {
+    const day = new Date(monday);
+    day.setDate(monday.getDate() + i);
+    weekDays.push(day);
+  }
 
-  const formatTime = (time: string) => {
-    return time.substring(0, 5);
-  };
+  return weekDays;
+};
 
-  const getWeekDays = (selectedDate: string) => {
-    const date = new Date(selectedDate);
-    const currentDay = date.getDay();
-    const monday = new Date(date);
-    monday.setDate(date.getDate() - currentDay + 1);
-
-    const weekDays = [];
-    for (let i = 0; i < 7; i++) {
-      const day = new Date(monday);
-      day.setDate(monday.getDate() + i);
-      weekDays.push(day);
-    }
-
-    return weekDays;
-  };
-
-  const handleAppointmentPress = (appointment: Appointment) => {
-    selectAppointment(appointment);
-    router.push(`/(tabs)/calendar/appointment/${appointment.id}`);
-  };
-
-  const weekDays = date ? getWeekDays(date) : [];
-  const selectedDateFormatted = date
-    ? formatDate(date)
-    : { day: "", dayName: "" };
-
-  const styles = StyleSheet.create({
+const createStyles = (colors: any) =>
+  StyleSheet.create({
     container: {
       flex: 1,
       backgroundColor: colors.backgroundSecondary,
@@ -184,9 +161,9 @@ export const AgendaViewScreen: React.FC = () => {
       color: colors.text,
     },
     menuButton: {
-      width: 32,
-      height: 32,
-      borderRadius: 16,
+      width: MENU_BUTTON_SIZE,
+      height: MENU_BUTTON_SIZE,
+      borderRadius: MENU_BUTTON_SIZE / 2,
       alignItems: "center",
       justifyContent: "center",
       backgroundColor: colors.backgroundSecondary,
@@ -203,7 +180,7 @@ export const AgendaViewScreen: React.FC = () => {
       borderBottomColor: colors.border + "20",
     },
     timeContainer: {
-      width: 60,
+      width: TIME_CONTAINER_WIDTH,
       alignItems: "flex-start",
       paddingTop: 4,
     },
@@ -286,7 +263,7 @@ export const AgendaViewScreen: React.FC = () => {
       paddingVertical: 60,
     },
     emptyIcon: {
-      fontSize: 48,
+      fontSize: EMPTY_ICON_SIZE,
       marginBottom: 16,
       opacity: 0.5,
     },
@@ -303,6 +280,37 @@ export const AgendaViewScreen: React.FC = () => {
       lineHeight: 20,
     },
   });
+
+export const AgendaViewScreen: React.FC = () => {
+  const { colors } = useTheme();
+  const { date } = useLocalSearchParams<{ date: string }>();
+  const fadeAnim = useRef(new Animated.Value(0)).current;
+
+  const { getAppointmentsForDate, selectAppointment, isLoading } =
+    useCalendarStore();
+
+  const appointments = date ? getAppointmentsForDate(date) : [];
+
+  // Get styles with current theme colors
+  const styles = createStyles(colors);
+
+  useEffect(() => {
+    Animated.timing(fadeAnim, {
+      toValue: 1,
+      duration: ANIMATION_DURATION,
+      useNativeDriver: true,
+    }).start();
+  }, [fadeAnim]);
+
+  const handleAppointmentPress = (appointment: Appointment) => {
+    selectAppointment(appointment);
+    router.push(`/(tabs)/calendar/appointment/${appointment.id}`);
+  };
+
+  const weekDays = date ? getWeekDays(date) : [];
+  const selectedDateFormatted = date
+    ? formatDate(date)
+    : { day: "", dayName: "" };
 
   const renderAppointment = (appointment: Appointment, index: number) => {
     const typeColor = APPOINTMENT_TYPE_COLORS[appointment.type];
