@@ -6,13 +6,11 @@ import React, { useEffect, useRef, useState } from "react";
 import {
   Alert,
   Animated,
-  Linking,
   Platform,
   ScrollView,
   StyleSheet,
   Text,
   TextInput,
-  TouchableOpacity,
   View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
@@ -94,12 +92,6 @@ export const AppointmentDetailsScreen: React.FC = () => {
     }
   };
 
-  const handleViewConvocation = () => {
-    if (selectedAppointment.convocationUrl) {
-      Linking.openURL(selectedAppointment.convocationUrl);
-    }
-  };
-
   const formatTime = (time: string) => {
     return time.substring(0, 5);
   };
@@ -128,6 +120,10 @@ export const AppointmentDetailsScreen: React.FC = () => {
         return colors.textSecondary;
     }
   };
+
+  // Check if any actions are available
+  const hasActions =
+    selectedAppointment.status === "prevu" || selectedAppointment.canModify;
 
   const typeColor = APPOINTMENT_TYPE_COLORS[selectedAppointment.type];
 
@@ -280,21 +276,52 @@ export const AppointmentDetailsScreen: React.FC = () => {
     primaryButton: {
       flex: 1,
     },
-    convocationButton: {
-      flexDirection: "row",
+    noActionsContainer: {
       alignItems: "center",
       justifyContent: "center",
-      paddingVertical: 12,
-      borderRadius: 8,
-      backgroundColor: colors.info + "15",
-      borderWidth: 1,
-      borderColor: colors.info + "30",
+      paddingVertical: 32,
+      paddingHorizontal: 16,
+      borderRadius: 16,
+      backgroundColor: colors.surface + "80",
+      borderWidth: 2,
+      borderColor: colors.primary + "20",
+      borderStyle: "dashed",
     },
-    convocationButtonText: {
-      fontSize: 16,
+    noActionsIcon: {
+      width: 80,
+      height: 80,
+      borderRadius: 40,
+      backgroundColor: colors.primary,
+      alignItems: "center",
+      justifyContent: "center",
+      marginBottom: 16,
+      ...Platform.select({
+        ios: {
+          shadowColor: colors.primaryDark,
+          shadowOffset: { width: 0, height: 4 },
+          shadowOpacity: 0.3,
+          shadowRadius: 8,
+        },
+        android: {
+          elevation: 6,
+        },
+        web: {
+          boxShadow: `0 4px 12px ${colors.success}40`,
+        },
+      }),
+    },
+    noActionsTitle: {
+      fontSize: 18,
       fontWeight: "600",
-      color: colors.info,
-      marginLeft: 8,
+      color: colors.text,
+      marginBottom: 8,
+      textAlign: "center",
+    },
+    noActionsSubtitle: {
+      fontSize: 14,
+      color: colors.textSecondary,
+      textAlign: "center",
+      lineHeight: 20,
     },
     rescheduleModal: {
       position: "absolute",
@@ -490,42 +517,45 @@ export const AppointmentDetailsScreen: React.FC = () => {
             <Text style={styles.sectionTitle}>Actions</Text>
 
             <ConditionalComponent
-              isValid={selectedAppointment.convocationUrl !== undefined}
+              isValid={hasActions}
+              defaultComponent={
+                <View style={styles.noActionsContainer}>
+                  <View style={styles.noActionsIcon}>
+                    <FontAwesome name="check" size={32} color="#ffffff" />
+                  </View>
+                  <Text style={styles.noActionsTitle}>
+                    Aucune action requise
+                  </Text>
+                  <Text style={styles.noActionsSubtitle}>
+                    Ce rendez-vous ne nécessite aucune action de votre part pour
+                    le moment.
+                  </Text>
+                </View>
+              }
             >
-              <TouchableOpacity
-                style={styles.convocationButton}
-                onPress={handleViewConvocation}
-                activeOpacity={0.7}
+              <ConditionalComponent
+                isValid={selectedAppointment.status === "prevu"}
               >
-                <FontAwesome name="file-pdf-o" size={16} color={colors.info} />
-                <Text style={styles.convocationButtonText}>
-                  Voir la convocation
-                </Text>
-              </TouchableOpacity>
-            </ConditionalComponent>
+                <View style={styles.actionButtons}>
+                  <Button
+                    title="Confirmer ma présence"
+                    onPress={handleConfirmPresence}
+                    style={styles.primaryButton}
+                    loading={isLoading}
+                  />
+                </View>
+              </ConditionalComponent>
 
-            <ConditionalComponent
-              isValid={selectedAppointment.status === "prevu"}
-            >
-              <View style={styles.actionButtons}>
-                <Button
-                  title="Confirmer ma présence"
-                  onPress={handleConfirmPresence}
-                  style={styles.primaryButton}
-                  loading={isLoading}
-                />
-              </View>
-            </ConditionalComponent>
-
-            <ConditionalComponent isValid={selectedAppointment.canModify}>
-              <View style={styles.actionButtons}>
-                <Button
-                  title="Demander un report"
-                  variant="outline"
-                  onPress={() => setShowRescheduleModal(true)}
-                  style={styles.primaryButton}
-                />
-              </View>
+              <ConditionalComponent isValid={selectedAppointment.canModify}>
+                <View style={styles.actionButtons}>
+                  <Button
+                    title="Demander un report"
+                    variant="outline"
+                    onPress={() => setShowRescheduleModal(true)}
+                    style={styles.primaryButton}
+                  />
+                </View>
+              </ConditionalComponent>
             </ConditionalComponent>
           </View>
         </ScrollView>

@@ -1,13 +1,10 @@
 // screens/innerApplication/calendar/calendarScreen.tsx
 import ConditionalComponent from "@/shared/components/conditionalComponent/conditionalComponent";
 import { SearchModal } from "@/shared/components/ui/SearchModal";
-import { Sidebar } from "@/shared/components/ui/Sidebar";
-import { useAuthStore } from "@/store/authStore";
 import { useCalendarStore } from "@/store/calendarStore";
 import { router } from "expo-router";
 import React, { useEffect, useRef, useState } from "react";
 import {
-  Alert,
   Animated,
   Dimensions,
   FlatList,
@@ -20,10 +17,10 @@ import {
 import { Calendar, DateData } from "react-native-calendars";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useTheme } from "../../../contexts/ThemeContext";
-import { Header } from "../../../shared/components/ui/Header";
 import { Appointment } from "../../../shared/types/calendar";
 import { AppointmentCard } from "./components/AppointmentCard";
 import { CalendarFilterBar } from "./components/CalendarFilterBar";
+import { CalendarHeader } from "./components/CalendarHeader";
 
 const { height: screenHeight } = Dimensions.get("window");
 
@@ -84,7 +81,6 @@ const AnimatedAppointmentCard: React.FC<{
 
 export const CalendarScreen: React.FC = () => {
   const { colors } = useTheme();
-  const [showSidebar, setShowSidebar] = useState(false);
   const [showSearchModal, setShowSearchModal] = useState(false);
   const [currentDate, setCurrentDate] = useState(new Date());
   const [refreshing, setRefreshing] = useState(false);
@@ -114,8 +110,6 @@ export const CalendarScreen: React.FC = () => {
     getAppointmentsForDate,
     clearError,
   } = useCalendarStore();
-
-  const { logout } = useAuthStore();
 
   useEffect(() => {
     fetchAppointments();
@@ -332,21 +326,6 @@ export const CalendarScreen: React.FC = () => {
     setRefreshing(false);
   };
 
-  const handleLogout = () => {
-    Alert.alert("Déconnexion", "Êtes-vous sûr de vouloir vous déconnecter ?", [
-      { text: "Annuler", style: "cancel" },
-      {
-        text: "Déconnecter",
-        style: "destructive",
-        onPress: () => {
-          setShowSidebar(false);
-          logout();
-          router.replace("/auth/login");
-        },
-      },
-    ]);
-  };
-
   const handleNotificationPress = () => {
     router.push("/notifications?returnTo=/calendar");
   };
@@ -358,28 +337,6 @@ export const CalendarScreen: React.FC = () => {
   const handleSearch = (query: string) => {
     setFilters({ searchQuery: query });
   };
-
-  const sidebarItems = [
-    {
-      id: "calendar",
-      label: "Calendrier",
-      icon: "calendar" as const,
-      onPress: () => {
-        setShowSidebar(false);
-      },
-      isActive: true,
-    },
-    {
-      id: "appointments",
-      label: "Mes rendez-vous",
-      icon: "clock-o" as const,
-      onPress: () => {
-        setShowSidebar(false);
-        setCurrentView("list");
-      },
-      isActive: false,
-    },
-  ];
 
   // Improved calendar theme with better dark/light mode support
   const calendarTheme = {
@@ -415,6 +372,9 @@ export const CalendarScreen: React.FC = () => {
     container: {
       flex: 1,
       backgroundColor: colors.backgroundSecondary,
+    },
+    headerContainer: {
+      zIndex: 10,
     },
     content: {
       flex: 1,
@@ -542,25 +502,24 @@ export const CalendarScreen: React.FC = () => {
 
   return (
     <SafeAreaView style={styles.container}>
-      {/* Fixed Header with correct title */}
+      {/* Fixed Header - Removed leftIcon */}
       <Animated.View
-        style={{
-          opacity: headerAnim,
-          transform: [
-            {
-              translateY: headerAnim.interpolate({
-                inputRange: [0, 1],
-                outputRange: [-50, 0],
-              }),
-            },
-          ],
-        }}
+        style={[
+          styles.headerContainer,
+          {
+            opacity: headerAnim,
+            transform: [
+              {
+                translateY: headerAnim.interpolate({
+                  inputRange: [0, 1],
+                  outputRange: [-50, 0],
+                }),
+              },
+            ],
+          },
+        ]}
       >
-        <Header
-          leftIcon={{
-            icon: "bars",
-            onPress: () => setShowSidebar(true),
-          }}
+        <CalendarHeader
           title="RDV Annuel"
           subtitle={`${filteredAppointments.length} rendez-vous`}
           rightIcons={[
@@ -685,17 +644,6 @@ export const CalendarScreen: React.FC = () => {
           </Animated.View>
 
           {/* Information Card - Only show in calendar view */}
-          <Animated.View
-            style={[styles.infoContainer, { opacity: calendarOpacity }]}
-          >
-            <Text style={styles.infoTitle}>Navigation</Text>
-            <Text style={styles.infoText}>
-              Appuyez sur une date pour voir vos rendez-vous du jour. Les points
-              colorés indiquent les types de rendez-vous : vert pour médical,
-              rouge pour formation, bleu pour RH, orange pour maintenance,
-              violet pour réunion.
-            </Text>
-          </Animated.View>
         </Animated.View>
 
         {/* List View */}
@@ -750,15 +698,6 @@ export const CalendarScreen: React.FC = () => {
         placeholder="Rechercher par titre, lieu, médecin..."
         initialQuery={filters.searchQuery || ""}
         title="Rechercher rendez-vous"
-      />
-
-      {/* Sidebar */}
-      <Sidebar
-        title="Rendez-vous annuel" // Changed from "Calendrier" to "Planning"
-        items={sidebarItems}
-        visible={showSidebar}
-        onClose={() => setShowSidebar(false)}
-        onLogout={handleLogout}
       />
     </SafeAreaView>
   );

@@ -40,9 +40,10 @@ const AppointmentCard: React.FC<AppointmentCardProps> = ({
 
   const formatDate = (date: string) => {
     const dateObj = new Date(date);
-    const day = dateObj.getDate();
-    const month = dateObj.getMonth() + 1;
-    return `${day}/${month}`;
+    const day = dateObj.getDate().toString().padStart(2, "0");
+    const month = (dateObj.getMonth() + 1).toString().padStart(2, "0");
+    const year = dateObj.getFullYear();
+    return `${day}/${month}/${year}`;
   };
 
   const getStatusColor = () => {
@@ -157,7 +158,7 @@ const AppointmentCard: React.FC<AppointmentCardProps> = ({
     statusRow: {
       flexDirection: "row",
       alignItems: "center",
-      justifyContent: "space-between",
+      justifyContent: "flex-start",
     },
     statusContainer: {
       flexDirection: "row",
@@ -172,19 +173,6 @@ const AppointmentCard: React.FC<AppointmentCardProps> = ({
     statusText: {
       fontSize: 12,
       fontWeight: "500",
-    },
-    rightSection: {
-      alignItems: "center",
-      justifyContent: "center",
-      marginLeft: 12,
-    },
-    chevronButton: {
-      width: 32,
-      height: 32,
-      borderRadius: 16,
-      alignItems: "center",
-      justifyContent: "center",
-      backgroundColor: colors.backgroundSecondary,
     },
     confirmedBadge: {
       position: "absolute",
@@ -258,21 +246,6 @@ const AppointmentCard: React.FC<AppointmentCardProps> = ({
             </Text>
           </View>
         </View>
-      </View>
-
-      {/* Right Section */}
-      <View style={styles.rightSection}>
-        <TouchableOpacity
-          style={styles.chevronButton}
-          onPress={onPress}
-          activeOpacity={0.7}
-        >
-          <FontAwesome
-            name="chevron-right"
-            size={12}
-            color={colors.textSecondary}
-          />
-        </TouchableOpacity>
       </View>
     </TouchableOpacity>
   );
