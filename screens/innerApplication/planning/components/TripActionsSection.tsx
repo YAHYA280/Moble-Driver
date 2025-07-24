@@ -165,7 +165,9 @@ export const TripActionsSection: React.FC<TripActionsSectionProps> = ({
     noActionsContainer: {
       ...styles.noActionsContainer,
       backgroundColor: colors.surface + "80",
-      borderColor: statusMessage ? statusMessage.color + "20" : colors.primary + "20",
+      borderColor: statusMessage
+        ? statusMessage.color + "20"
+        : colors.primary + "20",
     },
     noActionsIcon: {
       ...styles.noActionsIcon,
@@ -178,8 +180,10 @@ export const TripActionsSection: React.FC<TripActionsSectionProps> = ({
           shadowRadius: 8,
         },
         android: { elevation: 6 },
-        web: { 
-          boxShadow: `0 4px 12px ${statusMessage ? statusMessage.color : colors.success}40` 
+        web: {
+          boxShadow: `0 4px 12px ${
+            statusMessage ? statusMessage.color : colors.success
+          }40`,
         },
       }),
     },
@@ -202,14 +206,43 @@ export const TripActionsSection: React.FC<TripActionsSectionProps> = ({
         defaultComponent={
           <View style={dynamicStyles.noActionsContainer}>
             <View style={dynamicStyles.noActionsIcon}>
-              <FontAwesome 
-                name={statusMessage?.icon || "check"} 
-                size={32} 
-                color="#ffffff" 
+              <FontAwesome
+                name={statusMessage?.icon || "check"}
+                size={32}
+                color="#ffffff"
               />
             </View>
             <Text style={dynamicStyles.noActionsTitle}>
               {statusMessage?.title || "Aucune action requise"}
             </Text>
             <Text style={dynamicStyles.noActionsSubtitle}>
-              {statusMessage?.subtitle || "
+              {statusMessage?.subtitle ||
+                "Ce trajet est dans un état où aucune action n'est nécessaire."}
+            </Text>
+          </View>
+        }
+      >
+        <View style={styles.actionButtons}>
+          {availableActions.map((action, index) => (
+            <View
+              key={action.id}
+              style={index === 0 ? styles.buttonRow : undefined}
+            >
+              <Button
+                title={action.title}
+                variant={action.variant}
+                onPress={action.onPress}
+                loading={isLoading}
+                style={
+                  availableActions.length === 1
+                    ? styles.primaryButton
+                    : { flex: 1 }
+                }
+              />
+            </View>
+          ))}
+        </View>
+      </ConditionalComponent>
+    </View>
+  );
+};
