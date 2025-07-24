@@ -175,12 +175,12 @@ export const PlanningScreen: React.FC = () => {
   const handleDayPress = (day: any) => {
     const date = day.dateString;
     setSelectedDate(date);
-    router.push(`/(tabs)/planning/agenda/${date}`);
+    router.push(`./planning/agenda/${date}`);
   };
 
   const handleTripPress = (trip: Trip) => {
     selectTrip(trip);
-    router.push(`/(tabs)/planning/trip/${trip.id}`);
+    router.push(`./planning/trip/${trip.id}`);
   };
 
   const handleViewToggle = () => {
@@ -209,7 +209,7 @@ export const PlanningScreen: React.FC = () => {
               duration: 250,
               useNativeDriver: true,
             }),
-            Animated.timing(calenderContentAnim, {
+            Animated.timing(calendarContentAnim, {
               toValue: 1,
               duration: 300,
               useNativeDriver: true,

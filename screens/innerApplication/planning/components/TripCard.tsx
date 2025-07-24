@@ -247,7 +247,7 @@ export const TripCard: React.FC<TripCardProps> = ({
 
         <View style={styles.routeRow}>
           <FontAwesome
-            name="route"
+            name="road"
             size={12}
             color={colors.textTertiary}
             style={styles.routeIcon}

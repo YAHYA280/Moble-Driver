@@ -125,14 +125,14 @@ export const TripActionsSection: React.FC<TripActionsSectionProps> = ({
     switch (trip.status) {
       case "termine":
         return {
-          icon: "check-circle",
+          icon: "check" as const,
           title: "Trajet terminé",
           subtitle: "Ce trajet a été terminé avec succès.",
           color: colors.success,
         };
       case "annule":
         return {
-          icon: "times-circle",
+          icon: "times" as const,
           title: "Trajet annulé",
           subtitle: "Ce trajet a été annulé et ne peut plus être modifié.",
           color: colors.error,

@@ -270,7 +270,7 @@ export const AgendaViewScreen: React.FC = () => {
 
   const handleTripPress = (trip: Trip) => {
     selectTrip(trip);
-    router.push(`/(tabs)/planning/trip/${trip.id}`);
+    router.push(`./planning/trip/${trip.id}`);
   };
 
   const weekDays = date ? getWeekDays(date) : [];
@@ -322,7 +322,7 @@ export const AgendaViewScreen: React.FC = () => {
           </Text>
 
           <View style={styles.tripRoute}>
-            <FontAwesome name="route" size={12} color={colors.textSecondary} />
+            <FontAwesome name="road" size={12} color={colors.textSecondary} />
             <Text style={styles.tripRouteText}>
               {trip.startLocation} → {trip.endLocation}
             </Text>

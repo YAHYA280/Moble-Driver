@@ -286,7 +286,7 @@ export const TripDetailsCard: React.FC<TripDetailsCardProps> = ({ trip }) => {
 
         <View style={dynamicStyles.detailRow}>
           <View style={styles.detailIcon}>
-            <FontAwesome name="route" size={16} color={colors.textSecondary} />
+            <FontAwesome name="road" size={16} color={colors.textSecondary} />
           </View>
           <View style={styles.detailContent}>
             <Text style={dynamicStyles.detailLabel}>Itinéraire</Text>

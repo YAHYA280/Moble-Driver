@@ -75,7 +75,7 @@ export const HomeScreen: React.FC = () => {
   };
 
   const handlePlanningPress = () => {
-    router.push("/planning"); // Direct to tab route
+    router.push("/(tabs)/planning");
   };
 
   const styles = StyleSheet.create({
