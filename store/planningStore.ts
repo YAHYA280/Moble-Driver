@@ -11,6 +11,7 @@ import {
 type PlanningStore = PlanningState &
   PlanningActions & {
     getUpcomingTrips: (limit?: number) => Trip[];
+    getTripsForWeek: (startDate: string, endDate: string) => Trip[];
   };
 
 // Helper function to apply filters
@@ -517,6 +518,22 @@ export const usePlanningStore = create<PlanningStore>((set, get) => ({
 
   getTripsForDate: (date: string) => {
     return get().filteredTrips.filter((t) => t.date === date);
+  },
+
+  getTripsForWeek: (startDate: string, endDate: string) => {
+    const start = new Date(startDate);
+    const end = new Date(endDate);
+
+    return get()
+      .filteredTrips.filter((trip) => {
+        const tripDate = new Date(trip.date);
+        return tripDate >= start && tripDate <= end;
+      })
+      .sort((a, b) => {
+        const dateA = new Date(`${a.date}T${a.startTime}`);
+        const dateB = new Date(`${b.date}T${b.startTime}`);
+        return dateA.getTime() - dateB.getTime();
+      });
   },
 
   getUpcomingTrips: (limit: number = 10) => {

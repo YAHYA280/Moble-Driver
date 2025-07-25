@@ -112,6 +112,13 @@ export const PlanningScreen: React.FC = () => {
   const [currentDate, setCurrentDate] = useState(new Date());
   const [refreshing, setRefreshing] = useState(false);
   const [calendarView, setCalendarView] = useState<"month" | "week">("month");
+  const [currentWeekStart, setCurrentWeekStart] = useState(() => {
+    const date = new Date();
+    const day = date.getDay();
+    const monday = new Date(date);
+    monday.setDate(date.getDate() - day + 1);
+    return monday;
+  });
 
   // Animation refs
   const headerAnim = useRef(new Animated.Value(0)).current;
@@ -130,7 +137,8 @@ export const PlanningScreen: React.FC = () => {
     clearFilters,
     setSelectedDate,
     selectTrip,
-    getUpcomingTrips,
+    getTripsForDate,
+    getTripsForWeek,
     clearError,
   } = usePlanningStore();
 
@@ -138,6 +146,14 @@ export const PlanningScreen: React.FC = () => {
     fetchTrips();
     initializeAnimations();
   }, []);
+
+  // Set initial selected date to today
+  useEffect(() => {
+    if (!selectedDate) {
+      const today = new Date().toISOString().split("T")[0];
+      setSelectedDate(today);
+    }
+  }, [selectedDate, setSelectedDate]);
 
   const initializeAnimations = () => {
     Animated.sequence([
@@ -251,14 +267,77 @@ export const PlanningScreen: React.FC = () => {
     setRefreshing(false);
   };
 
-  const upcomingTrips = getUpcomingTrips(5); // Get next 5 upcoming trips
+  const handleWeekChange = (weekStart: Date) => {
+    setCurrentWeekStart(weekStart);
+    setCurrentDate(weekStart);
+  };
+
+  // Get the trips to display based on view mode
+  const getDisplayTrips = () => {
+    if (calendarView === "month") {
+      // Show trips for the selected date (or today if no date selected)
+      const targetDate = selectedDate || new Date().toISOString().split("T")[0];
+      return getTripsForDate(targetDate);
+    } else {
+      // Show trips for the current week
+      const weekStart = new Date(currentWeekStart);
+      const weekEnd = new Date(weekStart);
+      weekEnd.setDate(weekStart.getDate() + 6);
+
+      return getTripsForWeek(
+        weekStart.toISOString().split("T")[0],
+        weekEnd.toISOString().split("T")[0]
+      );
+    }
+  };
+
+  // Get section title and subtitle
+  const getSectionInfo = () => {
+    if (calendarView === "month") {
+      const targetDate = selectedDate || new Date().toISOString().split("T")[0];
+      const dateObj = new Date(targetDate);
+      const isToday = targetDate === new Date().toISOString().split("T")[0];
+
+      return {
+        title: isToday ? "Trajets du jour" : "Trajets du jour sélectionné",
+        subtitle: isToday
+          ? "Aujourd'hui"
+          : dateObj.toLocaleDateString("fr-FR", {
+              weekday: "long",
+              day: "numeric",
+              month: "long",
+            }),
+      };
+    } else {
+      const weekStart = new Date(currentWeekStart);
+      const weekEnd = new Date(weekStart);
+      weekEnd.setDate(weekStart.getDate() + 6);
+
+      const startFormatted = weekStart.toLocaleDateString("fr-FR", {
+        day: "numeric",
+        month: "short",
+      });
+      const endFormatted = weekEnd.toLocaleDateString("fr-FR", {
+        day: "numeric",
+        month: "short",
+      });
+
+      return {
+        title: "Trajets de la semaine",
+        subtitle: `Du ${startFormatted} au ${endFormatted}`,
+      };
+    }
+  };
+
+  const displayTrips = getDisplayTrips();
+  const sectionInfo = getSectionInfo();
 
   const renderTripItem = ({ item, index }: { item: Trip; index: number }) => (
     <AnimatedTripCard
       item={item}
       index={index}
       onPress={() => handleTripPress(item)}
-      showDate={true}
+      showDate={calendarView === "week"}
     />
   );
 
@@ -401,7 +480,7 @@ export const PlanningScreen: React.FC = () => {
                 markedDates={getMarkedDates()}
                 theme={calendarTheme}
                 onDayPress={handleDayPress}
-                onWeekChange={(date) => setCurrentDate(date)}
+                onWeekChange={handleWeekChange}
               />
             }
           >
@@ -424,38 +503,39 @@ export const PlanningScreen: React.FC = () => {
           </ConditionalComponent>
         </Animated.View>
 
-        {/* Upcoming Trips Section */}
+        {/* Trips Section */}
         <Animated.View
           style={[dynamicStyles.upcomingSection, { opacity: upcomingOpacity }]}
         >
           <View style={dynamicStyles.sectionHeader}>
             <View>
-              <Text style={dynamicStyles.sectionTitle}>Prochains trajets</Text>
+              <Text style={dynamicStyles.sectionTitle}>
+                {sectionInfo.title}
+              </Text>
               <Text style={dynamicStyles.sectionSubtitle}>
-                {upcomingTrips.length} trajet
-                {upcomingTrips.length !== 1 ? "s" : ""} à venir
+                {sectionInfo.subtitle} • {displayTrips.length} trajet
+                {displayTrips.length !== 1 ? "s" : ""}
               </Text>
             </View>
           </View>
 
           <View style={styles.upcomingTripsContainer}>
             <ConditionalComponent
-              isValid={upcomingTrips.length > 0}
+              isValid={displayTrips.length > 0}
               defaultComponent={
                 <View style={styles.emptyState}>
                   <Text style={styles.emptyIcon}>🚌</Text>
-                  <Text style={dynamicStyles.emptyTitle}>
-                    Aucun trajet à venir
-                  </Text>
+                  <Text style={dynamicStyles.emptyTitle}>Aucun trajet</Text>
                   <Text style={dynamicStyles.emptyText}>
-                    Vous n&apos;avez aucun trajet planifié dans les prochains
-                    jours.
+                    {calendarView === "month"
+                      ? "Aucun trajet prévu pour cette date."
+                      : "Aucun trajet prévu pour cette semaine."}
                   </Text>
                 </View>
               }
             >
               <FlatList
-                data={upcomingTrips}
+                data={displayTrips}
                 renderItem={renderTripItem}
                 keyExtractor={(item) => item.id}
                 showsVerticalScrollIndicator={false}

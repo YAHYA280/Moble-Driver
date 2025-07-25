@@ -1,13 +1,21 @@
 // screens/innerApplication/planning/tripDetailsScreen.tsx
+import { FontAwesome } from "@expo/vector-icons";
 import { router, useLocalSearchParams } from "expo-router";
 import React, { useEffect, useRef } from "react";
-import { Alert, Animated, ScrollView, StyleSheet } from "react-native";
+import {
+  Animated,
+  Image,
+  Platform,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+} from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useTheme } from "../../../contexts/ThemeContext";
 import { Header } from "../../../shared/components/ui/Header";
 import { usePlanningStore } from "../../../store/planningStore";
-import { TripActionsSection } from "./components/TripActionsSection";
-import { TripDetailsCard } from "./components/TripDetailsCard";
 
 const styles = StyleSheet.create({
   container: {
@@ -17,8 +25,290 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   scrollContent: {
-    padding: 16,
+    padding: 20,
     paddingBottom: 120,
+  },
+
+  // Route Section
+  routeSection: {
+    backgroundColor: "#fff",
+    borderRadius: 16,
+    padding: 20,
+    marginBottom: 20,
+  },
+  routeHeader: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginBottom: 16,
+  },
+  routeIcon: {
+    marginRight: 8,
+  },
+  routeTitle: {
+    fontSize: 16,
+    fontWeight: "600",
+  },
+  routeContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    marginBottom: 20,
+  },
+  locationContainer: {
+    flex: 1,
+  },
+  locationText: {
+    fontSize: 14,
+    fontWeight: "500",
+    marginBottom: 4,
+  },
+  locationSubtext: {
+    fontSize: 12,
+    opacity: 0.7,
+  },
+  routeLine: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginVertical: 16,
+  },
+  startDot: {
+    width: 12,
+    height: 12,
+    borderRadius: 6,
+    backgroundColor: "#746cd4",
+    marginRight: 8,
+  },
+  line: {
+    flex: 1,
+    height: 2,
+    backgroundColor: "#746cd4",
+    marginHorizontal: 8,
+  },
+  endDot: {
+    width: 12,
+    height: 12,
+    borderRadius: 6,
+    backgroundColor: "#746cd4",
+    marginLeft: 8,
+  },
+  distanceBadge: {
+    backgroundColor: "#746cd4",
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 20,
+    marginLeft: 12,
+  },
+  distanceText: {
+    color: "#fff",
+    fontSize: 12,
+    fontWeight: "600",
+  },
+
+  // Time Section
+  timeSection: {
+    backgroundColor: "#fff",
+    borderRadius: 16,
+    padding: 20,
+    marginBottom: 20,
+  },
+  timeHeader: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginBottom: 16,
+  },
+  timeTitle: {
+    fontSize: 16,
+    fontWeight: "600",
+    marginLeft: 8,
+  },
+  timeContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  timeBox: {
+    alignItems: "center",
+    paddingHorizontal: 20,
+  },
+  timeLabel: {
+    fontSize: 14,
+    fontWeight: "500",
+    marginBottom: 8,
+    color: "#746cd4",
+  },
+  timeValue: {
+    fontSize: 24,
+    fontWeight: "700",
+    color: "#746cd4",
+  },
+  timeArrow: {
+    marginHorizontal: 20,
+  },
+
+  // Contact Section
+  contactSection: {
+    backgroundColor: "#fff",
+    borderRadius: 16,
+    padding: 20,
+    marginBottom: 20,
+  },
+  contactHeader: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginBottom: 16,
+  },
+  contactTitle: {
+    fontSize: 16,
+    fontWeight: "600",
+    marginLeft: 8,
+  },
+  contactNumbers: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    gap: 12,
+  },
+  contactButton: {
+    flex: 1,
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: "#f8f9ff",
+    borderRadius: 12,
+    padding: 16,
+    borderWidth: 1,
+    borderColor: "#e8eaff",
+  },
+  contactIcon: {
+    marginRight: 8,
+  },
+  contactText: {
+    fontSize: 14,
+    fontWeight: "600",
+    color: "#746cd4",
+  },
+
+  // Arrêts Section
+  arretsSection: {
+    backgroundColor: "#fff",
+    borderRadius: 16,
+    padding: 20,
+    marginBottom: 20,
+  },
+  arretsHeader: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginBottom: 16,
+  },
+  arretsTitle: {
+    fontSize: 16,
+    fontWeight: "600",
+    marginLeft: 8,
+  },
+  showRoadButton: {
+    backgroundColor: "#746cd4",
+    borderRadius: 12,
+    paddingVertical: 16,
+    paddingHorizontal: 24,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  showRoadButtonText: {
+    color: "#fff",
+    fontSize: 16,
+    fontWeight: "600",
+  },
+
+  // Vehicle Section
+  vehicleSection: {
+    backgroundColor: "#fff",
+    borderRadius: 16,
+    padding: 20,
+    marginBottom: 20,
+  },
+  vehicleHeader: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginBottom: 16,
+  },
+  vehicleTitle: {
+    fontSize: 16,
+    fontWeight: "600",
+    marginLeft: 8,
+  },
+  vehicleCard: {
+    flexDirection: "row",
+    alignItems: "center",
+  },
+  vehicleImageContainer: {
+    width: 100,
+    height: 80,
+    borderRadius: 16,
+    backgroundColor: "#f0f0f0",
+    marginRight: 20,
+    overflow: "hidden",
+  },
+  vehicleImage: {
+    width: "100%",
+    height: "100%",
+    resizeMode: "cover",
+  },
+  vehicleInfo: {
+    flex: 1,
+  },
+  vehicleName: {
+    fontSize: 20,
+    fontWeight: "700",
+    marginBottom: 6,
+  },
+  vehicleModel: {
+    fontSize: 16,
+    opacity: 0.6,
+    marginBottom: 12,
+  },
+  vehiclePlateContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+  },
+  plateIcon: {
+    marginRight: 8,
+  },
+  plateNumber: {
+    fontSize: 16,
+    fontWeight: "700",
+    marginRight: 12,
+  },
+  plateBadge: {
+    backgroundColor: "#746cd4",
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 12,
+  },
+  plateBadgeText: {
+    color: "#fff",
+    fontSize: 14,
+    fontWeight: "600",
+  },
+
+  // Home Button
+  homeButton: {
+    position: "absolute",
+    bottom: 40,
+    left: "50%",
+    marginLeft: -28,
+    width: 56,
+    height: 56,
+    borderRadius: 28,
+    backgroundColor: "#746cd4",
+    alignItems: "center",
+    justifyContent: "center",
+    shadowColor: "#746cd4",
+    shadowOffset: {
+      width: 0,
+      height: 4,
+    },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    elevation: 8,
   },
 });
 
@@ -27,8 +317,7 @@ export const TripDetailsScreen: React.FC = () => {
   const { id } = useLocalSearchParams<{ id: string }>();
   const fadeAnim = useRef(new Animated.Value(0)).current;
 
-  const { selectedTrip, isLoading, updateTripStatus, fetchTripDetails } =
-    usePlanningStore();
+  const { selectedTrip, isLoading, fetchTripDetails } = usePlanningStore();
 
   useEffect(() => {
     if (id && (!selectedTrip || selectedTrip.id !== id)) {
@@ -65,74 +354,131 @@ export const TripDetailsScreen: React.FC = () => {
     );
   }
 
-  const handleStartTrip = async () => {
-    Alert.alert(
-      "Démarrer le trajet",
-      "Confirmez-vous le démarrage de ce trajet ?",
-      [
-        { text: "Annuler", style: "cancel" },
-        {
-          text: "Démarrer",
-          onPress: async () => {
-            try {
-              await updateTripStatus(selectedTrip.id, "en_cours");
-              Alert.alert("Success", "Le trajet a été démarré.");
-            } catch (error) {
-              Alert.alert("Erreur", "Impossible de démarrer le trajet.");
-            }
-          },
-        },
-      ]
-    );
+  const formatTime = (time: string) => time.substring(0, 5);
+
+  const handleMapPress = () => {
+    router.push(`/(tabs)/geolocation?tripId=${selectedTrip.id}`);
   };
 
-  const handleCompleteTrip = async () => {
-    Alert.alert("Terminer le trajet", "Confirmez-vous la fin de ce trajet ?", [
-      { text: "Annuler", style: "cancel" },
-      {
-        text: "Terminer",
-        onPress: async () => {
-          try {
-            await updateTripStatus(selectedTrip.id, "termine");
-            Alert.alert("Success", "Le trajet a été terminé.");
-          } catch (error) {
-            Alert.alert("Erreur", "Impossible de terminer le trajet.");
-          }
-        },
-      },
-    ]);
-  };
-
-  const handleCancelTrip = async () => {
-    Alert.alert(
-      "Annuler le trajet",
-      "Êtes-vous sûr de vouloir annuler ce trajet ?",
-      [
-        { text: "Non", style: "cancel" },
-        {
-          text: "Annuler le trajet",
-          style: "destructive",
-          onPress: async () => {
-            try {
-              await updateTripStatus(
-                selectedTrip.id,
-                "annule",
-                "Annulé par le chauffeur"
-              );
-              Alert.alert("Success", "Le trajet a été annulé.");
-            } catch (error) {
-              Alert.alert("Erreur", "Impossible d'annuler le trajet.");
-            }
-          },
-        },
-      ]
-    );
+  const handleContactPress = (phoneNumber: string) => {
+    // Handle phone call
+    console.log(`Calling ${phoneNumber}`);
   };
 
   const dynamicStyles = {
     container: {
       ...styles.container,
       backgroundColor: colors.backgroundSecondary,
+    },
+    routeSection: {
+      ...styles.routeSection,
+      backgroundColor: colors.card,
+      ...Platform.select({
+        ios: {
+          shadowColor: colors.shadow,
+          shadowOffset: { width: 0, height: 2 },
+          shadowOpacity: colors.isDark ? 0.3 : 0.08,
+          shadowRadius: 8,
+        },
+        android: { elevation: 3 },
+      }),
+    },
+    timeSection: {
+      ...styles.timeSection,
+      backgroundColor: colors.card,
+      ...Platform.select({
+        ios: {
+          shadowColor: colors.shadow,
+          shadowOffset: { width: 0, height: 2 },
+          shadowOpacity: colors.isDark ? 0.3 : 0.08,
+          shadowRadius: 8,
+        },
+        android: { elevation: 3 },
+      }),
+    },
+    contactSection: {
+      ...styles.contactSection,
+      backgroundColor: colors.card,
+      ...Platform.select({
+        ios: {
+          shadowColor: colors.shadow,
+          shadowOffset: { width: 0, height: 2 },
+          shadowOpacity: colors.isDark ? 0.3 : 0.08,
+          shadowRadius: 8,
+        },
+        android: { elevation: 3 },
+      }),
+    },
+    arretsSection: {
+      ...styles.arretsSection,
+      backgroundColor: colors.card,
+      ...Platform.select({
+        ios: {
+          shadowColor: colors.shadow,
+          shadowOffset: { width: 0, height: 2 },
+          shadowOpacity: colors.isDark ? 0.3 : 0.08,
+          shadowRadius: 8,
+        },
+        android: { elevation: 3 },
+      }),
+    },
+    vehicleSection: {
+      ...styles.vehicleSection,
+      backgroundColor: colors.card,
+      ...Platform.select({
+        ios: {
+          shadowColor: colors.shadow,
+          shadowOffset: { width: 0, height: 2 },
+          shadowOpacity: colors.isDark ? 0.3 : 0.08,
+          shadowRadius: 8,
+        },
+        android: { elevation: 3 },
+      }),
+    },
+    routeTitle: {
+      ...styles.routeTitle,
+      color: colors.text,
+    },
+    timeTitle: {
+      ...styles.timeTitle,
+      color: colors.text,
+    },
+    contactTitle: {
+      ...styles.contactTitle,
+      color: colors.text,
+    },
+    arretsTitle: {
+      ...styles.arretsTitle,
+      color: colors.text,
+    },
+    vehicleTitle: {
+      ...styles.vehicleTitle,
+      color: colors.text,
+    },
+    locationText: {
+      ...styles.locationText,
+      color: colors.text,
+    },
+    locationSubtext: {
+      ...styles.locationSubtext,
+      color: colors.textSecondary,
+    },
+    vehicleName: {
+      ...styles.vehicleName,
+      color: colors.text,
+    },
+    vehicleModel: {
+      ...styles.vehicleModel,
+      color: colors.textSecondary,
+    },
+    plateNumber: {
+      ...styles.plateNumber,
+      color: colors.text,
+    },
+    contactButton: {
+      ...styles.contactButton,
+      backgroundColor: colors.primary + "15",
+      borderColor: colors.primary + "30",
     },
   };
 
@@ -143,7 +489,7 @@ export const TripDetailsScreen: React.FC = () => {
           icon: "chevron-left",
           onPress: () => router.back(),
         }}
-        title="Détails du trajet"
+        title={selectedTrip.title}
       />
 
       <Animated.View style={[styles.content, { opacity: fadeAnim }]}>
@@ -151,16 +497,208 @@ export const TripDetailsScreen: React.FC = () => {
           showsVerticalScrollIndicator={false}
           contentContainerStyle={styles.scrollContent}
         >
-          <TripDetailsCard trip={selectedTrip} />
+          {/* Route Section */}
+          <View style={dynamicStyles.routeSection}>
+            <View style={styles.routeHeader}>
+              <FontAwesome
+                name="map-marker"
+                size={18}
+                color={colors.error}
+                style={styles.routeIcon}
+              />
+              <Text style={dynamicStyles.routeTitle}>Point de Départ</Text>
+            </View>
 
-          <TripActionsSection
-            trip={selectedTrip}
-            isLoading={isLoading}
-            onStartTrip={handleStartTrip}
-            onCompleteTrip={handleCompleteTrip}
-            onCancelTrip={handleCancelTrip}
-          />
+            <View style={styles.routeContainer}>
+              <View style={styles.locationContainer}>
+                <Text style={dynamicStyles.locationText}>
+                  {selectedTrip.startLocation}
+                </Text>
+                <Text style={dynamicStyles.locationSubtext}>
+                  {selectedTrip.startLocation}
+                </Text>
+              </View>
+
+              <View style={styles.locationContainer}>
+                <Text
+                  style={[dynamicStyles.locationText, { textAlign: "right" }]}
+                >
+                  {selectedTrip.endLocation}
+                </Text>
+                <Text
+                  style={[
+                    dynamicStyles.locationSubtext,
+                    { textAlign: "right" },
+                  ]}
+                >
+                  {selectedTrip.endLocation}
+                </Text>
+              </View>
+            </View>
+
+            <View style={styles.routeLine}>
+              <View style={styles.startDot} />
+              <View style={styles.line} />
+              <FontAwesome name="graduation-cap" size={16} color="#746cd4" />
+              <View style={styles.distanceBadge}>
+                <Text style={styles.distanceText}>20 km</Text>
+              </View>
+            </View>
+          </View>
+
+          {/* Time Section */}
+          <View style={dynamicStyles.timeSection}>
+            <View style={styles.timeHeader}>
+              <FontAwesome
+                name="clock-o"
+                size={18}
+                color={colors.textSecondary}
+              />
+              <Text style={dynamicStyles.timeTitle}>
+                Heures de Départ et d&apos;Arrivé
+              </Text>
+            </View>
+
+            <View style={styles.timeContainer}>
+              <View style={styles.timeBox}>
+                <Text style={styles.timeLabel}>De</Text>
+                <Text style={styles.timeValue}>
+                  {formatTime(selectedTrip.startTime)}
+                </Text>
+              </View>
+
+              <FontAwesome
+                name="chevron-right"
+                size={20}
+                color="#746cd4"
+                style={styles.timeArrow}
+              />
+
+              <View style={styles.timeBox}>
+                <Text style={styles.timeLabel}>À</Text>
+                <Text style={styles.timeValue}>
+                  {formatTime(selectedTrip.endTime)}
+                </Text>
+              </View>
+            </View>
+          </View>
+
+          {/* Contact Section */}
+          <View style={dynamicStyles.contactSection}>
+            <View style={styles.contactHeader}>
+              <FontAwesome
+                name="phone"
+                size={18}
+                color={colors.textSecondary}
+              />
+              <Text style={dynamicStyles.contactTitle}>Contact usager</Text>
+            </View>
+
+            <View style={styles.contactNumbers}>
+              <TouchableOpacity
+                style={dynamicStyles.contactButton}
+                onPress={() => handleContactPress("+145324421224")}
+                activeOpacity={0.7}
+              >
+                <FontAwesome
+                  name="phone"
+                  size={16}
+                  color="#746cd4"
+                  style={styles.contactIcon}
+                />
+                <Text style={styles.contactText}>+145324421224</Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                style={dynamicStyles.contactButton}
+                onPress={() => handleContactPress("+145324421224")}
+                activeOpacity={0.7}
+              >
+                <FontAwesome
+                  name="phone"
+                  size={16}
+                  color="#746cd4"
+                  style={styles.contactIcon}
+                />
+                <Text style={styles.contactText}>+145324421224</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+
+          {/* Arrêts Section */}
+          <View style={dynamicStyles.arretsSection}>
+            <View style={styles.arretsHeader}>
+              <FontAwesome
+                name="map"
+                size={18}
+                color="#746cd4"
+                style={styles.routeIcon}
+              />
+              <Text style={dynamicStyles.arretsTitle}>Arrêts</Text>
+            </View>
+
+            <TouchableOpacity
+              style={styles.showRoadButton}
+              onPress={handleMapPress}
+              activeOpacity={0.8}
+            >
+              <Text style={styles.showRoadButtonText}>
+                Voir l&apos;itinéraire sur la carte
+              </Text>
+            </TouchableOpacity>
+          </View>
+
+          {/* Vehicle Section */}
+          <View style={dynamicStyles.vehicleSection}>
+            <View style={styles.vehicleHeader}>
+              <FontAwesome
+                name="car"
+                size={18}
+                color={colors.error}
+                style={styles.routeIcon}
+              />
+              <Text style={dynamicStyles.vehicleTitle}>Véhicule Assigné</Text>
+            </View>
+
+            <View style={styles.vehicleCard}>
+              <View style={styles.vehicleImageContainer}>
+                <Image
+                  source={{
+                    uri: "https://images.unsplash.com/photo-1563720223185-11003d516935?w=300&h=200&fit=crop&crop=center",
+                  }}
+                  style={styles.vehicleImage}
+                />
+              </View>
+
+              <View style={styles.vehicleInfo}>
+                <Text style={dynamicStyles.vehicleName}>
+                  {selectedTrip.assignedVehicle?.brand || "Mercedes-Benz"}
+                </Text>
+                <Text style={dynamicStyles.vehicleModel}>
+                  {selectedTrip.assignedVehicle?.model || "S 580 e 4MATIC Long"}
+                </Text>
+
+                <View style={styles.vehiclePlateContainer}>
+                  <FontAwesome
+                    name="credit-card"
+                    size={16}
+                    color={colors.textSecondary}
+                    style={styles.plateIcon}
+                  />
+                  <Text style={dynamicStyles.plateNumber}>
+                    {selectedTrip.assignedVehicle?.plateNumber ||
+                      "SN-UX420-77V1"}
+                  </Text>
+                  <View style={styles.plateBadge}>
+                    <Text style={styles.plateBadgeText}>23-XYZ-45</Text>
+                  </View>
+                </View>
+              </View>
+            </View>
+          </View>
         </ScrollView>
+
+        {/* Home Button */}
       </Animated.View>
     </SafeAreaView>
   );
