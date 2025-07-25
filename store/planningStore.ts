@@ -1,4 +1,4 @@
-// store/planningStore.ts
+// store/planningStore.ts - Updated with matching vehicle IDs
 import { create } from "zustand";
 import {
   PlanningActions,
@@ -90,7 +90,35 @@ const nextMonthYear = currentMonth === 11 ? currentYear + 1 : currentYear;
 const currentMonthDates = generateDatesForMonth(currentYear, currentMonth);
 const nextMonthDates = generateDatesForMonth(nextMonthYear, nextMonth);
 
-// Mock data with school trips based on the images
+// Vehicle assignments that match the vehicle store
+const vehicleAssignments = [
+  {
+    id: "95700L15",
+    plateNumber: "95700L15",
+    model: "A4",
+    brand: "Audi",
+  },
+  {
+    id: "SN-UX420-77V1",
+    plateNumber: "SN-UX420-77V1",
+    model: "S 580 e 4MATIC Long",
+    brand: "Mercedes-Benz",
+  },
+  {
+    id: "98765ABC",
+    plateNumber: "98765ABC",
+    model: "Transit",
+    brand: "Ford",
+  },
+  {
+    id: "957H15-CV56",
+    plateNumber: "957H15",
+    model: "CV56",
+    brand: "Audi",
+  },
+];
+
+// Mock data with school trips that use matching vehicle IDs
 const mockTrips: Trip[] = [
   // Today's trips
   {
@@ -122,12 +150,7 @@ const mockTrips: Trip[] = [
         type: "dropoff",
       },
     ],
-    assignedVehicle: {
-      id: "audi_cv56",
-      plateNumber: "Audi-CV56",
-      model: "CV56",
-      brand: "Audi",
-    },
+    assignedVehicle: vehicleAssignments[0], // Audi A4
     driverId: "driver_001",
     driverName: "Jean Jacques",
     totalPassengers: 7,
@@ -158,12 +181,7 @@ const mockTrips: Trip[] = [
         type: "pickup",
       },
     ],
-    assignedVehicle: {
-      id: "audi_cv56_2",
-      plateNumber: "Audi-CV56",
-      model: "CV56",
-      brand: "Audi",
-    },
+    assignedVehicle: vehicleAssignments[1], // Mercedes-Benz S 580
     driverId: "driver_001",
     driverName: "Jean Jacques",
     totalPassengers: 2,
@@ -202,12 +220,7 @@ const mockTrips: Trip[] = [
         type: "dropoff",
       },
     ],
-    assignedVehicle: {
-      id: "audi_cv56_3",
-      plateNumber: "Audi-CV56",
-      model: "CV56",
-      brand: "Audi",
-    },
+    assignedVehicle: vehicleAssignments[2], // Ford Transit
     driverId: "driver_001",
     driverName: "Jean Jacques",
     totalPassengers: 7,
@@ -238,12 +251,7 @@ const mockTrips: Trip[] = [
         type: "pickup",
       },
     ],
-    assignedVehicle: {
-      id: "audi_cv56_4",
-      plateNumber: "Audi-CV56",
-      model: "CV56",
-      brand: "Audi",
-    },
+    assignedVehicle: vehicleAssignments[3], // Audi CV56
     driverId: "driver_001",
     driverName: "Jean Jacques",
     totalPassengers: 3,
@@ -274,12 +282,7 @@ const mockTrips: Trip[] = [
         type: "pickup",
       },
     ],
-    assignedVehicle: {
-      id: "audi_cv56_5",
-      plateNumber: "Audi-CV56",
-      model: "CV56",
-      brand: "Audi",
-    },
+    assignedVehicle: vehicleAssignments[0], // Audi A4 (reused)
     driverId: "driver_001",
     driverName: "Jean Jacques",
     totalPassengers: 2,
@@ -318,12 +321,7 @@ const mockTrips: Trip[] = [
         type: "dropoff" as const,
       },
     ],
-    assignedVehicle: {
-      id: `vehicle_${index}`,
-      plateNumber: "Audi-CV56",
-      model: "CV56",
-      brand: "Audi",
-    },
+    assignedVehicle: vehicleAssignments[index % vehicleAssignments.length],
     driverId: "driver_001",
     driverName: "Jean Jacques",
     totalPassengers: Math.floor(Math.random() * 8) + 1,
@@ -362,12 +360,7 @@ const mockTrips: Trip[] = [
         type: "dropoff" as const,
       },
     ],
-    assignedVehicle: {
-      id: `vehicle_next_${index}`,
-      plateNumber: "Audi-CV56",
-      model: "CV56",
-      brand: "Audi",
-    },
+    assignedVehicle: vehicleAssignments[index % vehicleAssignments.length],
     driverId: "driver_001",
     driverName: "Jean Jacques",
     totalPassengers: Math.floor(Math.random() * 8) + 1,

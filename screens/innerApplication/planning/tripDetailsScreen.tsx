@@ -1,7 +1,7 @@
-// screens/innerApplication/planning/tripDetailsScreen.tsx
+// screens/innerApplication/planning/tripDetailsScreen.tsx - Fixed version
 import { FontAwesome } from "@expo/vector-icons";
 import { router, useLocalSearchParams } from "expo-router";
-import React, { useEffect, useRef } from "react";
+import React, { useEffect, useMemo, useRef } from "react";
 import {
   Animated,
   Image,
@@ -16,6 +16,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { useTheme } from "../../../contexts/ThemeContext";
 import { Header } from "../../../shared/components/ui/Header";
 import { usePlanningStore } from "../../../store/planningStore";
+import { useVehicleStore } from "../../../store/vehicleStore";
 
 const styles = StyleSheet.create({
   container: {
@@ -288,27 +289,11 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: "600",
   },
-
-  // Home Button
-  homeButton: {
-    position: "absolute",
-    bottom: 40,
-    left: "50%",
-    marginLeft: -28,
-    width: 56,
-    height: 56,
-    borderRadius: 28,
-    backgroundColor: "#746cd4",
+  vehicleChevron: {
+    marginLeft: 12,
     alignItems: "center",
     justifyContent: "center",
-    shadowColor: "#746cd4",
-    shadowOffset: {
-      width: 0,
-      height: 4,
-    },
-    shadowOpacity: 0.3,
-    shadowRadius: 8,
-    elevation: 8,
+    padding: 8,
   },
 });
 
@@ -319,23 +304,65 @@ export const TripDetailsScreen: React.FC = () => {
 
   const { selectedTrip, isLoading, fetchTripDetails } = usePlanningStore();
 
+  // Memoize the trip to prevent unnecessary re-renders
+  const trip = useMemo(() => {
+    return selectedTrip;
+  }, [selectedTrip?.id, selectedTrip?.updatedAt]);
+
+  // Only fetch if we don't have the trip or if the ID changed
   useEffect(() => {
-    if (id && (!selectedTrip || selectedTrip.id !== id)) {
+    if (id && (!trip || trip.id !== id)) {
       fetchTripDetails(id);
     }
-  }, [id, selectedTrip, fetchTripDetails]);
+  }, [id]);
 
+  // Only animate when we have a stable trip
   useEffect(() => {
-    if (selectedTrip) {
+    if (trip && trip.id === id) {
       Animated.timing(fadeAnim, {
         toValue: 1,
         duration: 600,
         useNativeDriver: true,
       }).start();
     }
-  }, [selectedTrip, fadeAnim]);
+  }, [trip?.id, id, fadeAnim]);
 
-  if (!selectedTrip) {
+  const handleVehiclePress = () => {
+    if (trip?.assignedVehicle) {
+      const { vehicles, selectVehicle } = useVehicleStore.getState();
+
+      const vehicle = vehicles.find(
+        (v) =>
+          v.id === trip.assignedVehicle?.id ||
+          v.plateNumber === trip.assignedVehicle?.plateNumber
+      );
+
+      if (vehicle) {
+        selectVehicle(vehicle);
+        // Add return parameter to know where to go back
+        router.push(
+          `/(tabs)/vehicles/details?returnTo=planning&tripId=${trip.id}`
+        );
+      } else {
+        console.log("Vehicle not found in store");
+      }
+    }
+  };
+
+  const formatTime = (time: string) => time.substring(0, 5);
+
+  const handleMapPress = () => {
+    if (trip) {
+      router.push(`/(tabs)/geolocation?tripId=${trip.id}`);
+    }
+  };
+
+  const handleContactPress = (phoneNumber: string) => {
+    console.log(`Calling ${phoneNumber}`);
+  };
+
+  // Show loading state if no trip
+  if (!trip || trip.id !== id) {
     return (
       <SafeAreaView
         style={[
@@ -353,17 +380,6 @@ export const TripDetailsScreen: React.FC = () => {
       </SafeAreaView>
     );
   }
-
-  const formatTime = (time: string) => time.substring(0, 5);
-
-  const handleMapPress = () => {
-    router.push(`/(tabs)/geolocation?tripId=${selectedTrip.id}`);
-  };
-
-  const handleContactPress = (phoneNumber: string) => {
-    // Handle phone call
-    console.log(`Calling ${phoneNumber}`);
-  };
 
   const dynamicStyles = {
     container: {
@@ -489,7 +505,7 @@ export const TripDetailsScreen: React.FC = () => {
           icon: "chevron-left",
           onPress: () => router.back(),
         }}
-        title={selectedTrip.title}
+        title={trip.title}
       />
 
       <Animated.View style={[styles.content, { opacity: fadeAnim }]}>
@@ -512,10 +528,10 @@ export const TripDetailsScreen: React.FC = () => {
             <View style={styles.routeContainer}>
               <View style={styles.locationContainer}>
                 <Text style={dynamicStyles.locationText}>
-                  {selectedTrip.startLocation}
+                  {trip.startLocation}
                 </Text>
                 <Text style={dynamicStyles.locationSubtext}>
-                  {selectedTrip.startLocation}
+                  {trip.startLocation}
                 </Text>
               </View>
 
@@ -523,7 +539,7 @@ export const TripDetailsScreen: React.FC = () => {
                 <Text
                   style={[dynamicStyles.locationText, { textAlign: "right" }]}
                 >
-                  {selectedTrip.endLocation}
+                  {trip.endLocation}
                 </Text>
                 <Text
                   style={[
@@ -531,7 +547,7 @@ export const TripDetailsScreen: React.FC = () => {
                     { textAlign: "right" },
                   ]}
                 >
-                  {selectedTrip.endLocation}
+                  {trip.endLocation}
                 </Text>
               </View>
             </View>
@@ -563,7 +579,7 @@ export const TripDetailsScreen: React.FC = () => {
               <View style={styles.timeBox}>
                 <Text style={styles.timeLabel}>De</Text>
                 <Text style={styles.timeValue}>
-                  {formatTime(selectedTrip.startTime)}
+                  {formatTime(trip.startTime)}
                 </Text>
               </View>
 
@@ -576,9 +592,7 @@ export const TripDetailsScreen: React.FC = () => {
 
               <View style={styles.timeBox}>
                 <Text style={styles.timeLabel}>À</Text>
-                <Text style={styles.timeValue}>
-                  {formatTime(selectedTrip.endTime)}
-                </Text>
+                <Text style={styles.timeValue}>{formatTime(trip.endTime)}</Text>
               </View>
             </View>
           </View>
@@ -660,7 +674,11 @@ export const TripDetailsScreen: React.FC = () => {
               <Text style={dynamicStyles.vehicleTitle}>Véhicule Assigné</Text>
             </View>
 
-            <View style={styles.vehicleCard}>
+            <TouchableOpacity
+              style={styles.vehicleCard}
+              onPress={handleVehiclePress}
+              activeOpacity={0.7}
+            >
               <View style={styles.vehicleImageContainer}>
                 <Image
                   source={{
@@ -672,10 +690,10 @@ export const TripDetailsScreen: React.FC = () => {
 
               <View style={styles.vehicleInfo}>
                 <Text style={dynamicStyles.vehicleName}>
-                  {selectedTrip.assignedVehicle?.brand || "Mercedes-Benz"}
+                  {trip.assignedVehicle?.brand || "Mercedes-Benz"}
                 </Text>
                 <Text style={dynamicStyles.vehicleModel}>
-                  {selectedTrip.assignedVehicle?.model || "S 580 e 4MATIC Long"}
+                  {trip.assignedVehicle?.model || "S 580 e 4MATIC Long"}
                 </Text>
 
                 <View style={styles.vehiclePlateContainer}>
@@ -686,19 +704,24 @@ export const TripDetailsScreen: React.FC = () => {
                     style={styles.plateIcon}
                   />
                   <Text style={dynamicStyles.plateNumber}>
-                    {selectedTrip.assignedVehicle?.plateNumber ||
-                      "SN-UX420-77V1"}
+                    {trip.assignedVehicle?.plateNumber || "SN-UX420-77V1"}
                   </Text>
                   <View style={styles.plateBadge}>
                     <Text style={styles.plateBadgeText}>23-XYZ-45</Text>
                   </View>
                 </View>
               </View>
-            </View>
+
+              <View style={styles.vehicleChevron}>
+                <FontAwesome
+                  name="chevron-right"
+                  size={16}
+                  color={colors.textSecondary}
+                />
+              </View>
+            </TouchableOpacity>
           </View>
         </ScrollView>
-
-        {/* Home Button */}
       </Animated.View>
     </SafeAreaView>
   );

@@ -1,4 +1,5 @@
-import { router } from "expo-router";
+// screens/innerApplication/vehicles/vehicleDetailsScreen.tsx - Updated with return navigation
+import { router, useLocalSearchParams } from "expo-router";
 import React, { useEffect, useRef } from "react";
 import { Animated, ScrollView, StyleSheet } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
@@ -123,6 +124,12 @@ export const VehicleDetailsScreen: React.FC = () => {
   const { selectedVehicle } = useVehicleStore();
   const headerAnim = useRef(new Animated.Value(0)).current;
 
+  // Get the return parameters
+  const { returnTo, tripId } = useLocalSearchParams<{
+    returnTo?: string;
+    tripId?: string;
+  }>();
+
   useEffect(() => {
     if (!selectedVehicle) {
       router.back();
@@ -135,6 +142,19 @@ export const VehicleDetailsScreen: React.FC = () => {
       useNativeDriver: true,
     }).start();
   }, [selectedVehicle, headerAnim]);
+
+  const handleBackPress = () => {
+    if (returnTo === "planning" && tripId) {
+      // Return to the specific trip details
+      router.push(`/(tabs)/planning/trip/${tripId}`);
+    } else if (returnTo === "planning") {
+      // Return to planning main screen
+      router.push("/(tabs)/planning");
+    } else {
+      // Default back behavior
+      router.back();
+    }
+  };
 
   if (!selectedVehicle) {
     return null;
@@ -161,7 +181,7 @@ export const VehicleDetailsScreen: React.FC = () => {
 
   return (
     <SafeAreaView style={styles.container}>
-      {/* Animated Header - same pattern as vehicle home screen */}
+      {/* Animated Header with custom back handler */}
       <Animated.View
         style={{
           opacity: headerAnim,
@@ -178,7 +198,7 @@ export const VehicleDetailsScreen: React.FC = () => {
         <Header
           leftIcon={{
             icon: "chevron-left",
-            onPress: () => router.back(),
+            onPress: handleBackPress,
           }}
           title="Détails du véhicule"
         />
