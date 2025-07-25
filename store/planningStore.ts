@@ -8,7 +8,10 @@ import {
   Trip,
 } from "../shared/types/planning";
 
-type PlanningStore = PlanningState & PlanningActions;
+type PlanningStore = PlanningState &
+  PlanningActions & {
+    getUpcomingTrips: (limit?: number) => Trip[];
+  };
 
 // Helper function to apply filters
 const applyFiltersToTrips = (trips: Trip[], filters: PlanningFilters) => {
@@ -514,6 +517,33 @@ export const usePlanningStore = create<PlanningStore>((set, get) => ({
 
   getTripsForDate: (date: string) => {
     return get().filteredTrips.filter((t) => t.date === date);
+  },
+
+  getUpcomingTrips: (limit: number = 10) => {
+    const now = new Date();
+    const currentDateTime = now.getTime();
+
+    return get()
+      .trips.filter((trip) => {
+        // Only include scheduled or in-progress trips
+        if (trip.status === "termine" || trip.status === "annule") {
+          return false;
+        }
+
+        // Create datetime from trip date and start time
+        const tripDateTime = new Date(
+          `${trip.date}T${trip.startTime}`
+        ).getTime();
+
+        // Include trips that are upcoming or currently happening
+        return tripDateTime >= currentDateTime - 30 * 60 * 1000; // Include trips up to 30 minutes ago
+      })
+      .sort((a, b) => {
+        const dateA = new Date(`${a.date}T${a.startTime}`);
+        const dateB = new Date(`${b.date}T${b.startTime}`);
+        return dateA.getTime() - dateB.getTime();
+      })
+      .slice(0, limit);
   },
 
   getTripCounts: () => {

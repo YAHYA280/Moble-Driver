@@ -27,7 +27,7 @@ interface PlanningFilterBarProps {
   onFiltersChange: (filters: Partial<PlanningFilters>) => void;
   onClearFilters: () => void;
   onViewToggle: () => void;
-  currentView: "month" | "week" | "day" | "list";
+  currentView: "month" | "week";
   style?: ViewStyle;
 }
 
@@ -334,12 +334,12 @@ export const PlanningFilterBar: React.FC<PlanningFilterBarProps> = ({
             activeOpacity={0.7}
           >
             <FontAwesome
-              name={currentView === "month" ? "list" : "calendar"}
+              name={currentView === "month" ? "calendar-o" : "calendar"}
               size={14}
               color={colors.primary}
             />
             <Text style={styles.viewToggleText}>
-              {currentView === "month" ? "Liste" : "Calendrier"}
+              {currentView === "month" ? "Semaine" : "Mois"}
             </Text>
           </TouchableOpacity>
         </View>

@@ -106,6 +106,7 @@ export interface PlanningActions {
   // Utils
   getFilteredTrips: () => Trip[];
   getTripsForDate: (date: string) => Trip[];
+  getUpcomingTrips: (limit?: number) => Trip[];
   getTripCounts: () => {
     total: number;
     scheduled: number;

@@ -270,7 +270,7 @@ export const AgendaViewScreen: React.FC = () => {
 
   const handleTripPress = (trip: Trip) => {
     selectTrip(trip);
-    router.push(`./planning/trip/${trip.id}`);
+    router.push(`/(tabs)/planning/trip/${trip.id}`);
   };
 
   const weekDays = date ? getWeekDays(date) : [];

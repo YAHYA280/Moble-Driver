@@ -4,13 +4,23 @@ import { SearchModal } from "@/shared/components/ui/SearchModal";
 import { usePlanningStore } from "@/store/planningStore";
 import { router } from "expo-router";
 import React, { useEffect, useRef, useState } from "react";
-import { Animated, StyleSheet, Text, View } from "react-native";
+import {
+  Animated,
+  FlatList,
+  Platform,
+  RefreshControl,
+  StyleSheet,
+  Text,
+  View,
+} from "react-native";
+import { Calendar } from "react-native-calendars";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useTheme } from "../../../contexts/ThemeContext";
 import { Trip } from "../../../shared/types/planning";
-import { PlanningContent } from "./components/PlanningContent";
+import { AnimatedTripCard } from "./components/AnimatedTripCard";
 import { PlanningFilterBar } from "./components/PlanningFilterBar";
 import { PlanningHeader } from "./components/PlanningHeader";
+import { PlanningWeekView } from "./components/PlanningWeekView";
 import { PLANNING_CONFIG } from "./constants/planningConstants";
 
 const styles = StyleSheet.create({
@@ -25,7 +35,64 @@ const styles = StyleSheet.create({
   },
   contentContainer: {
     flex: 1,
-    position: "relative",
+  },
+  calendarSection: {
+    marginHorizontal: 16,
+    marginTop: 8,
+    marginBottom: 16,
+    borderRadius: 16,
+    overflow: "hidden",
+  },
+  upcomingSection: {
+    flex: 1,
+    marginHorizontal: 16,
+    marginBottom: 16,
+    borderRadius: 16,
+    overflow: "hidden",
+  },
+  sectionHeader: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    paddingHorizontal: 20,
+    paddingVertical: 16,
+    borderBottomWidth: 1,
+  },
+  sectionTitle: {
+    fontSize: 18,
+    fontWeight: "700",
+  },
+  sectionSubtitle: {
+    fontSize: 14,
+    fontWeight: "500",
+    marginTop: 2,
+  },
+  upcomingTripsContainer: {
+    flex: 1,
+    paddingTop: 8,
+  },
+  emptyState: {
+    flex: 1,
+    alignItems: "center",
+    justifyContent: "center",
+    paddingVertical: 60,
+    paddingHorizontal: 32,
+  },
+  emptyIcon: {
+    fontSize: 48,
+    marginBottom: 16,
+    opacity: 0.5,
+  },
+  emptyTitle: {
+    fontSize: 18,
+    fontWeight: "600",
+    marginBottom: 8,
+    textAlign: "center",
+  },
+  emptyText: {
+    fontSize: 14,
+    textAlign: "center",
+    lineHeight: 20,
   },
   errorContainer: {
     margin: 16,
@@ -44,36 +111,32 @@ export const PlanningScreen: React.FC = () => {
   const [showSearchModal, setShowSearchModal] = useState(false);
   const [currentDate, setCurrentDate] = useState(new Date());
   const [refreshing, setRefreshing] = useState(false);
-  const [isTransitioning, setIsTransitioning] = useState(false);
+  const [calendarView, setCalendarView] = useState<"month" | "week">("month");
 
   // Animation refs
   const headerAnim = useRef(new Animated.Value(0)).current;
-  const calendarContentAnim = useRef(new Animated.Value(1)).current;
-  const listContentAnim = useRef(new Animated.Value(0)).current;
   const calendarOpacity = useRef(new Animated.Value(0)).current;
+  const upcomingOpacity = useRef(new Animated.Value(0)).current;
 
   const {
     trips,
     filteredTrips,
     filters,
     selectedDate,
-    currentView,
     isLoading,
     error,
     fetchTrips,
     setFilters,
     clearFilters,
-    setCurrentView,
     setSelectedDate,
     selectTrip,
-    getTripsForDate,
+    getUpcomingTrips,
     clearError,
   } = usePlanningStore();
 
   useEffect(() => {
     fetchTrips();
     initializeAnimations();
-    setupInitialView();
   }, []);
 
   const initializeAnimations = () => {
@@ -88,17 +151,12 @@ export const PlanningScreen: React.FC = () => {
         duration: PLANNING_CONFIG.ANIMATION_DURATION,
         useNativeDriver: true,
       }),
+      Animated.timing(upcomingOpacity, {
+        toValue: 1,
+        duration: PLANNING_CONFIG.ANIMATION_DURATION,
+        useNativeDriver: true,
+      }),
     ]).start();
-  };
-
-  const setupInitialView = () => {
-    if (currentView === "month") {
-      calendarContentAnim.setValue(1);
-      listContentAnim.setValue(0);
-    } else {
-      calendarContentAnim.setValue(0);
-      listContentAnim.setValue(1);
-    }
   };
 
   const getMarkedDates = () => {
@@ -175,51 +233,16 @@ export const PlanningScreen: React.FC = () => {
   const handleDayPress = (day: any) => {
     const date = day.dateString;
     setSelectedDate(date);
-    router.push(`./planning/agenda/${date}`);
+    router.push(`/(tabs)/planning/agenda/${date}`);
   };
 
   const handleTripPress = (trip: Trip) => {
     selectTrip(trip);
-    router.push(`./planning/trip/${trip.id}`);
+    router.push(`/(tabs)/planning/trip/${trip.id}`);
   };
 
-  const handleViewToggle = () => {
-    if (isTransitioning) return;
-
-    setIsTransitioning(true);
-    const newView = currentView === "month" ? "list" : "month";
-
-    const animations =
-      newView === "list"
-        ? [
-            Animated.timing(calendarContentAnim, {
-              toValue: 0,
-              duration: 250,
-              useNativeDriver: true,
-            }),
-            Animated.timing(listContentAnim, {
-              toValue: 1,
-              duration: 300,
-              useNativeDriver: true,
-            }),
-          ]
-        : [
-            Animated.timing(listContentAnim, {
-              toValue: 0,
-              duration: 250,
-              useNativeDriver: true,
-            }),
-            Animated.timing(calendarContentAnim, {
-              toValue: 1,
-              duration: 300,
-              useNativeDriver: true,
-            }),
-          ];
-
-    Animated.parallel(animations).start(() => {
-      setCurrentView(newView);
-      setIsTransitioning(false);
-    });
+  const handleCalendarViewToggle = () => {
+    setCalendarView((prev) => (prev === "month" ? "week" : "month"));
   };
 
   const handleRefresh = async () => {
@@ -228,10 +251,77 @@ export const PlanningScreen: React.FC = () => {
     setRefreshing(false);
   };
 
+  const upcomingTrips = getUpcomingTrips(5); // Get next 5 upcoming trips
+
+  const renderTripItem = ({ item, index }: { item: Trip; index: number }) => (
+    <AnimatedTripCard
+      item={item}
+      index={index}
+      onPress={() => handleTripPress(item)}
+      showDate={true}
+    />
+  );
+
   const dynamicStyles = {
     container: {
       ...styles.container,
       backgroundColor: colors.backgroundSecondary,
+    },
+    calendarSection: {
+      ...styles.calendarSection,
+      backgroundColor: colors.surface,
+      ...Platform.select({
+        ios: {
+          shadowColor: colors.shadow,
+          shadowOffset: { width: 0, height: 4 },
+          shadowOpacity: colors.isDark ? 0.3 : 0.12,
+          shadowRadius: 16,
+        },
+        android: { elevation: 8 },
+        web: {
+          boxShadow: colors.isDark
+            ? "0 4px 16px rgba(0, 0, 0, 0.3)"
+            : "0 4px 16px rgba(0, 0, 0, 0.12)",
+        },
+      }),
+    },
+    upcomingSection: {
+      ...styles.upcomingSection,
+      backgroundColor: colors.surface,
+      ...Platform.select({
+        ios: {
+          shadowColor: colors.shadow,
+          shadowOffset: { width: 0, height: 4 },
+          shadowOpacity: colors.isDark ? 0.3 : 0.12,
+          shadowRadius: 16,
+        },
+        android: { elevation: 8 },
+        web: {
+          boxShadow: colors.isDark
+            ? "0 4px 16px rgba(0, 0, 0, 0.3)"
+            : "0 4px 16px rgba(0, 0, 0, 0.12)",
+        },
+      }),
+    },
+    sectionHeader: {
+      ...styles.sectionHeader,
+      borderBottomColor: colors.border + "30",
+    },
+    sectionTitle: {
+      ...styles.sectionTitle,
+      color: colors.text,
+    },
+    sectionSubtitle: {
+      ...styles.sectionSubtitle,
+      color: colors.textSecondary,
+    },
+    emptyTitle: {
+      ...styles.emptyTitle,
+      color: colors.text,
+    },
+    emptyText: {
+      ...styles.emptyText,
+      color: colors.textSecondary,
     },
     errorContainer: {
       ...styles.errorContainer,
@@ -280,8 +370,8 @@ export const PlanningScreen: React.FC = () => {
         filters={filters}
         onFiltersChange={setFilters}
         onClearFilters={clearFilters}
-        onViewToggle={handleViewToggle}
-        currentView={currentView}
+        onViewToggle={handleCalendarViewToggle}
+        currentView={calendarView}
       />
 
       <ConditionalComponent isValid={!!error}>
@@ -291,25 +381,98 @@ export const PlanningScreen: React.FC = () => {
       </ConditionalComponent>
 
       <View style={styles.contentContainer}>
-        <PlanningContent
-          currentView={currentView}
-          currentDate={currentDate}
-          selectedDate={selectedDate}
-          filteredTrips={filteredTrips}
-          markedDates={getMarkedDates()}
-          calendarTheme={calendarTheme}
-          filters={filters}
-          refreshing={refreshing}
-          calendarContentAnim={calendarContentAnim}
-          listContentAnim={listContentAnim}
-          calendarOpacity={calendarOpacity}
-          onDayPress={handleDayPress}
-          onTripPress={handleTripPress}
-          onRefresh={handleRefresh}
-          onMonthChange={(month) =>
-            setCurrentDate(new Date(month.year, month.month - 1, month.day))
-          }
-        />
+        {/* Calendar Section */}
+        <Animated.View
+          style={[dynamicStyles.calendarSection, { opacity: calendarOpacity }]}
+        >
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={handleRefresh}
+            colors={[colors.primary]}
+            tintColor={colors.primary}
+            style={{ flex: 0 }}
+          />
+
+          <ConditionalComponent
+            isValid={calendarView === "month"}
+            defaultComponent={
+              <PlanningWeekView
+                currentDate={currentDate}
+                markedDates={getMarkedDates()}
+                theme={calendarTheme}
+                onDayPress={handleDayPress}
+                onWeekChange={(date) => setCurrentDate(date)}
+              />
+            }
+          >
+            <Calendar
+              key={colors.isDark ? "dark" : "light"}
+              current={currentDate.toISOString().split("T")[0]}
+              onDayPress={handleDayPress}
+              markedDates={getMarkedDates()}
+              markingType="multi-dot"
+              theme={calendarTheme}
+              enableSwipeMonths={true}
+              hideExtraDays={false}
+              disableMonthChange={false}
+              firstDay={1}
+              onMonthChange={(month) =>
+                setCurrentDate(new Date(month.year, month.month - 1, month.day))
+              }
+              style={{ borderRadius: 16, overflow: "hidden" }}
+            />
+          </ConditionalComponent>
+        </Animated.View>
+
+        {/* Upcoming Trips Section */}
+        <Animated.View
+          style={[dynamicStyles.upcomingSection, { opacity: upcomingOpacity }]}
+        >
+          <View style={dynamicStyles.sectionHeader}>
+            <View>
+              <Text style={dynamicStyles.sectionTitle}>Prochains trajets</Text>
+              <Text style={dynamicStyles.sectionSubtitle}>
+                {upcomingTrips.length} trajet
+                {upcomingTrips.length !== 1 ? "s" : ""} à venir
+              </Text>
+            </View>
+          </View>
+
+          <View style={styles.upcomingTripsContainer}>
+            <ConditionalComponent
+              isValid={upcomingTrips.length > 0}
+              defaultComponent={
+                <View style={styles.emptyState}>
+                  <Text style={styles.emptyIcon}>🚌</Text>
+                  <Text style={dynamicStyles.emptyTitle}>
+                    Aucun trajet à venir
+                  </Text>
+                  <Text style={dynamicStyles.emptyText}>
+                    Vous n&apos;avez aucun trajet planifié dans les prochains
+                    jours.
+                  </Text>
+                </View>
+              }
+            >
+              <FlatList
+                data={upcomingTrips}
+                renderItem={renderTripItem}
+                keyExtractor={(item) => item.id}
+                showsVerticalScrollIndicator={false}
+                contentContainerStyle={{ paddingBottom: 20 }}
+                refreshControl={
+                  <RefreshControl
+                    refreshing={refreshing}
+                    onRefresh={handleRefresh}
+                    colors={[colors.primary]}
+                    tintColor={colors.primary}
+                  />
+                }
+                ItemSeparatorComponent={() => <View style={{ height: 4 }} />}
+              />
+            </ConditionalComponent>
+          </View>
+        </Animated.View>
       </View>
 
       <SearchModal
