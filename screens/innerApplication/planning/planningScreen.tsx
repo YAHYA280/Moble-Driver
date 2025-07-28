@@ -2,6 +2,7 @@
 import ConditionalComponent from "@/shared/components/conditionalComponent/conditionalComponent";
 import { SearchModal } from "@/shared/components/ui/SearchModal";
 import { usePlanningStore } from "@/store/planningStore";
+import FontAwesome from "@expo/vector-icons/build/FontAwesome";
 import { router } from "expo-router";
 import React, { useEffect, useRef, useState } from "react";
 import {
@@ -11,6 +12,7 @@ import {
   RefreshControl,
   StyleSheet,
   Text,
+  TouchableOpacity,
   View,
 } from "react-native";
 import { Calendar } from "react-native-calendars";
@@ -18,7 +20,6 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { useTheme } from "../../../contexts/ThemeContext";
 import { Trip } from "../../../shared/types/planning";
 import { AnimatedTripCard } from "./components/AnimatedTripCard";
-import { PlanningFilterBar } from "./components/PlanningFilterBar";
 import { PlanningHeader } from "./components/PlanningHeader";
 import { PlanningWeekView } from "./components/PlanningWeekView";
 import { PLANNING_CONFIG } from "./constants/planningConstants";
@@ -103,6 +104,26 @@ const styles = StyleSheet.create({
   errorText: {
     fontSize: 14,
     fontWeight: "500",
+  },
+  viewToggleContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+  },
+  viewToggleButton: {
+    flexDirection: "row",
+    alignItems: "center",
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    borderRadius: 20,
+    borderWidth: 1,
+  },
+  viewToggleText: {
+    fontSize: 14,
+    fontWeight: "600",
+    marginLeft: 6,
   },
 });
 
@@ -411,6 +432,15 @@ export const PlanningScreen: React.FC = () => {
       ...styles.errorText,
       color: colors.error,
     },
+    viewToggleButton: {
+      ...styles.viewToggleButton,
+      backgroundColor: colors.primary + "15",
+      borderColor: colors.primary + "30",
+    },
+    viewToggleText: {
+      ...styles.viewToggleText,
+      color: colors.primary,
+    },
   };
 
   return (
@@ -445,15 +475,26 @@ export const PlanningScreen: React.FC = () => {
         />
       </Animated.View>
 
-      <PlanningFilterBar
-        filters={filters}
-        onFiltersChange={setFilters}
-        onClearFilters={clearFilters}
-        onViewToggle={handleCalendarViewToggle}
-        currentView={calendarView}
-      />
+      {/* Simple View Toggle (replaces the filter bar) */}
+      <View style={styles.viewToggleContainer}>
+        <TouchableOpacity
+          style={dynamicStyles.viewToggleButton}
+          onPress={handleCalendarViewToggle}
+          activeOpacity={0.7}
+        >
+          <FontAwesome
+            name={calendarView === "month" ? "calendar-o" : "calendar"}
+            size={14}
+            color={colors.primary}
+          />
+          <Text style={dynamicStyles.viewToggleText}>
+            {calendarView === "month" ? "Vue semaine" : "Vue mois"}
+          </Text>
+        </TouchableOpacity>
+      </View>
 
       <ConditionalComponent isValid={!!error}>
+        -
         <View style={dynamicStyles.errorContainer}>
           <Text style={dynamicStyles.errorText}>{error}</Text>
         </View>
