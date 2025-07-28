@@ -580,7 +580,7 @@ export const PlanningScreen: React.FC = () => {
                 renderItem={renderTripItem}
                 keyExtractor={(item) => item.id}
                 showsVerticalScrollIndicator={false}
-                contentContainerStyle={{ paddingBottom: 20 }}
+                contentContainerStyle={{ paddingBottom: 70 }}
                 refreshControl={
                   <RefreshControl
                     refreshing={refreshing}

@@ -129,7 +129,9 @@ const createStyles = (colors: any) =>
     },
     tripsList: {
       flex: 1,
-      paddingBottom: 20,
+    },
+    tripsListContent: {
+      paddingBottom: 150,
     },
     tripItem: {
       flexDirection: "row",
@@ -391,6 +393,7 @@ export const AgendaViewScreen: React.FC = () => {
 
           <ScrollView
             style={styles.tripsList}
+            contentContainerStyle={styles.tripsListContent}
             showsVerticalScrollIndicator={false}
           >
             <ConditionalComponent
