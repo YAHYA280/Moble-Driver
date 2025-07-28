@@ -5,7 +5,6 @@ import {
   Animated,
   FlatList,
   Platform,
-  RefreshControl,
   StyleSheet,
   Text,
   View,
@@ -29,11 +28,11 @@ interface TripsSectionProps {
 
 const styles = StyleSheet.create({
   upcomingSection: {
-    flex: 1,
     marginHorizontal: 16,
     marginBottom: 16,
     borderRadius: 16,
     overflow: "hidden",
+    minHeight: 200,
   },
   sectionHeader: {
     flexDirection: "row",
@@ -53,11 +52,9 @@ const styles = StyleSheet.create({
     marginTop: 2,
   },
   upcomingTripsContainer: {
-    flex: 1,
     paddingTop: 8,
   },
   emptyState: {
-    flex: 1,
     alignItems: "center",
     justifyContent: "center",
     paddingVertical: 60,
@@ -86,8 +83,6 @@ export const TripsSection: React.FC<TripsSectionProps> = ({
   sectionInfo,
   calendarView,
   onTripPress,
-  onRefresh,
-  refreshing,
   upcomingOpacity,
 }) => {
   const { colors } = useTheme();
@@ -176,15 +171,8 @@ export const TripsSection: React.FC<TripsSectionProps> = ({
             renderItem={renderTripItem}
             keyExtractor={(item) => item.id}
             showsVerticalScrollIndicator={false}
-            contentContainerStyle={{ paddingBottom: 70 }}
-            refreshControl={
-              <RefreshControl
-                refreshing={refreshing}
-                onRefresh={onRefresh}
-                colors={[colors.primary]}
-                tintColor={colors.primary}
-              />
-            }
+            scrollEnabled={false}
+            contentContainerStyle={{ paddingBottom: 20 }}
             ItemSeparatorComponent={() => <View style={{ height: 4 }} />}
           />
         </ConditionalComponent>

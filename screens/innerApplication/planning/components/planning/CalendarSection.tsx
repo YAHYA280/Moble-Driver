@@ -1,7 +1,7 @@
 // screens/innerApplication/planning/components/planning/CalendarSection.tsx
 import ConditionalComponent from "@/shared/components/conditionalComponent/conditionalComponent";
 import React from "react";
-import { Animated, Platform, RefreshControl, StyleSheet } from "react-native";
+import { Animated, Platform, StyleSheet } from "react-native";
 import { Calendar } from "react-native-calendars";
 import { useTheme } from "../../../../../contexts/ThemeContext";
 import { Trip } from "../../../../../shared/types/planning";
@@ -40,8 +40,6 @@ export const CalendarSection: React.FC<CalendarSectionProps> = ({
   currentWeekStart,
   onDayPress,
   onWeekChange,
-  onRefresh,
-  refreshing,
   onMonthChange,
   calendarOpacity,
   calendarTransition,
@@ -163,14 +161,6 @@ export const CalendarSection: React.FC<CalendarSectionProps> = ({
         },
       ]}
     >
-      <RefreshControl
-        refreshing={refreshing}
-        onRefresh={onRefresh}
-        colors={[colors.primary]}
-        tintColor={colors.primary}
-        style={{ flex: 0 }}
-      />
-
       <ConditionalComponent
         isValid={calendarView === "month"}
         defaultComponent={

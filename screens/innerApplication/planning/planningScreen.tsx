@@ -1,9 +1,9 @@
 // screens/innerApplication/planning/planningScreen.tsx
 import { SearchModal } from "@/shared/components/ui/SearchModal";
 import { usePlanningStore } from "@/store/planningStore";
-import { router } from "expo-router";
-import React, { useEffect, useRef, useState } from "react";
-import { Animated, StyleSheet, View } from "react-native";
+import { router, useFocusEffect } from "expo-router";
+import React, { useCallback, useEffect, useRef, useState } from "react";
+import { Animated, RefreshControl, ScrollView, StyleSheet } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useTheme } from "../../../contexts/ThemeContext";
 import { Trip } from "../../../shared/types/planning";
@@ -21,8 +21,12 @@ const styles = StyleSheet.create({
   headerContainer: {
     zIndex: 10,
   },
-  contentContainer: {
+  scrollContainer: {
     flex: 1,
+  },
+  contentContainer: {
+    flexGrow: 1,
+    paddingBottom: 20,
   },
 });
 
@@ -49,6 +53,7 @@ export const PlanningScreen: React.FC = () => {
   const toggleButtonScale = useRef(new Animated.Value(1)).current;
   const toggleButtonOpacity = useRef(new Animated.Value(1)).current;
   const calendarTransition = useRef(new Animated.Value(1)).current;
+  const scrollViewRef = useRef<ScrollView>(null);
 
   const {
     filteredTrips,
@@ -62,6 +67,27 @@ export const PlanningScreen: React.FC = () => {
     getTripsForDate,
     getTripsForWeek,
   } = usePlanningStore();
+
+  // Reset to current day when screen comes into focus
+  useFocusEffect(
+    useCallback(() => {
+      const today = new Date().toISOString().split("T")[0];
+      setSelectedDate(today);
+      setCurrentDate(new Date());
+
+      // Reset week view to current week
+      const date = new Date();
+      const day = date.getDay();
+      const monday = new Date(date);
+      monday.setDate(date.getDate() - day + 1);
+      setCurrentWeekStart(monday);
+
+      // Scroll to top when returning to screen
+      setTimeout(() => {
+        scrollViewRef.current?.scrollTo({ y: 0, animated: true });
+      }, 100);
+    }, [setSelectedDate])
+  );
 
   useEffect(() => {
     fetchTrips();
@@ -269,18 +295,31 @@ export const PlanningScreen: React.FC = () => {
         />
       </Animated.View>
 
-      <ViewToggleSection
-        calendarView={calendarView}
-        onViewToggle={handleCalendarViewToggle}
-        isViewChanging={isViewChanging}
-        toggleAnim={toggleAnim}
-        toggleButtonScale={toggleButtonScale}
-        toggleButtonOpacity={toggleButtonOpacity}
-      />
+      <ScrollView
+        ref={scrollViewRef}
+        style={styles.scrollContainer}
+        contentContainerStyle={styles.contentContainer}
+        showsVerticalScrollIndicator={false}
+        refreshControl={
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={handleRefresh}
+            colors={[colors.primary]}
+            tintColor={colors.primary}
+          />
+        }
+      >
+        <ViewToggleSection
+          calendarView={calendarView}
+          onViewToggle={handleCalendarViewToggle}
+          isViewChanging={isViewChanging}
+          toggleAnim={toggleAnim}
+          toggleButtonScale={toggleButtonScale}
+          toggleButtonOpacity={toggleButtonOpacity}
+        />
 
-      {error && <ErrorSection error={error} />}
+        {error && <ErrorSection error={error} />}
 
-      <View style={styles.contentContainer}>
         <CalendarSection
           calendarView={calendarView}
           currentDate={currentDate}
@@ -305,7 +344,7 @@ export const PlanningScreen: React.FC = () => {
           refreshing={refreshing}
           upcomingOpacity={upcomingOpacity}
         />
-      </View>
+      </ScrollView>
 
       <SearchModal
         visible={showSearchModal}
