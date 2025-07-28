@@ -127,14 +127,6 @@ const createStyles = (colors: any) =>
       fontWeight: "600",
       color: colors.text,
     },
-    menuButton: {
-      width: LAYOUT_CONFIG.MENU_BUTTON_SIZE,
-      height: LAYOUT_CONFIG.MENU_BUTTON_SIZE,
-      borderRadius: LAYOUT_CONFIG.MENU_BUTTON_SIZE / 2,
-      alignItems: "center",
-      justifyContent: "center",
-      backgroundColor: colors.backgroundSecondary,
-    },
     tripsList: {
       flex: 1,
       paddingBottom: 20,
@@ -218,11 +210,6 @@ const createStyles = (colors: any) =>
       fontWeight: "500",
       color: colors.textSecondary,
     },
-    menuIcon: {
-      alignSelf: "flex-end",
-      marginTop: -8,
-      marginRight: -8,
-    },
     emptyState: {
       flex: 1,
       alignItems: "center",
@@ -304,19 +291,6 @@ export const AgendaViewScreen: React.FC = () => {
             },
           ]}
         >
-          <View style={styles.menuIcon}>
-            <TouchableOpacity
-              style={styles.menuButton}
-              onPress={() => handleTripPress(trip)}
-            >
-              <FontAwesome
-                name="ellipsis-v"
-                size={14}
-                color={colors.textSecondary}
-              />
-            </TouchableOpacity>
-          </View>
-
           <Text style={[styles.tripTitle, { color: typeColor }]}>
             {trip.title}
           </Text>
@@ -413,13 +387,6 @@ export const AgendaViewScreen: React.FC = () => {
             <View>
               <Text style={styles.agendaSubtitle}>Trajets</Text>
             </View>
-            <TouchableOpacity style={styles.menuButton}>
-              <FontAwesome
-                name="ellipsis-v"
-                size={14}
-                color={colors.textSecondary}
-              />
-            </TouchableOpacity>
           </View>
 
           <ScrollView
