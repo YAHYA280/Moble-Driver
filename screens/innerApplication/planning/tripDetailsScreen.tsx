@@ -505,7 +505,7 @@ export const TripDetailsScreen: React.FC = () => {
           icon: "chevron-left",
           onPress: () => router.back(),
         }}
-        title={trip.title}
+        title="On y va ?🚗"
       />
 
       <Animated.View style={[styles.content, { opacity: fadeAnim }]}>

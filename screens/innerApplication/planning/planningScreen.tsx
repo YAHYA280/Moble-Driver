@@ -133,6 +133,7 @@ export const PlanningScreen: React.FC = () => {
   const [currentDate, setCurrentDate] = useState(new Date());
   const [refreshing, setRefreshing] = useState(false);
   const [calendarView, setCalendarView] = useState<"month" | "week">("month");
+  const [isViewChanging, setIsViewChanging] = useState(false);
   const [currentWeekStart, setCurrentWeekStart] = useState(() => {
     const date = new Date();
     const day = date.getDay();
@@ -145,6 +146,10 @@ export const PlanningScreen: React.FC = () => {
   const headerAnim = useRef(new Animated.Value(0)).current;
   const calendarOpacity = useRef(new Animated.Value(0)).current;
   const upcomingOpacity = useRef(new Animated.Value(0)).current;
+  const toggleAnim = useRef(new Animated.Value(0)).current;
+  const toggleButtonScale = useRef(new Animated.Value(1)).current;
+  const toggleButtonOpacity = useRef(new Animated.Value(1)).current;
+  const calendarTransition = useRef(new Animated.Value(1)).current;
 
   const {
     trips,
@@ -183,6 +188,11 @@ export const PlanningScreen: React.FC = () => {
         duration: PLANNING_CONFIG.ANIMATION_DURATION,
         useNativeDriver: true,
       }),
+      Animated.timing(toggleAnim, {
+        toValue: 1,
+        duration: PLANNING_CONFIG.ANIMATION_DURATION,
+        useNativeDriver: true,
+      }),
       Animated.timing(calendarOpacity, {
         toValue: 1,
         duration: PLANNING_CONFIG.ANIMATION_DURATION,
@@ -194,6 +204,55 @@ export const PlanningScreen: React.FC = () => {
         useNativeDriver: true,
       }),
     ]).start();
+  };
+
+  const animateViewToggle = () => {
+    setIsViewChanging(true);
+
+    // Button press animation
+    Animated.sequence([
+      Animated.parallel([
+        Animated.timing(toggleButtonScale, {
+          toValue: 0.95,
+          duration: 100,
+          useNativeDriver: true,
+        }),
+        Animated.timing(toggleButtonOpacity, {
+          toValue: 0.7,
+          duration: 100,
+          useNativeDriver: true,
+        }),
+      ]),
+      Animated.parallel([
+        Animated.spring(toggleButtonScale, {
+          toValue: 1,
+          tension: 200,
+          friction: 8,
+          useNativeDriver: true,
+        }),
+        Animated.timing(toggleButtonOpacity, {
+          toValue: 1,
+          duration: 200,
+          useNativeDriver: true,
+        }),
+      ]),
+    ]).start();
+
+    // Calendar transition animation
+    Animated.sequence([
+      Animated.timing(calendarTransition, {
+        toValue: 0,
+        duration: 200,
+        useNativeDriver: true,
+      }),
+      Animated.timing(calendarTransition, {
+        toValue: 1,
+        duration: 300,
+        useNativeDriver: true,
+      }),
+    ]).start(() => {
+      setIsViewChanging(false);
+    });
   };
 
   const getMarkedDates = () => {
@@ -279,6 +338,7 @@ export const PlanningScreen: React.FC = () => {
   };
 
   const handleCalendarViewToggle = () => {
+    animateViewToggle();
     setCalendarView((prev) => (prev === "month" ? "week" : "month"));
   };
 
@@ -475,35 +535,81 @@ export const PlanningScreen: React.FC = () => {
         />
       </Animated.View>
 
-      {/* Simple View Toggle (replaces the filter bar) */}
-      <View style={styles.viewToggleContainer}>
-        <TouchableOpacity
-          style={dynamicStyles.viewToggleButton}
-          onPress={handleCalendarViewToggle}
-          activeOpacity={0.7}
+      {/* Animated View Toggle */}
+      <Animated.View
+        style={[
+          styles.viewToggleContainer,
+          {
+            opacity: toggleAnim,
+            transform: [
+              {
+                translateY: toggleAnim.interpolate({
+                  inputRange: [0, 1],
+                  outputRange: [30, 0],
+                }),
+              },
+              { scale: toggleButtonScale },
+            ],
+          },
+        ]}
+      >
+        <Animated.View
+          style={{
+            opacity: toggleButtonOpacity,
+          }}
         >
-          <FontAwesome
-            name={calendarView === "month" ? "calendar-o" : "calendar"}
-            size={14}
-            color={colors.primary}
-          />
-          <Text style={dynamicStyles.viewToggleText}>
-            {calendarView === "month" ? "Vue semaine" : "Vue mois"}
-          </Text>
-        </TouchableOpacity>
-      </View>
+          <TouchableOpacity
+            style={[
+              dynamicStyles.viewToggleButton,
+              {
+                opacity: isViewChanging ? 0.8 : 1,
+              },
+            ]}
+            onPress={handleCalendarViewToggle}
+            activeOpacity={0.7}
+            disabled={isViewChanging}
+          >
+            <FontAwesome
+              name={calendarView === "month" ? "calendar-o" : "calendar"}
+              size={14}
+              color={colors.primary}
+            />
+            <Text style={dynamicStyles.viewToggleText}>
+              {calendarView === "month" ? "Vue semaine" : "Vue mois"}
+            </Text>
+          </TouchableOpacity>
+        </Animated.View>
+      </Animated.View>
 
       <ConditionalComponent isValid={!!error}>
-        -
         <View style={dynamicStyles.errorContainer}>
           <Text style={dynamicStyles.errorText}>{error}</Text>
         </View>
       </ConditionalComponent>
 
       <View style={styles.contentContainer}>
-        {/* Calendar Section */}
+        {/* Animated Calendar Section */}
         <Animated.View
-          style={[dynamicStyles.calendarSection, { opacity: calendarOpacity }]}
+          style={[
+            dynamicStyles.calendarSection,
+            {
+              opacity: calendarOpacity,
+              transform: [
+                {
+                  scale: calendarTransition.interpolate({
+                    inputRange: [0, 1],
+                    outputRange: [0.95, 1],
+                  }),
+                },
+                {
+                  translateY: calendarTransition.interpolate({
+                    inputRange: [0, 1],
+                    outputRange: [20, 0],
+                  }),
+                },
+              ],
+            },
+          ]}
         >
           <RefreshControl
             refreshing={refreshing}
