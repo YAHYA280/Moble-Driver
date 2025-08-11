@@ -1,4 +1,4 @@
-// screens/innerApplication/routeSheets/routeSheetScreen.tsx - Updated with Create Navigation
+// screens/innerApplication/routeSheets/routeSheetScreen.tsx - Fixed Navigation
 
 import { router } from "expo-router";
 import React, { useEffect, useState } from "react";
@@ -40,14 +40,16 @@ export const RouteSheetScreen: React.FC = () => {
   }, [fetchRouteSheets]);
 
   const handleCreateNewRouteSheet = () => {
-    // Navigate to create screen instead of auto-creating
+    console.log("Navigating to create route sheet screen...");
     router.push("/(tabs)/routes/create");
   };
 
   const handleEditCurrentMonth = async () => {
     try {
+      console.log("Getting current month route sheet...");
       const currentSheet = await getCurrentMonthRouteSheet();
       if (currentSheet) {
+        console.log("Navigating to edit current sheet:", currentSheet.id);
         router.push(`/(tabs)/routes/edit/${currentSheet.id}`);
       }
     } catch (error) {
@@ -56,10 +58,12 @@ export const RouteSheetScreen: React.FC = () => {
   };
 
   const handleViewRouteSheet = (routeSheetId: string) => {
+    console.log("Viewing route sheet:", routeSheetId);
     router.push(`/(tabs)/routes/view/${routeSheetId}`);
   };
 
   const handleEditRouteSheet = (routeSheetId: string) => {
+    console.log("Editing route sheet:", routeSheetId);
     router.push(`/(tabs)/routes/edit/${routeSheetId}`);
   };
 

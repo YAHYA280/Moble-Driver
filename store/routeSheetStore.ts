@@ -1,4 +1,4 @@
-// store/routeSheetStore.ts - FIXED VERSION
+// store/routeSheetStore.ts - Fixed createRouteSheet function
 
 import { create } from "zustand";
 import {
@@ -236,17 +236,6 @@ const generateMockRouteSheets = (): RouteSheet[] => {
     sheets.push(sheet);
   }
 
-  console.log(
-    "Generated mock route sheets:",
-    sheets.map((s) => ({
-      id: s.id,
-      monthName: s.monthName,
-      status: s.status,
-      completionPercentage: s.completionPercentage,
-      totalKilometrage: s.totalKilometrage,
-    }))
-  );
-
   return sheets;
 };
 
@@ -263,7 +252,6 @@ export const useRouteSheetStore = create<RouteSheetStore>((set, get) => ({
 
   // Actions
   fetchRouteSheets: async () => {
-    console.log("fetchRouteSheets: Starting...");
     set({ isLoading: true, error: null });
 
     try {
@@ -271,21 +259,11 @@ export const useRouteSheetStore = create<RouteSheetStore>((set, get) => ({
       await new Promise((resolve) => setTimeout(resolve, 800));
 
       const mockRouteSheets = generateMockRouteSheets();
-      console.log(
-        "fetchRouteSheets: Generated",
-        mockRouteSheets.length,
-        "route sheets"
-      );
 
       set((state) => {
         const filteredRouteSheets = applyFilters(
           mockRouteSheets,
           state.filters
-        );
-        console.log(
-          "fetchRouteSheets: Filtered to",
-          filteredRouteSheets.length,
-          "route sheets"
         );
 
         return {
@@ -295,8 +273,6 @@ export const useRouteSheetStore = create<RouteSheetStore>((set, get) => ({
           error: null,
         };
       });
-
-      console.log("fetchRouteSheets: Successfully completed");
     } catch (error) {
       console.error("fetchRouteSheets: Error occurred:", error);
       set({
@@ -307,7 +283,6 @@ export const useRouteSheetStore = create<RouteSheetStore>((set, get) => ({
   },
 
   getCurrentMonthRouteSheet: async () => {
-    console.log("getCurrentMonthRouteSheet: Starting...");
     const now = new Date();
     const currentMonth = `${now.getFullYear()}-${String(
       now.getMonth() + 1
@@ -317,9 +292,6 @@ export const useRouteSheetStore = create<RouteSheetStore>((set, get) => ({
 
     // Ensure we have loaded route sheets
     if (state.routeSheets.length === 0) {
-      console.log(
-        "getCurrentMonthRouteSheet: No route sheets loaded, fetching..."
-      );
       await get().fetchRouteSheets();
     }
 
@@ -329,19 +301,11 @@ export const useRouteSheetStore = create<RouteSheetStore>((set, get) => ({
     );
 
     if (existingSheet) {
-      console.log(
-        "getCurrentMonthRouteSheet: Found existing sheet",
-        existingSheet.id
-      );
       set({ currentRouteSheet: existingSheet });
       return existingSheet;
     }
 
     // Create new route sheet for current month
-    console.log(
-      "getCurrentMonthRouteSheet: Creating new sheet for",
-      currentMonth
-    );
     const newSheet = await get().createRouteSheet(currentMonth);
     set({ currentRouteSheet: newSheet });
     return newSheet;
@@ -349,6 +313,10 @@ export const useRouteSheetStore = create<RouteSheetStore>((set, get) => ({
 
   createRouteSheet: async (month: string) => {
     console.log("createRouteSheet: Creating for month", month);
+
+    // Simulate API call
+    await new Promise((resolve) => setTimeout(resolve, 500));
+
     const [year, monthNum] = month.split("-").map(Number);
     const monthNames = [
       "Janvier",
@@ -366,7 +334,7 @@ export const useRouteSheetStore = create<RouteSheetStore>((set, get) => ({
     ];
 
     const newRouteSheet: RouteSheet = {
-      id: `sheet_${Date.now()}_new`,
+      id: `sheet_${Date.now()}_new_${monthNum}`,
       month,
       year,
       monthName: `${monthNames[monthNum - 1]} ${year}`,
@@ -380,7 +348,21 @@ export const useRouteSheetStore = create<RouteSheetStore>((set, get) => ({
     };
 
     set((state) => {
-      const updatedRouteSheets = [...state.routeSheets, newRouteSheet];
+      // Check if a sheet for this month already exists
+      const existingSheetIndex = state.routeSheets.findIndex(
+        (sheet) => sheet.month === month
+      );
+
+      let updatedRouteSheets;
+      if (existingSheetIndex >= 0) {
+        // Replace existing sheet
+        updatedRouteSheets = [...state.routeSheets];
+        updatedRouteSheets[existingSheetIndex] = newRouteSheet;
+      } else {
+        // Add new sheet
+        updatedRouteSheets = [...state.routeSheets, newRouteSheet];
+      }
+
       const filteredRouteSheets = applyFilters(
         updatedRouteSheets,
         state.filters

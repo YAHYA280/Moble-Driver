@@ -27,7 +27,10 @@ export const CreateRouteSheetScreen: React.FC = () => {
 
     setIsLoading(true);
     try {
+      console.log("Creating route sheet for month:", selectedMonth);
       const newRouteSheet = await createRouteSheet(selectedMonth);
+      console.log("Created route sheet:", newRouteSheet.id);
+
       // Navigate to edit the new route sheet
       router.replace(`/(tabs)/routes/edit/${newRouteSheet.id}`);
     } catch (error) {
@@ -75,6 +78,26 @@ export const CreateRouteSheetScreen: React.FC = () => {
     textDayFontSize: 14,
     textMonthFontSize: 16,
     textDayHeaderFontSize: 12,
+  };
+
+  const getSelectedMonthName = () => {
+    if (!selectedMonth) return "";
+    const [year, month] = selectedMonth.split("-").map(Number);
+    const monthNames = [
+      "Janvier",
+      "Février",
+      "Mars",
+      "Avril",
+      "Mai",
+      "Juin",
+      "Juillet",
+      "Août",
+      "Septembre",
+      "Octobre",
+      "Novembre",
+      "Décembre",
+    ];
+    return `${monthNames[month - 1]} ${year}`;
   };
 
   const styles = StyleSheet.create({
@@ -153,26 +176,6 @@ export const CreateRouteSheetScreen: React.FC = () => {
       backgroundColor: "transparent",
     },
   });
-
-  const getSelectedMonthName = () => {
-    if (!selectedMonth) return "";
-    const [year, month] = selectedMonth.split("-").map(Number);
-    const monthNames = [
-      "Janvier",
-      "Février",
-      "Mars",
-      "Avril",
-      "Mai",
-      "Juin",
-      "Juillet",
-      "Août",
-      "Septembre",
-      "Octobre",
-      "Novembre",
-      "Décembre",
-    ];
-    return `${monthNames[month - 1]} ${year}`;
-  };
 
   return (
     <SafeAreaView style={styles.container}>
