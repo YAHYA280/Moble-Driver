@@ -1,4 +1,5 @@
-// screens/innerApplication/home/homeScreen.tsx - Updated notification navigation
+// screens/innerApplication/home/homeScreen.tsx - UPDATED with correct navigation
+
 import { router } from "expo-router";
 import React, { useEffect, useRef } from "react";
 import { Animated, ScrollView, StyleSheet, View } from "react-native";
@@ -67,7 +68,8 @@ export const HomeScreen: React.FC = () => {
   };
 
   const handleRoutesPress = () => {
-    router.push("/(tabs)/routes"); // Updated to point to the new routes screen
+    // FIXED: Navigate to the correct route sheets screen
+    router.push("/(tabs)/routes");
   };
 
   const handleGeolocationPress = () => {

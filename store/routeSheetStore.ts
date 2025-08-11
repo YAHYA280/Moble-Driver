@@ -1,4 +1,4 @@
-// store/routeSheetStore.ts
+// store/routeSheetStore.ts - FIXED VERSION
 
 import { create } from "zustand";
 import {
@@ -104,27 +104,76 @@ const applyFilters = (
   );
 };
 
-// Mock data
-const mockRouteSheets: RouteSheet[] = [
-  {
-    id: "1",
-    month: "2025-01",
-    year: 2025,
-    monthName: "Janvier 2025",
-    driverId: "driver_1",
-    status: "draft",
-    days: generateDaysForMonth(2025, 1),
-    createdAt: "2025-01-01T00:00:00Z",
-    lastModified: "2025-01-15T10:30:00Z",
-    totalKilometrage: 0,
-    completionPercentage: 0,
-  },
-];
+// Generate mock data with better initialization
+const generateMockRouteSheets = (): RouteSheet[] => {
+  const sheets: RouteSheet[] = [];
+  const currentDate = new Date();
+  const currentYear = currentDate.getFullYear();
+
+  // Create sheets for last 6 months
+  for (let i = 0; i < 6; i++) {
+    const date = new Date(currentYear, currentDate.getMonth() - i, 1);
+    const year = date.getFullYear();
+    const month = date.getMonth() + 1;
+    const monthString = `${year}-${month.toString().padStart(2, "0")}`;
+
+    const monthNames = [
+      "Janvier",
+      "Février",
+      "Mars",
+      "Avril",
+      "Mai",
+      "Juin",
+      "Juillet",
+      "Août",
+      "Septembre",
+      "Octobre",
+      "Novembre",
+      "Décembre",
+    ];
+
+    const days = generateDaysForMonth(year, month);
+
+    // For demo purposes, add some completed days to older sheets
+    if (i > 0) {
+      days.slice(0, Math.floor(days.length * 0.3)).forEach((day) => {
+        day.timeSlots[0].isActive = true;
+        day.timeSlots[0].kilometrage = { startKm: 1000, endKm: 1150 };
+        day.timeSlots[0].isCompleted = true;
+        day.isCompleted = true;
+      });
+    }
+
+    const sheet: RouteSheet = {
+      id: `sheet_${monthString}`,
+      month: monthString,
+      year,
+      monthName: `${monthNames[month - 1]} ${year}`,
+      driverId: "driver_1",
+      status: i === 0 ? "draft" : i === 1 ? "submitted" : "archived",
+      days,
+      createdAt: new Date(year, month - 1, 1).toISOString(),
+      lastModified: new Date(
+        year,
+        month - 1,
+        Math.min(15, new Date().getDate())
+      ).toISOString(),
+      submittedAt:
+        i > 0 ? new Date(year, month - 1, 28).toISOString() : undefined,
+      totalKilometrage: calculateTotalKilometrage(days),
+      completionPercentage: calculateCompletionPercentage(days),
+    };
+
+    sheets.push(sheet);
+  }
+
+  return sheets;
+};
 
 export const useRouteSheetStore = create<RouteSheetStore>((set, get) => ({
   // State
-  routeSheets: mockRouteSheets,
-  filteredRouteSheets: mockRouteSheets,
+  routeSheets: [],
+  filteredRouteSheets: [],
   currentRouteSheet: null,
   selectedDay: null,
   filters: {},
@@ -137,7 +186,9 @@ export const useRouteSheetStore = create<RouteSheetStore>((set, get) => ({
     set({ isLoading: true, error: null });
     try {
       // Simulate API call
-      await new Promise((resolve) => setTimeout(resolve, 1000));
+      await new Promise((resolve) => setTimeout(resolve, 800));
+
+      const mockRouteSheets = generateMockRouteSheets();
 
       set((state) => {
         const filteredRouteSheets = applyFilters(
@@ -165,7 +216,14 @@ export const useRouteSheetStore = create<RouteSheetStore>((set, get) => ({
     ).padStart(2, "0")}`;
 
     const state = get();
-    const existingSheet = state.routeSheets.find(
+
+    // Ensure we have loaded route sheets
+    if (state.routeSheets.length === 0) {
+      await get().fetchRouteSheets();
+    }
+
+    const updatedState = get();
+    const existingSheet = updatedState.routeSheets.find(
       (sheet) => sheet.month === currentMonth
     );
 

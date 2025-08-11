@@ -1,12 +1,13 @@
-// screens/innerApplication/routeSheets/routeSheetScreen.tsx
+// screens/innerApplication/routeSheets/routeSheetScreen.tsx - FIXED VERSION
 
 import { router } from "expo-router";
-import React, { useEffect, useRef } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { Animated, StyleSheet, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useTheme } from "../../../contexts/ThemeContext";
 import { Button } from "../../../shared/components/ui/Button";
 import { Header } from "../../../shared/components/ui/Header";
+import { Sidebar } from "../../../shared/components/ui/Sidebar";
 import { useRouteSheetStore } from "../../../store/routeSheetStore";
 import { RouteSheetCard } from "./components/RouteSheetCard";
 import { RouteSheetEmptyState } from "./components/RouteSheetEmptyState";
@@ -14,6 +15,7 @@ import { RouteSheetEmptyState } from "./components/RouteSheetEmptyState";
 export const RouteSheetScreen: React.FC = () => {
   const { colors } = useTheme();
   const fadeAnim = useRef(new Animated.Value(0)).current;
+  const [showSidebar, setShowSidebar] = useState(false);
 
   const {
     filteredRouteSheets,
@@ -25,8 +27,18 @@ export const RouteSheetScreen: React.FC = () => {
   } = useRouteSheetStore();
 
   useEffect(() => {
-    fetchRouteSheets();
+    // Initialize data loading
+    const initializeData = async () => {
+      try {
+        await fetchRouteSheets();
+      } catch (error) {
+        console.error("Error initializing route sheets:", error);
+      }
+    };
 
+    initializeData();
+
+    // Start animation
     Animated.timing(fadeAnim, {
       toValue: 1,
       duration: 600,
@@ -52,6 +64,91 @@ export const RouteSheetScreen: React.FC = () => {
   const handleEditRouteSheet = (routeSheetId: string) => {
     router.push(`./routes/edit/${routeSheetId}`);
   };
+
+  const handleNotificationPress = () => {
+    router.push("/notifications?returnTo=/routes");
+  };
+
+  const handleLogout = () => {
+    // Add logout logic here
+    router.replace("/auth/login");
+  };
+
+  // Sidebar menu items
+  const sidebarItems = [
+    {
+      id: "home",
+      label: "Accueil",
+      icon: "home" as const,
+      onPress: () => {
+        setShowSidebar(false);
+        router.push("/");
+      },
+    },
+    {
+      id: "calendar",
+      label: "Calendrier",
+      icon: "calendar" as const,
+      onPress: () => {
+        setShowSidebar(false);
+        router.push("/calendar");
+      },
+    },
+    {
+      id: "routes",
+      label: "Feuille de route",
+      icon: "exclamation-triangle" as const,
+      onPress: () => {
+        setShowSidebar(false);
+      },
+      isActive: true,
+    },
+    {
+      id: "vehicles",
+      label: "Mon parc",
+      icon: "car" as const,
+      onPress: () => {
+        setShowSidebar(false);
+        router.push("/vehicles");
+      },
+    },
+    {
+      id: "payslips",
+      label: "Bulletin de paie",
+      icon: "credit-card" as const,
+      onPress: () => {
+        setShowSidebar(false);
+        router.push("/payslips");
+      },
+    },
+    {
+      id: "documents",
+      label: "Mes documents",
+      icon: "file-text" as const,
+      onPress: () => {
+        setShowSidebar(false);
+        router.push("/documents");
+      },
+    },
+    {
+      id: "geolocation",
+      label: "Géolocalisation",
+      icon: "map-marker" as const,
+      onPress: () => {
+        setShowSidebar(false);
+        router.push("/geolocation");
+      },
+    },
+    {
+      id: "planning",
+      label: "Planning",
+      icon: "calendar" as const,
+      onPress: () => {
+        setShowSidebar(false);
+        router.push("/planning");
+      },
+    },
+  ];
 
   const styles = StyleSheet.create({
     container: {
@@ -118,10 +215,17 @@ export const RouteSheetScreen: React.FC = () => {
       <SafeAreaView style={styles.container}>
         <Header
           leftIcon={{
-            icon: "chevron-left",
-            onPress: () => router.back(),
+            icon: "bars",
+            onPress: () => setShowSidebar(true),
           }}
           title="Feuille de route"
+          rightIcons={[
+            {
+              icon: "bell",
+              onPress: handleNotificationPress,
+              badge: 3,
+            },
+          ]}
         />
         <View style={styles.errorContainer}>
           <Text style={styles.errorText}>{error}</Text>
@@ -134,6 +238,13 @@ export const RouteSheetScreen: React.FC = () => {
             style={{ marginTop: 12 }}
           />
         </View>
+        <Sidebar
+          visible={showSidebar}
+          onClose={() => setShowSidebar(false)}
+          items={sidebarItems}
+          onLogout={handleLogout}
+          title="Menu"
+        />
       </SafeAreaView>
     );
   }
@@ -143,14 +254,28 @@ export const RouteSheetScreen: React.FC = () => {
       <SafeAreaView style={styles.container}>
         <Header
           leftIcon={{
-            icon: "chevron-left",
-            onPress: () => router.back(),
+            icon: "bars",
+            onPress: () => setShowSidebar(true),
           }}
           title="Feuille de route"
+          rightIcons={[
+            {
+              icon: "bell",
+              onPress: handleNotificationPress,
+              badge: 3,
+            },
+          ]}
         />
         <View style={styles.loadingContainer}>
           <Text style={styles.loadingText}>Chargement...</Text>
         </View>
+        <Sidebar
+          visible={showSidebar}
+          onClose={() => setShowSidebar(false)}
+          items={sidebarItems}
+          onLogout={handleLogout}
+          title="Menu"
+        />
       </SafeAreaView>
     );
   }
@@ -159,14 +284,15 @@ export const RouteSheetScreen: React.FC = () => {
     <SafeAreaView style={styles.container}>
       <Header
         leftIcon={{
-          icon: "chevron-left",
-          onPress: () => router.back(),
+          icon: "bars",
+          onPress: () => setShowSidebar(true),
         }}
         title="Feuille de route"
         rightIcons={[
           {
-            icon: "home",
-            onPress: () => router.push("/"),
+            icon: "bell",
+            onPress: handleNotificationPress,
+            badge: 3,
           },
         ]}
       />
@@ -205,6 +331,14 @@ export const RouteSheetScreen: React.FC = () => {
           <RouteSheetEmptyState onCreateNew={handleCreateNewRouteSheet} />
         )}
       </Animated.View>
+
+      <Sidebar
+        visible={showSidebar}
+        onClose={() => setShowSidebar(false)}
+        items={sidebarItems}
+        onLogout={handleLogout}
+        title="Menu"
+      />
     </SafeAreaView>
   );
 };
