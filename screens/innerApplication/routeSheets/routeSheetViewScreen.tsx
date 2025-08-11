@@ -288,7 +288,7 @@ export const RouteSheetViewScreen: React.FC = () => {
         ]}
       />
 
-      <Animated.View style={[styles.content, { opacity: fadeAnim }]}>
+      <Animated.View style={[styles.content]}>
         {/* Header Section */}
         <View style={styles.headerSection}>
           <View style={styles.titleRow}>

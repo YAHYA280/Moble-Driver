@@ -234,7 +234,7 @@ export const RouteSheetEditScreen: React.FC = () => {
         title={routeSheet.monthName}
       />
 
-      <Animated.View style={[styles.content, { opacity: fadeAnim }]}>
+      <Animated.View style={[styles.content]}>
         {/* Header Section */}
         <View style={styles.headerSection}>
           <Text style={styles.title}>{routeSheet.monthName}</Text>

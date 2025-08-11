@@ -5,6 +5,7 @@ import React, { useEffect, useRef, useState } from "react";
 import { Animated, ScrollView, StyleSheet, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useTheme } from "../../../contexts/ThemeContext";
+import ConditionalComponent from "../../../shared/components/conditionalComponent/conditionalComponent";
 import { Button } from "../../../shared/components/ui/Button";
 import { Header } from "../../../shared/components/ui/Header";
 import { Sidebar } from "../../../shared/components/ui/Sidebar";
@@ -30,7 +31,9 @@ export const RouteSheetScreen: React.FC = () => {
     // Initialize data loading
     const initializeData = async () => {
       try {
+        console.log("Starting to fetch route sheets...");
         await fetchRouteSheets();
+        console.log("Route sheets fetched successfully");
       } catch (error) {
         console.error("Error initializing route sheets:", error);
       }
@@ -44,12 +47,23 @@ export const RouteSheetScreen: React.FC = () => {
       duration: 600,
       useNativeDriver: true,
     }).start();
-  }, []);
+  }, [fetchRouteSheets, fadeAnim]);
+
+  // Debug: Log the current state
+  useEffect(() => {
+    console.log("RouteSheetScreen state:", {
+      isLoading,
+      error,
+      filteredRouteSheetsCount: filteredRouteSheets.length,
+    });
+  }, [isLoading, error, filteredRouteSheets]);
 
   const handleCreateNewRouteSheet = async () => {
     try {
+      console.log("Creating new route sheet...");
       const currentSheet = await getCurrentMonthRouteSheet();
       if (currentSheet) {
+        console.log("Navigating to edit screen with sheet:", currentSheet.id);
         router.push(`/(tabs)/routes/edit/${currentSheet.id}`);
       }
     } catch (error) {
@@ -58,10 +72,12 @@ export const RouteSheetScreen: React.FC = () => {
   };
 
   const handleViewRouteSheet = (routeSheetId: string) => {
+    console.log("Viewing route sheet:", routeSheetId);
     router.push(`/(tabs)/routes/view/${routeSheetId}`);
   };
 
   const handleEditRouteSheet = (routeSheetId: string) => {
+    console.log("Editing route sheet:", routeSheetId);
     router.push(`/(tabs)/routes/edit/${routeSheetId}`);
   };
 
@@ -148,13 +164,51 @@ export const RouteSheetScreen: React.FC = () => {
       flex: 1,
       justifyContent: "center",
       alignItems: "center",
+      paddingVertical: 60,
     },
     loadingText: {
       fontSize: 16,
       color: colors.textSecondary,
       marginTop: 8,
     },
+    debugContainer: {
+      backgroundColor: colors.surface,
+      padding: 16,
+      margin: 16,
+      borderRadius: 8,
+      borderWidth: 1,
+      borderColor: colors.border,
+    },
+    debugText: {
+      fontSize: 12,
+      color: colors.textSecondary,
+      marginBottom: 4,
+    },
   });
+
+  // Debug information component
+  const DebugInfo = () => (
+    <View style={styles.debugContainer}>
+      <Text style={styles.debugText}>Debug Info:</Text>
+      <Text style={styles.debugText}>Loading: {isLoading.toString()}</Text>
+      <Text style={styles.debugText}>Error: {error || "none"}</Text>
+      <Text style={styles.debugText}>
+        Filtered Route Sheets: {filteredRouteSheets.length}
+      </Text>
+      <Text style={styles.debugText}>
+        Route Sheets Data:{" "}
+        {JSON.stringify(
+          filteredRouteSheets.map((sheet) => ({
+            id: sheet.id,
+            monthName: sheet.monthName,
+            status: sheet.status,
+          })),
+          null,
+          2
+        )}
+      </Text>
+    </View>
+  );
 
   if (error) {
     return (
@@ -213,7 +267,9 @@ export const RouteSheetScreen: React.FC = () => {
           ]}
         />
         <View style={styles.loadingContainer}>
-          <Text style={styles.loadingText}>Chargement...</Text>
+          <Text style={styles.loadingText}>
+            Chargement des feuilles de route...
+          </Text>
         </View>
         <Sidebar
           visible={showSidebar}
@@ -243,7 +299,7 @@ export const RouteSheetScreen: React.FC = () => {
         ]}
       />
 
-      <Animated.View style={[styles.content, { opacity: fadeAnim }]}>
+      <Animated.View style={[styles.content]}>
         <ScrollView
           showsVerticalScrollIndicator={false}
           contentContainerStyle={{ paddingBottom: 20 }}
@@ -262,8 +318,16 @@ export const RouteSheetScreen: React.FC = () => {
             />
           </View>
 
+          {/* Debug Information - Remove this in production */}
+          {__DEV__ && <DebugInfo />}
+
           {/* Route Sheets List */}
-          {filteredRouteSheets.length > 0 ? (
+          <ConditionalComponent
+            isValid={filteredRouteSheets.length > 0}
+            defaultComponent={
+              <RouteSheetEmptyState onCreateNew={handleCreateNewRouteSheet} />
+            }
+          >
             <View>
               <Text style={styles.sectionTitle}>Vos feuilles de route</Text>
               <View style={styles.routeSheetsList}>
@@ -277,9 +341,7 @@ export const RouteSheetScreen: React.FC = () => {
                 ))}
               </View>
             </View>
-          ) : (
-            <RouteSheetEmptyState onCreateNew={handleCreateNewRouteSheet} />
-          )}
+          </ConditionalComponent>
         </ScrollView>
       </Animated.View>
 
@@ -288,7 +350,7 @@ export const RouteSheetScreen: React.FC = () => {
         onClose={() => setShowSidebar(false)}
         items={sidebarItems}
         onLogout={handleLogout}
-        title="Menu"
+        title="Feuille de route"
       />
     </SafeAreaView>
   );
