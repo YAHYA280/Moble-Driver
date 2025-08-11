@@ -67,7 +67,7 @@ export const HomeScreen: React.FC = () => {
   };
 
   const handleRoutesPress = () => {
-    router.push("/routes"); // Direct to tab route
+    router.push("/(tabs)/routes"); // Updated to point to the new routes screen
   };
 
   const handleGeolocationPress = () => {

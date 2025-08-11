@@ -4,6 +4,8 @@ export default function RoutesLayout() {
   return (
     <Stack screenOptions={{ headerShown: false }}>
       <Stack.Screen name="index" options={{ headerShown: false }} />
+      <Stack.Screen name="edit/[id]" options={{ headerShown: false }} />
+      <Stack.Screen name="view/[id]" options={{ headerShown: false }} />
     </Stack>
   );
 }
