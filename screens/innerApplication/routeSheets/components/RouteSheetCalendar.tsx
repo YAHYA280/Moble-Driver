@@ -1,25 +1,10 @@
 // screens/innerApplication/routeSheets/components/RouteSheetCalendar.tsx
 
-import ConditionalComponent from "@/shared/components/conditionalComponent/conditionalComponent";
 import React from "react";
-import {
-  Platform,
-  StyleSheet,
-  Text,
-  TouchableOpacity,
-  View,
-} from "react-native";
+import { Platform, StyleSheet, Text, View } from "react-native";
+import { Calendar, DateData } from "react-native-calendars";
 import { useThemeColors } from "../../../../hooks/useTheme";
 import { RouteSheet } from "../../../../shared/types/routeSheet";
-
-interface CalendarDay {
-  date: string;
-  day: number;
-  isCurrentMonth: boolean;
-  isCompleted: boolean;
-  hasData: boolean;
-  isToday: boolean;
-}
 
 interface RouteSheetCalendarProps {
   routeSheet: RouteSheet;
@@ -34,83 +19,65 @@ export const RouteSheetCalendar: React.FC<RouteSheetCalendarProps> = ({
 }) => {
   const colors = useThemeColors();
 
-  // Get calendar layout for the month
-  const getCalendarDays = (): CalendarDay[] => {
-    const [year, month] = routeSheet.month.split("-").map(Number);
-    const firstDay = new Date(year, month - 1, 1);
-    const startDate = new Date(firstDay);
+  // Prepare marked dates for the calendar
+  const getMarkedDates = () => {
+    const marked: any = {};
+    const today = new Date().toISOString().split("T")[0];
 
-    // Adjust to start on Monday (1) instead of Sunday (0)
-    const dayOfWeek = (firstDay.getDay() + 6) % 7;
-    startDate.setDate(firstDay.getDate() - dayOfWeek);
+    routeSheet.days.forEach((day) => {
+      const hasData = day.timeSlots.some((slot) => slot.isActive);
 
-    const days: CalendarDay[] = [];
-    const currentDate = new Date(startDate);
+      if (day.date === today) {
+        // Today's date
+        marked[day.date] = {
+          selected: true,
+          selectedColor: colors.primary,
+          selectedTextColor: "#ffffff",
+          marked: hasData,
+          dotColor: day.isCompleted ? colors.success : colors.warning,
+        };
+      } else if (day.isCompleted) {
+        // Completed days
+        marked[day.date] = {
+          marked: true,
+          dotColor: colors.success,
+          customStyles: {
+            container: {
+              backgroundColor: colors.success + "20",
+              borderRadius: 8,
+            },
+            text: {
+              color: colors.success,
+              fontWeight: "600",
+            },
+          },
+        };
+      } else if (hasData) {
+        // Days with data but not completed
+        marked[day.date] = {
+          marked: true,
+          dotColor: colors.warning,
+          customStyles: {
+            container: {
+              backgroundColor: colors.warning + "20",
+              borderRadius: 8,
+            },
+            text: {
+              color: colors.warning,
+              fontWeight: "600",
+            },
+          },
+        };
+      }
+    });
 
-    // Generate 6 weeks (42 days) to fill the calendar grid
-    for (let i = 0; i < 42; i++) {
-      const dateString = currentDate.toISOString().split("T")[0];
-      const isCurrentMonth = currentDate.getMonth() === month - 1;
-      const dayData = routeSheet.days.find((d) => d.date === dateString);
-
-      days.push({
-        date: dateString,
-        day: currentDate.getDate(),
-        isCurrentMonth,
-        isCompleted: dayData?.isCompleted || false,
-        hasData: dayData
-          ? dayData.timeSlots.some((slot) => slot.isActive)
-          : false,
-        isToday: dateString === new Date().toISOString().split("T")[0],
-      });
-
-      currentDate.setDate(currentDate.getDate() + 1);
-    }
-
-    return days;
+    return marked;
   };
 
-  const weekDays = ["Lun", "Mar", "Mer", "Jeu", "Ven", "Sam", "Dim"];
-  const calendarDays = getCalendarDays();
-
-  const getDayButtonStyle = (day: CalendarDay) => {
-    const baseStyle: any[] = [styles.dayButton];
-
-    if (!day.isCurrentMonth) {
-      baseStyle.push(styles.dayButtonOtherMonth);
-    } else {
-      baseStyle.push(styles.dayButtonCurrentMonth);
+  const handleDayPress = (day: DateData) => {
+    if (!readonly) {
+      onDayPress(day.dateString);
     }
-
-    if (day.isToday) {
-      baseStyle.push(styles.dayButtonToday);
-    } else if (day.isCompleted) {
-      baseStyle.push(styles.dayButtonCompleted);
-    } else if (day.hasData) {
-      baseStyle.push(styles.dayButtonHasData);
-    }
-
-    return baseStyle;
-  };
-
-  const getDayTextStyle = (day: CalendarDay) => {
-    const baseStyle: any[] = [styles.dayText];
-
-    if (!day.isCurrentMonth) {
-      baseStyle.push(styles.dayTextOtherMonth);
-    } else {
-      baseStyle.push(styles.dayTextCurrentMonth);
-    }
-
-    if (day.isToday) {
-      baseStyle.push(styles.dayTextToday);
-    } else if (day.isCompleted) {
-      baseStyle.push(styles.dayTextCompleted);
-    } else if (day.hasData) {
-      baseStyle.push(styles.dayTextHasData);
-    }
-
-    return baseStyle;
   };
 
   const styles = StyleSheet.create({
@@ -135,100 +102,8 @@ export const RouteSheetCalendar: React.FC<RouteSheetCalendarProps> = ({
         },
       }),
     },
-    weekHeader: {
-      flexDirection: "row",
-      marginBottom: 8,
-    },
-    weekDayHeader: {
-      flex: 1,
-      alignItems: "center",
-      paddingVertical: 8,
-    },
-    weekDayText: {
-      fontSize: 12,
-      fontWeight: "600",
-      color: colors.textSecondary,
-    },
-    calendarGrid: {
-      flexDirection: "row",
-      flexWrap: "wrap",
-    },
-    dayContainer: {
-      width: `${100 / 7}%`,
-      aspectRatio: 1,
-      alignItems: "center",
-      justifyContent: "center",
-      padding: 2,
-    },
-    dayButton: {
-      width: "100%",
-      height: "100%",
+    calendar: {
       borderRadius: 8,
-      alignItems: "center",
-      justifyContent: "center",
-      position: "relative",
-    },
-    dayButtonCurrentMonth: {
-      backgroundColor: "transparent",
-    },
-    dayButtonOtherMonth: {
-      backgroundColor: "transparent",
-      opacity: 0.3,
-    },
-    dayButtonCompleted: {
-      backgroundColor: colors.success + "20",
-      borderWidth: 2,
-      borderColor: colors.success,
-    },
-    dayButtonHasData: {
-      backgroundColor: colors.warning + "20",
-      borderWidth: 2,
-      borderColor: colors.warning,
-    },
-    dayButtonToday: {
-      backgroundColor: colors.primary + "20",
-      borderWidth: 2,
-      borderColor: colors.primary,
-    },
-    dayText: {
-      fontSize: 14,
-      fontWeight: "500",
-    },
-    dayTextCurrentMonth: {
-      color: colors.text,
-    },
-    dayTextOtherMonth: {
-      color: colors.textTertiary,
-    },
-    dayTextCompleted: {
-      color: colors.success,
-      fontWeight: "600",
-    },
-    dayTextHasData: {
-      color: colors.warning,
-      fontWeight: "600",
-    },
-    dayTextToday: {
-      color: colors.primary,
-      fontWeight: "700",
-    },
-    completedIndicator: {
-      position: "absolute",
-      top: 2,
-      right: 2,
-      width: 6,
-      height: 6,
-      borderRadius: 3,
-      backgroundColor: colors.success,
-    },
-    hasDataIndicator: {
-      position: "absolute",
-      top: 2,
-      right: 2,
-      width: 6,
-      height: 6,
-      borderRadius: 3,
-      backgroundColor: colors.warning,
     },
     legend: {
       flexDirection: "row",
@@ -254,40 +129,54 @@ export const RouteSheetCalendar: React.FC<RouteSheetCalendarProps> = ({
     },
   });
 
+  const calendarTheme = {
+    backgroundColor: colors.surface,
+    calendarBackground: colors.surface,
+    textSectionTitleColor: colors.textSecondary,
+    selectedDayBackgroundColor: colors.primary,
+    selectedDayTextColor: "#ffffff",
+    todayTextColor: colors.primary,
+    dayTextColor: colors.text,
+    textDisabledColor: colors.textTertiary,
+    dotColor: colors.primary,
+    selectedDotColor: "#ffffff",
+    arrowColor: colors.primary,
+    monthTextColor: colors.text,
+    indicatorColor: colors.primary,
+    textDayFontFamily: "System",
+    textMonthFontFamily: "System",
+    textDayHeaderFontFamily: "System",
+    textDayFontSize: 14,
+    textMonthFontSize: 16,
+    textDayHeaderFontSize: 12,
+  };
+
   return (
     <View style={styles.container}>
-      {/* Week days header */}
-      <View style={styles.weekHeader}>
-        {weekDays.map((day) => (
-          <View key={day} style={styles.weekDayHeader}>
-            <Text style={styles.weekDayText}>{day}</Text>
-          </View>
-        ))}
-      </View>
-
-      {/* Calendar grid */}
-      <View style={styles.calendarGrid}>
-        {calendarDays.map((day, index) => (
-          <View key={index} style={styles.dayContainer}>
-            <TouchableOpacity
-              style={getDayButtonStyle(day)}
-              onPress={() => day.isCurrentMonth && onDayPress(day.date)}
-              disabled={readonly || !day.isCurrentMonth}
-              activeOpacity={0.7}
-            >
-              <Text style={getDayTextStyle(day)}>{day.day}</Text>
-
-              <ConditionalComponent isValid={day.isCompleted}>
-                <View style={styles.completedIndicator} />
-              </ConditionalComponent>
-
-              <ConditionalComponent isValid={day.hasData && !day.isCompleted}>
-                <View style={styles.hasDataIndicator} />
-              </ConditionalComponent>
-            </TouchableOpacity>
-          </View>
-        ))}
-      </View>
+      <Calendar
+        style={styles.calendar}
+        current={routeSheet.month + "-01"}
+        minDate={routeSheet.month + "-01"}
+        maxDate={
+          routeSheet.month +
+          "-" +
+          String(
+            new Date(
+              parseInt(routeSheet.month.split("-")[0]),
+              parseInt(routeSheet.month.split("-")[1]),
+              0
+            ).getDate()
+          ).padStart(2, "0")
+        }
+        onDayPress={handleDayPress}
+        markedDates={getMarkedDates()}
+        markingType="custom"
+        theme={calendarTheme}
+        hideExtraDays={true}
+        firstDay={1} // Monday first
+        enableSwipeMonths={false}
+        disableMonthChange={true}
+      />
 
       {/* Legend */}
       <View style={styles.legend}>

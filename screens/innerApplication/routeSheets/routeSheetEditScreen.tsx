@@ -2,8 +2,8 @@
 
 import ConditionalComponent from "@/shared/components/conditionalComponent/conditionalComponent";
 import { router, useLocalSearchParams } from "expo-router";
-import React, { useEffect, useRef, useState } from "react";
-import { Animated, ScrollView, StyleSheet, Text, View } from "react-native";
+import React, { useEffect, useState } from "react";
+import { ScrollView, StyleSheet, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useTheme } from "../../../contexts/ThemeContext";
 import { Button } from "../../../shared/components/ui/Button";
@@ -15,7 +15,6 @@ import { RouteSheetDayModal } from "./components/RouteSheetDayModal";
 export const RouteSheetEditScreen: React.FC = () => {
   const { colors } = useTheme();
   const { id } = useLocalSearchParams<{ id: string }>();
-  const fadeAnim = useRef(new Animated.Value(0)).current;
   const [showDayModal, setShowDayModal] = useState(false);
   const [selectedDate, setSelectedDate] = useState<string>("");
 
@@ -54,18 +53,11 @@ export const RouteSheetEditScreen: React.FC = () => {
       await getCurrentMonthRouteSheet();
     } else {
       await fetchRouteSheets();
-      // The store will handle setting the current sheet based on ID
     }
   };
 
   useEffect(() => {
     initializeRouteSheet();
-
-    Animated.timing(fadeAnim, {
-      toValue: 1,
-      duration: 600,
-      useNativeDriver: true,
-    }).start();
   }, [id]);
 
   const handleDayPress = (date: string) => {
@@ -234,7 +226,7 @@ export const RouteSheetEditScreen: React.FC = () => {
         title={routeSheet.monthName}
       />
 
-      <Animated.View style={[styles.content]}>
+      <View style={styles.content}>
         {/* Header Section */}
         <View style={styles.headerSection}>
           <Text style={styles.title}>{routeSheet.monthName}</Text>
@@ -308,7 +300,7 @@ export const RouteSheetEditScreen: React.FC = () => {
             readonly={!isEditMode || !canEdit}
           />
         </ScrollView>
-      </Animated.View>
+      </View>
 
       {/* Day Edit Modal */}
       <RouteSheetDayModal

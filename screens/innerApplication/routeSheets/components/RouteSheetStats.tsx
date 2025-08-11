@@ -30,7 +30,6 @@ export const RouteSheetStats: React.FC<RouteSheetStatsProps> = ({
         ios: {
           shadowColor: colors.shadow,
           shadowOffset: { width: 0, height: 2 },
-          shadowOpacity: colors.isDark ? 0.3 : 0.08,
           shadowRadius: 8,
         },
         android: {

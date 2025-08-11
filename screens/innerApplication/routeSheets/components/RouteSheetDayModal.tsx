@@ -173,7 +173,6 @@ export const RouteSheetDayModal: React.FC<RouteSheetDayModalProps> = ({
         ios: {
           shadowColor: colors.shadow,
           shadowOffset: { width: 0, height: -4 },
-          shadowOpacity: colors.isDark ? 0.3 : 0.15,
           shadowRadius: 16,
         },
         android: {
@@ -234,7 +233,6 @@ export const RouteSheetDayModal: React.FC<RouteSheetDayModalProps> = ({
         ios: {
           shadowColor: colors.shadow,
           shadowOffset: { width: 0, height: 2 },
-          shadowOpacity: colors.isDark ? 0.3 : 0.08,
           shadowRadius: 8,
         },
         android: {
@@ -365,7 +363,6 @@ export const RouteSheetDayModal: React.FC<RouteSheetDayModalProps> = ({
                 <TouchableOpacity
                   style={styles.closeButton}
                   onPress={handleClose}
-                  activeOpacity={0.7}
                 >
                   <FontAwesome
                     name="times"
@@ -422,7 +419,6 @@ export const RouteSheetDayModal: React.FC<RouteSheetDayModalProps> = ({
                                 : styles.toggleButtonInactive,
                             ]}
                             onPress={() => handleTimeSlotToggle(timeSlot)}
-                            activeOpacity={0.7}
                           >
                             <Text
                               style={[

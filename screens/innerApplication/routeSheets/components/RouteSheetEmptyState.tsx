@@ -25,7 +25,6 @@ export const RouteSheetEmptyState: React.FC<RouteSheetEmptyStateProps> = ({
     icon: {
       fontSize: 64,
       marginBottom: 24,
-      opacity: 0.5,
     },
     title: {
       fontSize: 20,
