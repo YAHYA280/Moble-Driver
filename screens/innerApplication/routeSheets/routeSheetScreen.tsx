@@ -2,7 +2,7 @@
 
 import { router } from "expo-router";
 import React, { useEffect, useRef, useState } from "react";
-import { Animated, StyleSheet, Text, View } from "react-native";
+import { Animated, ScrollView, StyleSheet, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useTheme } from "../../../contexts/ThemeContext";
 import { Button } from "../../../shared/components/ui/Button";
@@ -50,7 +50,7 @@ export const RouteSheetScreen: React.FC = () => {
     try {
       const currentSheet = await getCurrentMonthRouteSheet();
       if (currentSheet) {
-        router.push(`./routes/edit/${currentSheet.id}`);
+        router.push(`/(tabs)/routes/edit/${currentSheet.id}`);
       }
     } catch (error) {
       console.error("Error creating route sheet:", error);
@@ -58,15 +58,15 @@ export const RouteSheetScreen: React.FC = () => {
   };
 
   const handleViewRouteSheet = (routeSheetId: string) => {
-    router.push(`./routes/view/${routeSheetId}`);
+    router.push(`/(tabs)/routes/view/${routeSheetId}`);
   };
 
   const handleEditRouteSheet = (routeSheetId: string) => {
-    router.push(`./routes/edit/${routeSheetId}`);
+    router.push(`/(tabs)/routes/edit/${routeSheetId}`);
   };
 
   const handleNotificationPress = () => {
-    router.push("/notifications?returnTo=/routes");
+    router.push("/(tabs)/notifications?returnTo=/(tabs)/routes");
   };
 
   const handleLogout = () => {
@@ -74,79 +74,25 @@ export const RouteSheetScreen: React.FC = () => {
     router.replace("/auth/login");
   };
 
-  // Sidebar menu items
+  // Sidebar menu items with route sheet specific items
   const sidebarItems = [
     {
-      id: "home",
-      label: "Accueil",
-      icon: "home" as const,
+      id: "add-route",
+      label: "Ajouter une feuille de route",
+      icon: "plus" as const,
       onPress: () => {
         setShowSidebar(false);
-        router.push("/");
+        handleCreateNewRouteSheet();
       },
     },
     {
-      id: "calendar",
-      label: "Calendrier",
-      icon: "calendar" as const,
-      onPress: () => {
-        setShowSidebar(false);
-        router.push("/calendar");
-      },
-    },
-    {
-      id: "routes",
-      label: "Feuille de route",
+      id: "my-routes",
+      label: "Mes feuilles de route",
       icon: "exclamation-triangle" as const,
       onPress: () => {
         setShowSidebar(false);
       },
       isActive: true,
-    },
-    {
-      id: "vehicles",
-      label: "Mon parc",
-      icon: "car" as const,
-      onPress: () => {
-        setShowSidebar(false);
-        router.push("/vehicles");
-      },
-    },
-    {
-      id: "payslips",
-      label: "Bulletin de paie",
-      icon: "credit-card" as const,
-      onPress: () => {
-        setShowSidebar(false);
-        router.push("/payslips");
-      },
-    },
-    {
-      id: "documents",
-      label: "Mes documents",
-      icon: "file-text" as const,
-      onPress: () => {
-        setShowSidebar(false);
-        router.push("/documents");
-      },
-    },
-    {
-      id: "geolocation",
-      label: "Géolocalisation",
-      icon: "map-marker" as const,
-      onPress: () => {
-        setShowSidebar(false);
-        router.push("/geolocation");
-      },
-    },
-    {
-      id: "planning",
-      label: "Planning",
-      icon: "calendar" as const,
-      onPress: () => {
-        setShowSidebar(false);
-        router.push("/planning");
-      },
     },
   ];
 
@@ -298,38 +244,43 @@ export const RouteSheetScreen: React.FC = () => {
       />
 
       <Animated.View style={[styles.content, { opacity: fadeAnim }]}>
-        {/* Header Section */}
-        <View style={styles.headerSection}>
-          <Text style={styles.title}>Gestion des feuilles de route</Text>
-          <Text style={styles.subtitle}>
-            Créez et consultez vos feuilles de route mensuelles
-          </Text>
+        <ScrollView
+          showsVerticalScrollIndicator={false}
+          contentContainerStyle={{ paddingBottom: 20 }}
+        >
+          {/* Header Section */}
+          <View style={styles.headerSection}>
+            <Text style={styles.title}>Gestion des feuilles de route</Text>
+            <Text style={styles.subtitle}>
+              Créez et consultez vos feuilles de route mensuelles
+            </Text>
 
-          <Button
-            title="+ Créer/Modifier feuille du mois"
-            onPress={handleCreateNewRouteSheet}
-            style={styles.createButton}
-          />
-        </View>
-
-        {/* Route Sheets List */}
-        {filteredRouteSheets.length > 0 ? (
-          <View>
-            <Text style={styles.sectionTitle}>Vos feuilles de route</Text>
-            <View style={styles.routeSheetsList}>
-              {filteredRouteSheets.map((routeSheet) => (
-                <RouteSheetCard
-                  key={routeSheet.id}
-                  routeSheet={routeSheet}
-                  onView={() => handleViewRouteSheet(routeSheet.id)}
-                  onEdit={() => handleEditRouteSheet(routeSheet.id)}
-                />
-              ))}
-            </View>
+            <Button
+              title="+ Créer/Modifier feuille du mois"
+              onPress={handleCreateNewRouteSheet}
+              style={styles.createButton}
+            />
           </View>
-        ) : (
-          <RouteSheetEmptyState onCreateNew={handleCreateNewRouteSheet} />
-        )}
+
+          {/* Route Sheets List */}
+          {filteredRouteSheets.length > 0 ? (
+            <View>
+              <Text style={styles.sectionTitle}>Vos feuilles de route</Text>
+              <View style={styles.routeSheetsList}>
+                {filteredRouteSheets.map((routeSheet) => (
+                  <RouteSheetCard
+                    key={routeSheet.id}
+                    routeSheet={routeSheet}
+                    onView={() => handleViewRouteSheet(routeSheet.id)}
+                    onEdit={() => handleEditRouteSheet(routeSheet.id)}
+                  />
+                ))}
+              </View>
+            </View>
+          ) : (
+            <RouteSheetEmptyState onCreateNew={handleCreateNewRouteSheet} />
+          )}
+        </ScrollView>
       </Animated.View>
 
       <Sidebar

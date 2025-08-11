@@ -15,8 +15,8 @@ type RouteSheetStore = RouteSheetState & RouteSheetActions;
 
 // Helper functions
 const generateTimeSlots = (): TimeSlotData[] => {
-  return TIME_SLOTS.map((slot) => ({
-    id: `${slot.toLowerCase()}-${Date.now()}`,
+  return TIME_SLOTS.map((slot, index) => ({
+    id: `${slot.toLowerCase().replace(/[-\s]/g, "_")}-${Date.now()}-${index}`,
     timeSlot: slot,
     isActive: false,
     kilometrage: { startKm: 0, endKm: 0 },
@@ -136,16 +136,49 @@ const generateMockRouteSheets = (): RouteSheet[] => {
 
     // For demo purposes, add some completed days to older sheets
     if (i > 0) {
-      days.slice(0, Math.floor(days.length * 0.3)).forEach((day) => {
-        day.timeSlots[0].isActive = true;
-        day.timeSlots[0].kilometrage = { startKm: 1000, endKm: 1150 };
-        day.timeSlots[0].isCompleted = true;
-        day.isCompleted = true;
+      const completedDaysCount = Math.floor(days.length * 0.4);
+      days.slice(0, completedDaysCount).forEach((day, dayIndex) => {
+        // Randomly activate 1-2 time slots per day
+        const slotsToActivate = Math.floor(Math.random() * 2) + 1;
+        for (let slotIndex = 0; slotIndex < slotsToActivate; slotIndex++) {
+          const slot = day.timeSlots[slotIndex];
+          slot.isActive = true;
+          const baseKm = 1000 + dayIndex * 50;
+          slot.kilometrage = {
+            startKm: baseKm,
+            endKm: baseKm + 120 + Math.floor(Math.random() * 80),
+          };
+          slot.isCompleted = true;
+          if (Math.random() > 0.7) {
+            slot.otherTrips = `Trajet supplémentaire jour ${dayIndex + 1}`;
+          }
+          if (Math.random() > 0.8) {
+            slot.comments = `RAS - Mission effectuée`;
+          }
+        }
+        day.isCompleted = checkDayCompletion(day);
+      });
+    } else {
+      // For current month, add some partial data
+      const today = new Date().getDate();
+      days.slice(0, Math.min(today - 1, 10)).forEach((day, dayIndex) => {
+        if (Math.random() > 0.3) {
+          // 70% chance of having data
+          const slot = day.timeSlots[0]; // Morning slot
+          slot.isActive = true;
+          const baseKm = 1200 + dayIndex * 45;
+          slot.kilometrage = {
+            startKm: baseKm,
+            endKm: baseKm + 95 + Math.floor(Math.random() * 60),
+          };
+          slot.isCompleted = true;
+          day.isCompleted = true;
+        }
       });
     }
 
     const sheet: RouteSheet = {
-      id: `sheet_${monthString}`,
+      id: `sheet_${monthString}_${Date.now()}_${i}`,
       month: monthString,
       year,
       monthName: `${monthNames[month - 1]} ${year}`,
@@ -186,15 +219,18 @@ export const useRouteSheetStore = create<RouteSheetStore>((set, get) => ({
     set({ isLoading: true, error: null });
     try {
       // Simulate API call
-      await new Promise((resolve) => setTimeout(resolve, 800));
+      await new Promise((resolve) => setTimeout(resolve, 1200));
 
       const mockRouteSheets = generateMockRouteSheets();
+      console.log("Generated route sheets:", mockRouteSheets.length);
 
       set((state) => {
         const filteredRouteSheets = applyFilters(
           mockRouteSheets,
           state.filters
         );
+        console.log("Filtered route sheets:", filteredRouteSheets.length);
+
         return {
           routeSheets: mockRouteSheets,
           filteredRouteSheets,
@@ -202,6 +238,7 @@ export const useRouteSheetStore = create<RouteSheetStore>((set, get) => ({
         };
       });
     } catch (error) {
+      console.error("Error in fetchRouteSheets:", error);
       set({
         error: "Erreur lors du chargement des feuilles de route",
         isLoading: false,
@@ -256,7 +293,7 @@ export const useRouteSheetStore = create<RouteSheetStore>((set, get) => ({
     ];
 
     const newRouteSheet: RouteSheet = {
-      id: `sheet_${Date.now()}`,
+      id: `sheet_${Date.now()}_new`,
       month,
       year,
       monthName: `${monthNames[monthNum - 1]} ${year}`,
