@@ -16,7 +16,6 @@ import {
 } from "react-native";
 import { useThemeColors } from "../../../../hooks/useTheme";
 import { Button } from "../../../../shared/components/ui/Button";
-import { Input } from "../../../../shared/components/ui/Input";
 
 interface TripData {
   id: string;
@@ -29,18 +28,26 @@ interface OtherTripsSectionProps {
   trips: TripData[];
   onTripsChange: (trips: TripData[]) => void;
   onTimePress?: (tripId: string, field: "startTime" | "endTime") => void;
+  disabled?: boolean;
   style?: ViewStyle;
 }
+
+const TRIP_OPTIONS = [
+  { value: "Visite garage", label: "Visite garage" },
+  { value: "Visite médicale", label: "Visite médicale" },
+];
 
 export const OtherTripsSection: React.FC<OtherTripsSectionProps> = ({
   trips,
   onTripsChange,
   onTimePress,
+  disabled = false,
   style,
 }) => {
   const colors = useThemeColors();
   const [isExpanded, setIsExpanded] = useState(false);
   const [rotateAnim] = useState(new Animated.Value(0));
+  const [showTripOptions, setShowTripOptions] = useState(false);
 
   // Time picker state
   const [showTimePicker, setShowTimePicker] = useState(false);
@@ -51,6 +58,8 @@ export const OtherTripsSection: React.FC<OtherTripsSectionProps> = ({
   const [tempTime, setTempTime] = useState(new Date());
 
   const toggleExpanded = () => {
+    if (disabled) return;
+
     const toValue = isExpanded ? 0 : 1;
 
     Animated.timing(rotateAnim, {
@@ -62,14 +71,15 @@ export const OtherTripsSection: React.FC<OtherTripsSectionProps> = ({
     setIsExpanded(!isExpanded);
   };
 
-  const addTrip = () => {
+  const addTrip = (tripType: string) => {
     const newTrip: TripData = {
       id: Date.now().toString(),
-      name: "",
+      name: tripType,
       startTime: "09:00",
       endTime: "12:00",
     };
     onTripsChange([...trips, newTrip]);
+    setShowTripOptions(false);
   };
 
   const updateTrip = (id: string, field: keyof TripData, value: string) => {
@@ -85,6 +95,8 @@ export const OtherTripsSection: React.FC<OtherTripsSectionProps> = ({
   };
 
   const handleTimePress = (tripId: string, field: "startTime" | "endTime") => {
+    if (disabled) return;
+
     const trip = trips.find((t) => t.id === tripId);
     if (trip) {
       setSelectedTripId(tripId);
@@ -181,27 +193,22 @@ export const OtherTripsSection: React.FC<OtherTripsSectionProps> = ({
     <View key={trip.id} style={styles.tripItem}>
       <View style={styles.tripHeader}>
         <Text style={[styles.tripTitle, { color: colors.text }]}>
-          {trip.name || "Nouveau trajet"}
+          {trip.name}
         </Text>
-        <TouchableOpacity
-          style={styles.removeButton}
-          onPress={() => removeTrip(trip.id)}
-        >
-          <FontAwesome name="times" size={16} color={colors.error} />
-        </TouchableOpacity>
+        {!disabled && (
+          <TouchableOpacity
+            style={styles.removeButton}
+            onPress={() => removeTrip(trip.id)}
+          >
+            <FontAwesome name="times" size={16} color={colors.error} />
+          </TouchableOpacity>
+        )}
       </View>
-
-      <Input
-        value={trip.name}
-        onChangeText={(value) => updateTrip(trip.id, "name", value)}
-        placeholder="Nom du trajet (ex: Visite garage, Visite médicale...)"
-        style={styles.tripNameInput}
-      />
 
       <View style={styles.timeRow}>
         <View style={styles.timeContainer}>
           <Text style={[styles.timeLabel, { color: colors.textSecondary }]}>
-            Début {trip.name || "trajet"}
+            Début {trip.name}
           </Text>
           <TouchableOpacity
             style={[
@@ -209,9 +216,11 @@ export const OtherTripsSection: React.FC<OtherTripsSectionProps> = ({
               {
                 backgroundColor: colors.backgroundSecondary,
                 borderColor: colors.border,
+                opacity: disabled ? 0.6 : 1,
               },
             ]}
             onPress={() => handleTimePress(trip.id, "startTime")}
+            disabled={disabled}
           >
             <Text style={[styles.timeText, { color: colors.text }]}>
               {trip.startTime}
@@ -226,7 +235,7 @@ export const OtherTripsSection: React.FC<OtherTripsSectionProps> = ({
 
         <View style={styles.timeContainer}>
           <Text style={[styles.timeLabel, { color: colors.textSecondary }]}>
-            Fin {trip.name || "trajet"}
+            Fin {trip.name}
           </Text>
           <TouchableOpacity
             style={[
@@ -234,9 +243,11 @@ export const OtherTripsSection: React.FC<OtherTripsSectionProps> = ({
               {
                 backgroundColor: colors.backgroundSecondary,
                 borderColor: colors.border,
+                opacity: disabled ? 0.6 : 1,
               },
             ]}
             onPress={() => handleTimePress(trip.id, "endTime")}
+            disabled={disabled}
           >
             <Text style={[styles.timeText, { color: colors.text }]}>
               {trip.endTime}
@@ -263,6 +274,7 @@ export const OtherTripsSection: React.FC<OtherTripsSectionProps> = ({
       borderRadius: 12,
       marginBottom: 20,
       overflow: "hidden",
+      opacity: disabled ? 0.7 : 1,
       ...Platform.select({
         ios: {
           shadowColor: colors.shadow,
@@ -310,6 +322,7 @@ export const OtherTripsSection: React.FC<OtherTripsSectionProps> = ({
       borderRadius: 8,
       borderStyle: "dashed",
       marginBottom: 16,
+      opacity: disabled ? 0.5 : 1,
     },
     addButtonText: {
       color: colors.primary,
@@ -336,9 +349,6 @@ export const OtherTripsSection: React.FC<OtherTripsSectionProps> = ({
     removeButton: {
       padding: 4,
     },
-    tripNameInput: {
-      marginBottom: 12,
-    },
     timeRow: {
       flexDirection: "row",
       justifyContent: "space-between",
@@ -364,6 +374,66 @@ export const OtherTripsSection: React.FC<OtherTripsSectionProps> = ({
     timeText: {
       fontSize: 16,
       fontWeight: "500",
+    },
+    // Trip Options Modal
+    optionsModal: {
+      flex: 1,
+      backgroundColor: "rgba(0, 0, 0, 0.5)",
+      justifyContent: "center",
+      alignItems: "center",
+    },
+    optionsContent: {
+      backgroundColor: colors.surface,
+      borderRadius: 16,
+      padding: 20,
+      width: "80%",
+      maxWidth: 300,
+      ...Platform.select({
+        ios: {
+          shadowColor: colors.shadow,
+          shadowOffset: { width: 0, height: 4 },
+          shadowOpacity: 0.3,
+          shadowRadius: 16,
+        },
+        android: {
+          elevation: 8,
+        },
+      }),
+    },
+    optionsHeader: {
+      marginBottom: 20,
+    },
+    optionsTitle: {
+      fontSize: 18,
+      fontWeight: "600",
+      color: colors.text,
+      textAlign: "center",
+    },
+    optionButton: {
+      backgroundColor: colors.backgroundSecondary,
+      borderRadius: 8,
+      padding: 16,
+      marginBottom: 12,
+      borderWidth: 1,
+      borderColor: colors.border,
+    },
+    optionText: {
+      fontSize: 16,
+      color: colors.text,
+      fontWeight: "500",
+      textAlign: "center",
+    },
+    cancelButton: {
+      backgroundColor: colors.error + "15",
+      borderRadius: 8,
+      padding: 12,
+      marginTop: 8,
+    },
+    cancelButtonText: {
+      fontSize: 14,
+      color: colors.error,
+      fontWeight: "500",
+      textAlign: "center",
     },
     // iOS Modal styles
     modalOverlay: {
@@ -400,15 +470,28 @@ export const OtherTripsSection: React.FC<OtherTripsSectionProps> = ({
 
   return (
     <View style={[styles.container, style]}>
-      <TouchableOpacity style={styles.header} onPress={toggleExpanded}>
+      <TouchableOpacity
+        style={styles.header}
+        onPress={toggleExpanded}
+        disabled={disabled}
+      >
         <View style={styles.headerLeft}>
           <FontAwesome
             name="plus"
             size={16}
-            color={colors.primary}
+            color={disabled ? colors.textMuted : colors.primary}
             style={styles.headerIcon}
           />
-          <Text style={styles.headerTitle}>Ajouter un autre trajet</Text>
+          <Text
+            style={[
+              styles.headerTitle,
+              {
+                color: disabled ? colors.textMuted : colors.primary,
+              },
+            ]}
+          >
+            Ajouter un autre trajet
+          </Text>
         </View>
         <Animated.View
           style={[styles.expandButton, { transform: [{ rotate }] }]}
@@ -423,14 +506,58 @@ export const OtherTripsSection: React.FC<OtherTripsSectionProps> = ({
 
       <ConditionalComponent isValid={isExpanded}>
         <View style={styles.content}>
-          <TouchableOpacity style={styles.addButton} onPress={addTrip}>
-            <FontAwesome name="plus" size={16} color={colors.primary} />
-            <Text style={styles.addButtonText}>Ajouter un trajet</Text>
-          </TouchableOpacity>
+          {!disabled && (
+            <TouchableOpacity
+              style={styles.addButton}
+              onPress={() => setShowTripOptions(true)}
+            >
+              <FontAwesome name="plus" size={16} color={colors.primary} />
+              <Text style={styles.addButtonText}>Ajouter un trajet</Text>
+            </TouchableOpacity>
+          )}
 
           {trips.map(renderTripItem)}
         </View>
       </ConditionalComponent>
+
+      {/* Trip Options Modal */}
+      <Modal
+        visible={showTripOptions}
+        animationType="fade"
+        transparent
+        onRequestClose={() => setShowTripOptions(false)}
+      >
+        <TouchableWithoutFeedback onPress={() => setShowTripOptions(false)}>
+          <View style={styles.optionsModal}>
+            <TouchableWithoutFeedback>
+              <View style={styles.optionsContent}>
+                <View style={styles.optionsHeader}>
+                  <Text style={styles.optionsTitle}>
+                    Choisir le type de trajet
+                  </Text>
+                </View>
+
+                {TRIP_OPTIONS.map((option) => (
+                  <TouchableOpacity
+                    key={option.value}
+                    style={styles.optionButton}
+                    onPress={() => addTrip(option.value)}
+                  >
+                    <Text style={styles.optionText}>{option.label}</Text>
+                  </TouchableOpacity>
+                ))}
+
+                <TouchableOpacity
+                  style={styles.cancelButton}
+                  onPress={() => setShowTripOptions(false)}
+                >
+                  <Text style={styles.cancelButtonText}>Annuler</Text>
+                </TouchableOpacity>
+              </View>
+            </TouchableWithoutFeedback>
+          </View>
+        </TouchableWithoutFeedback>
+      </Modal>
 
       {/* Native Time Picker */}
       {showTimePicker && Platform.OS === "android" && (

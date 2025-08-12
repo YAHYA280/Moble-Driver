@@ -29,18 +29,55 @@ interface TripData {
   endTime: string;
 }
 
+const getDefaultStartTime = (timeSlot: string) => {
+  switch (timeSlot) {
+    case "Matin":
+      return "08:00";
+    case "Midi":
+      return "12:00";
+    case "Après-midi":
+      return "14:00";
+    case "Soir":
+      return "18:00";
+    default:
+      return "09:00";
+  }
+};
+
+const getDefaultEndTime = (timeSlot: string) => {
+  switch (timeSlot) {
+    case "Matin":
+      return "11:00";
+    case "Midi":
+      return "13:30";
+    case "Après-midi":
+      return "17:00";
+    case "Soir":
+      return "21:00";
+    default:
+      return "12:00";
+  }
+};
+
 export const RouteSheetEditScreen: React.FC = () => {
   const { colors } = useTheme();
-  const { id, date } = useLocalSearchParams<{ id: string; date?: string }>();
+  const { id, date, mode } = useLocalSearchParams<{
+    id: string;
+    date?: string;
+    mode?: "create" | "view";
+  }>();
 
   // Local state for form data
   const [dayData, setDayData] = useState<DayData | null>(null);
+  const [originalDayData, setOriginalDayData] = useState<DayData | null>(null);
   const [startKm, setStartKm] = useState("");
   const [endKm, setEndKm] = useState("");
   const [fuelAmount, setFuelAmount] = useState("");
   const [observations, setObservations] = useState("");
   const [otherTrips, setOtherTrips] = useState<TripData[]>([]);
   const [isLoading, setIsLoading] = useState(false);
+  const [isViewMode, setIsViewMode] = useState(mode === "view");
+  const [hasChanges, setHasChanges] = useState(false);
 
   // Time picker state
   const [timePickerVisible, setTimePickerVisible] = useState(false);
@@ -69,6 +106,8 @@ export const RouteSheetEditScreen: React.FC = () => {
       const foundDay = currentRouteSheet.days.find((day) => day.date === date);
       if (foundDay) {
         setDayData(foundDay);
+        // Store original data for comparison
+        setOriginalDayData(JSON.parse(JSON.stringify(foundDay)));
 
         // Initialize times for each slot
         const initialTimes: Record<string, { start: string; end: string }> = {};
@@ -87,6 +126,16 @@ export const RouteSheetEditScreen: React.FC = () => {
           setStartKm(firstSlot.kilometrage.startKm.toString());
           setEndKm(firstSlot.kilometrage.endKm.toString());
           setObservations(firstSlot.comments || "");
+
+          // Parse other trips if they exist
+          if (firstSlot.otherTrips) {
+            try {
+              const trips = JSON.parse(firstSlot.otherTrips);
+              setOtherTrips(trips);
+            } catch (error) {
+              console.log("Error parsing other trips:", error);
+            }
+          }
         }
       }
     }
@@ -104,41 +153,92 @@ export const RouteSheetEditScreen: React.FC = () => {
         useNativeDriver: true,
       }),
     ]).start();
-  }, [currentRouteSheet, date]);
+  }, [currentRouteSheet, date, mode]);
 
-  const getDefaultStartTime = (timeSlot: string) => {
-    switch (timeSlot) {
-      case "Matin":
-        return "08:00";
-      case "Midi":
-        return "12:00";
-      case "Après-midi":
-        return "14:00";
-      case "Soir":
-        return "18:00";
-      default:
-        return "09:00";
-    }
-  };
+  // Comprehensive change tracking - check all possible changes
+  useEffect(() => {
+    if (isViewMode && dayData && originalDayData) {
+      let hasAnyChanges = false;
 
-  const getDefaultEndTime = (timeSlot: string) => {
-    switch (timeSlot) {
-      case "Matin":
-        return "11:00";
-      case "Midi":
-        return "13:30";
-      case "Après-midi":
-        return "17:00";
-      case "Soir":
-        return "21:00";
-      default:
-        return "12:00";
+      // Check time slot changes (active/inactive state)
+      const originalActiveSlots = originalDayData.timeSlots
+        .filter((slot) => slot.isActive)
+        .map((slot) => slot.id);
+      const currentActiveSlots = dayData.timeSlots
+        .filter((slot) => slot.isActive)
+        .map((slot) => slot.id);
+
+      if (
+        originalActiveSlots.length !== currentActiveSlots.length ||
+        !originalActiveSlots.every((id) => currentActiveSlots.includes(id))
+      ) {
+        hasAnyChanges = true;
+      }
+
+      // Check time changes
+      dayData.timeSlots.forEach((slot) => {
+        const originalSlot = originalDayData.timeSlots.find(
+          (s) => s.id === slot.id
+        );
+        const currentStartTime =
+          slotTimes[slot.id]?.start || getDefaultStartTime(slot.timeSlot);
+        const currentEndTime =
+          slotTimes[slot.id]?.end || getDefaultEndTime(slot.timeSlot);
+        const originalStartTime = getDefaultStartTime(slot.timeSlot);
+        const originalEndTime = getDefaultEndTime(slot.timeSlot);
+
+        if (
+          currentStartTime !== originalStartTime ||
+          currentEndTime !== originalEndTime
+        ) {
+          hasAnyChanges = true;
+        }
+      });
+
+      // Check form field changes
+      const activeSlots = originalDayData.timeSlots.filter(
+        (slot) => slot.isActive
+      );
+      if (activeSlots.length > 0) {
+        const originalFirstSlot = activeSlots[0];
+        const originalStartKm =
+          originalFirstSlot.kilometrage.startKm.toString();
+        const originalEndKm = originalFirstSlot.kilometrage.endKm.toString();
+        const originalObservations = originalFirstSlot.comments || "";
+
+        if (
+          startKm !== originalStartKm ||
+          endKm !== originalEndKm ||
+          observations !== originalObservations
+        ) {
+          hasAnyChanges = true;
+        }
+      }
+
+      // Check other trips changes
+      const originalTrips = JSON.stringify([]);
+      const currentTrips = JSON.stringify(otherTrips);
+      if (originalTrips !== currentTrips) {
+        hasAnyChanges = true;
+      }
+
+      setHasChanges(hasAnyChanges);
     }
-  };
+  }, [
+    dayData,
+    originalDayData,
+    slotTimes,
+    startKm,
+    endKm,
+    observations,
+    otherTrips,
+    isViewMode,
+  ]);
 
   const handleTimeSlotToggle = async (timeSlot: TimeSlotData) => {
     if (!dayData || !date) return;
 
+    // Allow time slot toggle in both create and view mode
     const updatedTimeSlots = dayData.timeSlots.map((slot) =>
       slot.id === timeSlot.id ? { ...slot, isActive: !slot.isActive } : slot
     );
@@ -156,6 +256,7 @@ export const RouteSheetEditScreen: React.FC = () => {
   };
 
   const handleTimePress = (timeSlot: TimeSlotData, type: "start" | "end") => {
+    // Allow time editing in both create and view mode
     setSelectedTimeSlot(timeSlot);
     setTimePickerType(type);
     setTimePickerTitle(
@@ -249,7 +350,7 @@ export const RouteSheetEditScreen: React.FC = () => {
         return;
       }
 
-      // Update the first active slot with data
+      // Update the first active slot with data and apply time slot changes
       const updatedTimeSlots = dayData.timeSlots.map((slot) => {
         if (slot.isActive && slot.id === activeSlots[0].id) {
           return {
@@ -258,7 +359,8 @@ export const RouteSheetEditScreen: React.FC = () => {
               startKm: startKmNum,
               endKm: endKmNum,
             },
-            comments: observations,
+            comments:
+              observations + (isViewMode && hasChanges ? " [Modifié]" : ""),
             otherTrips: otherTrips.length > 0 ? JSON.stringify(otherTrips) : "",
             isCompleted: true,
           };
@@ -266,15 +368,26 @@ export const RouteSheetEditScreen: React.FC = () => {
         return slot;
       });
 
+      // Mark as modified when changes are applied in view mode
       const updatedDayData: DayData = {
         ...dayData,
         timeSlots: updatedTimeSlots,
         isCompleted: true,
       };
 
+      // Add modification flag for view mode changes
+      if (isViewMode && hasChanges) {
+        (updatedDayData as any).isModified = true;
+      }
+
       await saveDayData(date, updatedDayData);
 
-      Alert.alert("Succès", "Feuille de route sauvegardée avec succès.", [
+      const successMessage =
+        isViewMode && hasChanges
+          ? "Modifications appliquées avec succès."
+          : "Feuille de route sauvegardée avec succès.";
+
+      Alert.alert("Succès", successMessage, [
         { text: "OK", onPress: () => router.back() },
       ]);
     } catch (error) {
@@ -293,6 +406,24 @@ export const RouteSheetEditScreen: React.FC = () => {
       month: "long",
       day: "numeric",
     });
+  };
+
+  const getButtonText = () => {
+    if (isViewMode) {
+      return hasChanges
+        ? "Appliquer les modifications"
+        : "Voir la feuille de route";
+    } else {
+      return "Ajouter une feuille de route";
+    }
+  };
+
+  const getHeaderTitle = () => {
+    if (isViewMode) {
+      return "Consultation feuille de route";
+    } else {
+      return "Ajout de feuille de route de chaque mois";
+    }
   };
 
   const styles = StyleSheet.create({
@@ -314,6 +445,9 @@ export const RouteSheetEditScreen: React.FC = () => {
       marginBottom: 20,
       fontWeight: "500",
     },
+    modifiedButton: {
+      backgroundColor: colors.primary,
+    },
     saveButtonContainer: {
       marginTop: 20,
       marginBottom: 40,
@@ -330,6 +464,13 @@ export const RouteSheetEditScreen: React.FC = () => {
           }}
           title="Feuille de route"
         />
+        <View
+          style={{ flex: 1, justifyContent: "center", alignItems: "center" }}
+        >
+          <Text style={{ color: colors.textSecondary }}>
+            Chargement des données...
+          </Text>
+        </View>
       </SafeAreaView>
     );
   }
@@ -355,7 +496,7 @@ export const RouteSheetEditScreen: React.FC = () => {
             icon: "chevron-left",
             onPress: () => router.back(),
           }}
-          title="Ajout de feuille de route de chaque mois"
+          title={getHeaderTitle()}
         />
       </Animated.View>
 
@@ -405,6 +546,7 @@ export const RouteSheetEditScreen: React.FC = () => {
                 onToggleActive={() => handleTimeSlotToggle(timeSlot)}
                 onStartTimePress={() => handleTimePress(timeSlot, "start")}
                 onEndTimePress={() => handleTimePress(timeSlot, "end")}
+                disabled={false}
               />
             ))}
 
@@ -430,20 +572,25 @@ export const RouteSheetEditScreen: React.FC = () => {
               onObservationsChange={setObservations}
             />
 
-            {/* Save Button inside scroll view */}
-            <View style={styles.saveButtonContainer}>
-              <Button
-                title="Ajouter une feuille de route"
-                onPress={handleSave}
-                loading={isLoading}
-                disabled={isLoading}
-              />
-            </View>
+            {/* Save Button - Only show when there are changes or in create mode */}
+            {(hasChanges || !isViewMode) && (
+              <View style={styles.saveButtonContainer}>
+                <Button
+                  title={getButtonText()}
+                  onPress={handleSave}
+                  loading={isLoading}
+                  disabled={isLoading}
+                  style={
+                    hasChanges && isViewMode ? styles.modifiedButton : undefined
+                  }
+                />
+              </View>
+            )}
           </ScrollView>
         </Animated.View>
       </KeyboardAvoidingView>
 
-      {/* Time Picker Modal - Only for time slots */}
+      {/* Time Picker Modal - Available in both create and view mode */}
       <CustomTimePicker
         visible={timePickerVisible}
         timeSlot={selectedTimeSlot?.timeSlot || "Matin"}

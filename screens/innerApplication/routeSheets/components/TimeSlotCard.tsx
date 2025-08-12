@@ -19,6 +19,7 @@ interface TimeSlotCardProps {
   onToggleActive: () => void;
   onStartTimePress: () => void;
   onEndTimePress: () => void;
+  disabled?: boolean;
   style?: ViewStyle;
 }
 
@@ -29,6 +30,7 @@ export const TimeSlotCard: React.FC<TimeSlotCardProps> = ({
   onToggleActive,
   onStartTimePress,
   onEndTimePress,
+  disabled = false,
   style,
 }) => {
   const colors = useThemeColors();
@@ -58,6 +60,7 @@ export const TimeSlotCard: React.FC<TimeSlotCardProps> = ({
       overflow: "hidden",
       borderWidth: timeSlot.isActive ? 2 : 1,
       borderColor: timeSlot.isActive ? slotColor : colors.border,
+      opacity: 1, // Always fully visible, no disabled opacity
       ...Platform.select({
         ios: {
           shadowColor: colors.shadow,
@@ -98,6 +101,7 @@ export const TimeSlotCard: React.FC<TimeSlotCardProps> = ({
       backgroundColor: timeSlot.isActive ? slotColor : "transparent",
       alignItems: "center",
       justifyContent: "center",
+      opacity: 1, // Always fully visible
     },
     content: {
       padding: 16,
@@ -127,6 +131,7 @@ export const TimeSlotCard: React.FC<TimeSlotCardProps> = ({
       paddingVertical: 12,
       paddingHorizontal: 16,
       backgroundColor: colors.backgroundSecondary,
+      opacity: 1, // Always fully visible
     },
     timeText: {
       fontSize: 16,
@@ -145,6 +150,7 @@ export const TimeSlotCard: React.FC<TimeSlotCardProps> = ({
         style={styles.header}
         onPress={onToggleActive}
         activeOpacity={0.7}
+        disabled={false} // Always allow interaction
       >
         <View style={styles.headerLeft}>
           <FontAwesome
@@ -154,7 +160,11 @@ export const TimeSlotCard: React.FC<TimeSlotCardProps> = ({
           />
           <Text style={styles.timeSlotName}>{timeSlot.timeSlot}</Text>
         </View>
-        <TouchableOpacity style={styles.toggleButton} onPress={onToggleActive}>
+        <TouchableOpacity
+          style={styles.toggleButton}
+          onPress={onToggleActive}
+          disabled={false} // Always allow interaction
+        >
           <ConditionalComponent isValid={timeSlot.isActive}>
             <FontAwesome name="check" size={12} color="white" />
           </ConditionalComponent>
@@ -172,6 +182,7 @@ export const TimeSlotCard: React.FC<TimeSlotCardProps> = ({
               <TouchableOpacity
                 style={styles.timeButton}
                 onPress={onStartTimePress}
+                disabled={false} // Always allow interaction
               >
                 <Text style={styles.timeText}>{startTime}</Text>
                 <FontAwesome
@@ -186,6 +197,7 @@ export const TimeSlotCard: React.FC<TimeSlotCardProps> = ({
               <TouchableOpacity
                 style={styles.timeButton}
                 onPress={onEndTimePress}
+                disabled={false} // Always allow interaction
               >
                 <Text style={styles.timeText}>{endTime}</Text>
                 <FontAwesome

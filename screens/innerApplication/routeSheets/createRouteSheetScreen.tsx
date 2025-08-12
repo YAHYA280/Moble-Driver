@@ -22,6 +22,7 @@ export const CreateRouteSheetScreen: React.FC = () => {
   const { colors } = useTheme();
   const [selectedDate, setSelectedDate] = useState<string>("");
   const [markedDates, setMarkedDates] = useState<any>({});
+  const [selectedDayData, setSelectedDayData] = useState<DayData | null>(null);
   const headerAnim = useRef(new Animated.Value(0)).current;
   const calendarAnim = useRef(new Animated.Value(0)).current;
   const buttonAnim = useRef(new Animated.Value(0)).current;
@@ -152,15 +153,13 @@ export const CreateRouteSheetScreen: React.FC = () => {
           paddingBottom: Platform.OS === "ios" ? 34 : 20,
           backgroundColor: colors.backgroundSecondary,
         },
-        fillButton: {
-          backgroundColor: colors.primary,
+        actionButton: {
           borderRadius: 12,
           paddingVertical: 16,
           alignItems: "center",
           justifyContent: "center",
           ...Platform.select({
             ios: {
-              shadowColor: colors.primary,
               shadowOffset: { width: 0, height: 4 },
               shadowOpacity: 0.3,
               shadowRadius: 8,
@@ -168,12 +167,42 @@ export const CreateRouteSheetScreen: React.FC = () => {
             android: {
               elevation: 6,
             },
+          }),
+        },
+        fillButton: {
+          backgroundColor: colors.primary,
+          ...Platform.select({
+            ios: {
+              shadowColor: colors.primary,
+            },
             web: {
               boxShadow: `0 4px 8px ${colors.primary}40`,
             },
           }),
         },
-        fillButtonText: {
+        viewButton: {
+          backgroundColor: colors.success,
+          ...Platform.select({
+            ios: {
+              shadowColor: colors.success,
+            },
+            web: {
+              boxShadow: `0 4px 8px ${colors.success}40`,
+            },
+          }),
+        },
+        modifiedButton: {
+          backgroundColor: colors.warning,
+          ...Platform.select({
+            ios: {
+              shadowColor: colors.warning,
+            },
+            web: {
+              boxShadow: `0 4px 8px ${colors.warning}40`,
+            },
+          }),
+        },
+        buttonText: {
           color: "white",
           fontSize: 16,
           fontWeight: "600",
@@ -268,15 +297,69 @@ export const CreateRouteSheetScreen: React.FC = () => {
       selectedDateObj.getFullYear() === currentDate.getFullYear()
     ) {
       setSelectedDate(dateString);
+
+      // Find the day data for the selected date
+      if (currentRouteSheet) {
+        const dayData = currentRouteSheet.days.find(
+          (d) => d.date === dateString
+        );
+        setSelectedDayData(dayData || null);
+      }
     }
   };
 
-  const handleFillRouteSheet = () => {
+  const isDayFilled = () => {
+    if (!selectedDayData) return false;
+    return selectedDayData.timeSlots.some((slot) => slot.isActive);
+  };
+
+  const isDayModified = () => {
+    if (!selectedDayData) return false;
+
+    // Check if day has the isModified flag or if any time slot has comments indicating modification
+    if ((selectedDayData as any).isModified) return true;
+
+    return selectedDayData.timeSlots.some(
+      (slot) =>
+        slot.isActive &&
+        slot.comments &&
+        (slot.comments.includes("[Modifié]") || slot.comments.trim() !== "")
+    );
+  };
+
+  const handleButtonPress = () => {
     if (selectedDate && currentRouteSheet) {
-      // Navigate to day edit screen with selected date
-      router.push(
-        `/(tabs)/routes/edit/${currentRouteSheet.id}?date=${selectedDate}`
-      );
+      if (isDayFilled()) {
+        // Navigate to view/edit mode for filled day
+        router.push(
+          `/(tabs)/routes/edit/${currentRouteSheet.id}?date=${selectedDate}&mode=view`
+        );
+      } else {
+        // Navigate to fill mode for empty day
+        router.push(
+          `/(tabs)/routes/edit/${currentRouteSheet.id}?date=${selectedDate}&mode=create`
+        );
+      }
+    }
+  };
+
+  const getButtonText = () => {
+    if (isDayFilled()) {
+      return "Voir feuille de route";
+    } else {
+      return "Saisir la feuille de route";
+    }
+  };
+
+  const getButtonStyle = () => {
+    if (isDayFilled()) {
+      if (isDayModified()) {
+        return [styles.actionButton, styles.modifiedButton];
+      } else {
+        return [styles.actionButton, styles.viewButton];
+      }
+    } else {
+      return [styles.actionButton, styles.fillButton];
     }
   };
 
@@ -424,7 +507,7 @@ export const CreateRouteSheetScreen: React.FC = () => {
           />
         </Animated.View>
 
-        {/* Fill Route Sheet Button - Right under calendar */}
+        {/* Action Button */}
         {selectedDate && (
           <Animated.View
             style={[
@@ -443,13 +526,11 @@ export const CreateRouteSheetScreen: React.FC = () => {
             ]}
           >
             <TouchableOpacity
-              style={styles.fillButton}
-              onPress={handleFillRouteSheet}
+              style={getButtonStyle()}
+              onPress={handleButtonPress}
               activeOpacity={0.8}
             >
-              <Text style={styles.fillButtonText}>
-                Veuillez saisir la feuille de route
-              </Text>
+              <Text style={styles.buttonText}>{getButtonText()}</Text>
             </TouchableOpacity>
           </Animated.View>
         )}
