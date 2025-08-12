@@ -108,12 +108,8 @@ export const RouteSheetScreen: React.FC = () => {
   }, []);
 
   const handleRouteSheetPress = (routeSheet: RouteSheet) => {
-    // Navigate to route sheet view/edit based on status
-    if (routeSheet.status === "draft") {
-      router.push(`./(tabs)/routes/edit/${routeSheet.id}`);
-    } else {
-      router.push(`./(tabs)/routes/view/${routeSheet.id}`);
-    }
+    // Navigate to route sheet view screen for all sheets
+    router.push(`/(tabs)/routes/view/${routeSheet.id}`);
   };
 
   const handleEditRouteSheet = (routeSheet: RouteSheet) => {
