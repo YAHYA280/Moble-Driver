@@ -108,6 +108,7 @@ export const KilometrageSection: React.FC<KilometrageSectionProps> = ({
             onChangeText={onStartKmChange}
             placeholder="15 km"
             keyboardType="numeric"
+            returnKeyType="next"
           />
         </View>
         <View style={styles.inputContainer}>
@@ -119,6 +120,7 @@ export const KilometrageSection: React.FC<KilometrageSectionProps> = ({
             onChangeText={onEndKmChange}
             placeholder="12"
             keyboardType="numeric"
+            returnKeyType="next"
           />
         </View>
       </View>
@@ -130,6 +132,7 @@ export const KilometrageSection: React.FC<KilometrageSectionProps> = ({
           onChangeText={onFuelAmountChange}
           placeholder="1200 $"
           keyboardType="numeric"
+          returnKeyType="done"
         />
       </View>
 

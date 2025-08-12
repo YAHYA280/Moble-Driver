@@ -59,6 +59,8 @@ export const ObservationsSection: React.FC<ObservationsSectionProps> = ({
         multiline
         numberOfLines={4}
         style={{ minHeight: 100 }}
+        returnKeyType="done"
+        blurOnSubmit={true}
       />
     </View>
   );

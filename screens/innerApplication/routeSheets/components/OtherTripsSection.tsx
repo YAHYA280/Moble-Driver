@@ -1,16 +1,21 @@
 import ConditionalComponent from "@/shared/components/conditionalComponent/conditionalComponent";
 import { FontAwesome } from "@expo/vector-icons";
+import DateTimePicker from "@react-native-community/datetimepicker";
 import React, { useState } from "react";
 import {
+  Alert,
   Animated,
+  Modal,
   Platform,
   StyleSheet,
   Text,
   TouchableOpacity,
+  TouchableWithoutFeedback,
   View,
   ViewStyle,
 } from "react-native";
 import { useThemeColors } from "../../../../hooks/useTheme";
+import { Button } from "../../../../shared/components/ui/Button";
 import { Input } from "../../../../shared/components/ui/Input";
 
 interface TripData {
@@ -36,6 +41,14 @@ export const OtherTripsSection: React.FC<OtherTripsSectionProps> = ({
   const colors = useThemeColors();
   const [isExpanded, setIsExpanded] = useState(false);
   const [rotateAnim] = useState(new Animated.Value(0));
+
+  // Time picker state
+  const [showTimePicker, setShowTimePicker] = useState(false);
+  const [selectedTripId, setSelectedTripId] = useState<string | null>(null);
+  const [selectedTimeField, setSelectedTimeField] = useState<
+    "startTime" | "endTime"
+  >("startTime");
+  const [tempTime, setTempTime] = useState(new Date());
 
   const toggleExpanded = () => {
     const toValue = isExpanded ? 0 : 1;
@@ -72,9 +85,96 @@ export const OtherTripsSection: React.FC<OtherTripsSectionProps> = ({
   };
 
   const handleTimePress = (tripId: string, field: "startTime" | "endTime") => {
-    if (onTimePress) {
-      onTimePress(tripId, field);
+    const trip = trips.find((t) => t.id === tripId);
+    if (trip) {
+      setSelectedTripId(tripId);
+      setSelectedTimeField(field);
+
+      // Convert time string to Date object
+      const [hours, minutes] = trip[field].split(":").map(Number);
+      const date = new Date();
+      date.setHours(hours);
+      date.setMinutes(minutes);
+      setTempTime(date);
+
+      setShowTimePicker(true);
     }
+  };
+
+  const handleTimeChange = (event: any, selectedTime?: Date) => {
+    if (Platform.OS === "android") {
+      setShowTimePicker(false);
+
+      if (event.type === "set" && selectedTime && selectedTripId) {
+        const hours = selectedTime.getHours().toString().padStart(2, "0");
+        const minutes = selectedTime.getMinutes().toString().padStart(2, "0");
+        const timeString = `${hours}:${minutes}`;
+
+        // Validate time order
+        const trip = trips.find((t) => t.id === selectedTripId);
+        if (trip && validateTimeOrder(trip, selectedTimeField, timeString)) {
+          updateTrip(selectedTripId, selectedTimeField, timeString);
+        }
+      }
+
+      setSelectedTripId(null);
+      setTempTime(new Date());
+    } else {
+      // iOS - just update the temp time, don't close yet
+      if (selectedTime) {
+        setTempTime(selectedTime);
+      }
+    }
+  };
+
+  const handleIOSConfirm = () => {
+    if (selectedTripId) {
+      const hours = tempTime.getHours().toString().padStart(2, "0");
+      const minutes = tempTime.getMinutes().toString().padStart(2, "0");
+      const timeString = `${hours}:${minutes}`;
+
+      // Validate time order
+      const trip = trips.find((t) => t.id === selectedTripId);
+      if (trip && !validateTimeOrder(trip, selectedTimeField, timeString)) {
+        return; // Don't update if validation fails
+      }
+
+      updateTrip(selectedTripId, selectedTimeField, timeString);
+    }
+    handleIOSCancel();
+  };
+
+  const validateTimeOrder = (
+    trip: TripData,
+    field: "startTime" | "endTime",
+    newTime: string
+  ) => {
+    const newStartTime = field === "startTime" ? newTime : trip.startTime;
+    const newEndTime = field === "endTime" ? newTime : trip.endTime;
+
+    // Convert to minutes for comparison
+    const [startHours, startMinutes] = newStartTime.split(":").map(Number);
+    const [endHours, endMinutes] = newEndTime.split(":").map(Number);
+
+    const startTotalMinutes = startHours * 60 + startMinutes;
+    const endTotalMinutes = endHours * 60 + endMinutes;
+
+    if (startTotalMinutes >= endTotalMinutes) {
+      Alert.alert(
+        "Erreur de validation",
+        `L'heure de début (${newStartTime}) doit être antérieure à l'heure de fin (${newEndTime}).`,
+        [{ text: "OK" }]
+      );
+      return false;
+    }
+
+    return true;
+  };
+
+  const handleIOSCancel = () => {
+    setShowTimePicker(false);
+    setSelectedTripId(null);
+    setTempTime(new Date());
   };
 
   const renderTripItem = (trip: TripData) => (
@@ -265,6 +365,37 @@ export const OtherTripsSection: React.FC<OtherTripsSectionProps> = ({
       fontSize: 16,
       fontWeight: "500",
     },
+    // iOS Modal styles
+    modalOverlay: {
+      flex: 1,
+      backgroundColor: "rgba(0, 0, 0, 0.5)",
+      justifyContent: "flex-end",
+    },
+    modalContent: {
+      backgroundColor: colors.surface,
+      borderTopLeftRadius: 20,
+      borderTopRightRadius: 20,
+      paddingBottom: Platform.OS === "ios" ? 34 : 20,
+    },
+    modalHeader: {
+      flexDirection: "row",
+      justifyContent: "space-between",
+      alignItems: "center",
+      padding: 16,
+      borderBottomWidth: 1,
+      borderBottomColor: colors.border,
+    },
+    modalTitle: {
+      fontSize: 18,
+      fontWeight: "600",
+      color: colors.text,
+    },
+    modalActions: {
+      flexDirection: "row",
+      gap: 12,
+      paddingHorizontal: 16,
+      paddingTop: 16,
+    },
   });
 
   return (
@@ -300,6 +431,65 @@ export const OtherTripsSection: React.FC<OtherTripsSectionProps> = ({
           {trips.map(renderTripItem)}
         </View>
       </ConditionalComponent>
+
+      {/* Native Time Picker */}
+      {showTimePicker && Platform.OS === "android" && (
+        <DateTimePicker
+          value={tempTime}
+          mode="time"
+          is24Hour={true}
+          display="default"
+          onChange={handleTimeChange}
+        />
+      )}
+
+      {/* iOS Modal Time Picker */}
+      {showTimePicker && Platform.OS === "ios" && (
+        <Modal
+          animationType="slide"
+          transparent={true}
+          visible={showTimePicker}
+          onRequestClose={handleIOSCancel}
+        >
+          <TouchableWithoutFeedback onPress={handleIOSCancel}>
+            <View style={styles.modalOverlay}>
+              <TouchableWithoutFeedback>
+                <View style={styles.modalContent}>
+                  <View style={styles.modalHeader}>
+                    <Text style={styles.modalTitle}>Sélectionner l'heure</Text>
+                  </View>
+
+                  <DateTimePicker
+                    value={tempTime}
+                    mode="time"
+                    is24Hour={true}
+                    display="spinner"
+                    onChange={handleTimeChange}
+                    style={{
+                      backgroundColor: colors.surface,
+                      height: 200,
+                    }}
+                  />
+
+                  <View style={styles.modalActions}>
+                    <Button
+                      title="Annuler"
+                      variant="outline"
+                      onPress={handleIOSCancel}
+                      style={{ flex: 1 }}
+                    />
+                    <Button
+                      title="Confirmer"
+                      onPress={handleIOSConfirm}
+                      style={{ flex: 1 }}
+                    />
+                  </View>
+                </View>
+              </TouchableWithoutFeedback>
+            </View>
+          </TouchableWithoutFeedback>
+        </Modal>
+      )}
     </View>
   );
 };

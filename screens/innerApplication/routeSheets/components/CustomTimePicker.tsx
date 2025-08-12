@@ -101,6 +101,12 @@ export const CustomTimePicker: React.FC<CustomTimePickerProps> = ({
   const timeOptions = getTimeRange(timeSlot);
 
   const handleConfirm = () => {
+    // Validate time order for time slots (only if we have context about start/end)
+    if (title.includes("Début") || title.includes("Fin")) {
+      // This validation could be enhanced with more context if needed
+      // For now, we'll let the parent component handle validation
+    }
+
     onTimeSelect(tempSelectedTime);
     onClose();
   };

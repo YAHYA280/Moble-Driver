@@ -3,6 +3,8 @@ import React, { useEffect, useRef, useState } from "react";
 import {
   Alert,
   Animated,
+  KeyboardAvoidingView,
+  Platform,
   ScrollView,
   StyleSheet,
   Text,
@@ -49,7 +51,6 @@ export const RouteSheetEditScreen: React.FC = () => {
     "start"
   );
   const [timePickerTitle, setTimePickerTitle] = useState("");
-  const [selectedTripId, setSelectedTripId] = useState<string | null>(null);
 
   // Time management for each slot
   const [slotTimes, setSlotTimes] = useState<
@@ -156,7 +157,6 @@ export const RouteSheetEditScreen: React.FC = () => {
 
   const handleTimePress = (timeSlot: TimeSlotData, type: "start" | "end") => {
     setSelectedTimeSlot(timeSlot);
-    setSelectedTripId(null);
     setTimePickerType(type);
     setTimePickerTitle(
       `${type === "start" ? "Début" : "Fin"} - ${timeSlot.timeSlot}`
@@ -164,23 +164,23 @@ export const RouteSheetEditScreen: React.FC = () => {
     setTimePickerVisible(true);
   };
 
-  const handleTripTimePress = (
-    tripId: string,
-    field: "startTime" | "endTime"
-  ) => {
-    setSelectedTimeSlot(null);
-    setSelectedTripId(tripId);
-    setTimePickerType(field === "startTime" ? "start" : "end");
-    const trip = otherTrips.find((t) => t.id === tripId);
-    setTimePickerTitle(
-      `${field === "startTime" ? "Début" : "Fin"} - ${trip?.name || "Trajet"}`
-    );
-    setTimePickerVisible(true);
-  };
-
   const handleTimeSelect = (selectedTime: string) => {
     if (selectedTimeSlot) {
-      // Update time slot time
+      // Validate time order for time slots
+      const currentTimes = slotTimes[selectedTimeSlot.id] || {
+        start: getDefaultStartTime(selectedTimeSlot.timeSlot),
+        end: getDefaultEndTime(selectedTimeSlot.timeSlot),
+      };
+
+      const newStartTime =
+        timePickerType === "start" ? selectedTime : currentTimes.start;
+      const newEndTime =
+        timePickerType === "end" ? selectedTime : currentTimes.end;
+
+      if (!validateTimeSlotOrder(newStartTime, newEndTime)) {
+        return; // Don't update if validation fails
+      }
+
       setSlotTimes((prev) => ({
         ...prev,
         [selectedTimeSlot.id]: {
@@ -188,20 +188,27 @@ export const RouteSheetEditScreen: React.FC = () => {
           [timePickerType === "start" ? "start" : "end"]: selectedTime,
         },
       }));
-    } else if (selectedTripId) {
-      // Update trip time
-      setOtherTrips((prev) =>
-        prev.map((trip) =>
-          trip.id === selectedTripId
-            ? {
-                ...trip,
-                [timePickerType === "start" ? "startTime" : "endTime"]:
-                  selectedTime,
-              }
-            : trip
-        )
-      );
     }
+  };
+
+  const validateTimeSlotOrder = (startTime: string, endTime: string) => {
+    // Convert to minutes for comparison
+    const [startHours, startMinutes] = startTime.split(":").map(Number);
+    const [endHours, endMinutes] = endTime.split(":").map(Number);
+
+    const startTotalMinutes = startHours * 60 + startMinutes;
+    const endTotalMinutes = endHours * 60 + endMinutes;
+
+    if (startTotalMinutes >= endTotalMinutes) {
+      Alert.alert(
+        "Erreur de validation",
+        `L'heure de début (${startTime}) doit être antérieure à l'heure de fin (${endTime}).`,
+        [{ text: "OK" }]
+      );
+      return false;
+    }
+
+    return true;
   };
 
   const handleSave = async () => {
@@ -352,85 +359,91 @@ export const RouteSheetEditScreen: React.FC = () => {
         />
       </Animated.View>
 
-      {/* Content */}
-      <Animated.View
-        style={[
-          styles.content,
-          {
-            opacity: contentAnim,
-            transform: [
-              {
-                translateY: contentAnim.interpolate({
-                  inputRange: [0, 1],
-                  outputRange: [30, 0],
-                }),
-              },
-            ],
-          },
-        ]}
+      {/* Content with KeyboardAvoidingView */}
+      <KeyboardAvoidingView
+        style={styles.content}
+        behavior={Platform.OS === "ios" ? "padding" : "height"}
+        keyboardVerticalOffset={Platform.OS === "ios" ? 0 : 0}
       >
-        <ScrollView
-          style={styles.content}
-          contentContainerStyle={styles.scrollContent}
-          showsVerticalScrollIndicator={false}
+        <Animated.View
+          style={[
+            styles.content,
+            {
+              opacity: contentAnim,
+              transform: [
+                {
+                  translateY: contentAnim.interpolate({
+                    inputRange: [0, 1],
+                    outputRange: [30, 0],
+                  }),
+                },
+              ],
+            },
+          ]}
         >
-          <Text style={styles.dateText}>{getFormattedDate()}</Text>
+          <ScrollView
+            style={styles.content}
+            contentContainerStyle={styles.scrollContent}
+            showsVerticalScrollIndicator={false}
+            keyboardShouldPersistTaps="handled"
+          >
+            <Text style={styles.dateText}>{getFormattedDate()}</Text>
 
-          {/* Time Slots */}
-          {dayData.timeSlots.map((timeSlot) => (
-            <TimeSlotCard
-              key={timeSlot.id}
-              timeSlot={timeSlot}
-              startTime={
-                slotTimes[timeSlot.id]?.start ||
-                getDefaultStartTime(timeSlot.timeSlot)
-              }
-              endTime={
-                slotTimes[timeSlot.id]?.end ||
-                getDefaultEndTime(timeSlot.timeSlot)
-              }
-              onToggleActive={() => handleTimeSlotToggle(timeSlot)}
-              onStartTimePress={() => handleTimePress(timeSlot, "start")}
-              onEndTimePress={() => handleTimePress(timeSlot, "end")}
+            {/* Time Slots */}
+            {dayData.timeSlots.map((timeSlot) => (
+              <TimeSlotCard
+                key={timeSlot.id}
+                timeSlot={timeSlot}
+                startTime={
+                  slotTimes[timeSlot.id]?.start ||
+                  getDefaultStartTime(timeSlot.timeSlot)
+                }
+                endTime={
+                  slotTimes[timeSlot.id]?.end ||
+                  getDefaultEndTime(timeSlot.timeSlot)
+                }
+                onToggleActive={() => handleTimeSlotToggle(timeSlot)}
+                onStartTimePress={() => handleTimePress(timeSlot, "start")}
+                onEndTimePress={() => handleTimePress(timeSlot, "end")}
+              />
+            ))}
+
+            {/* Kilometrage Section */}
+            <KilometrageSection
+              startKm={startKm}
+              endKm={endKm}
+              fuelAmount={fuelAmount}
+              onStartKmChange={setStartKm}
+              onEndKmChange={setEndKm}
+              onFuelAmountChange={setFuelAmount}
             />
-          ))}
 
-          {/* Kilometrage Section */}
-          <KilometrageSection
-            startKm={startKm}
-            endKm={endKm}
-            fuelAmount={fuelAmount}
-            onStartKmChange={setStartKm}
-            onEndKmChange={setEndKm}
-            onFuelAmountChange={setFuelAmount}
-          />
-
-          {/* Other Trips Section */}
-          <OtherTripsSection
-            trips={otherTrips}
-            onTripsChange={setOtherTrips}
-            onTimePress={handleTripTimePress}
-          />
-
-          {/* Observations Section */}
-          <ObservationsSection
-            observations={observations}
-            onObservationsChange={setObservations}
-          />
-
-          {/* Save Button inside scroll view */}
-          <View style={styles.saveButtonContainer}>
-            <Button
-              title="Ajouter une feuille de route"
-              onPress={handleSave}
-              loading={isLoading}
-              disabled={isLoading}
+            {/* Other Trips Section */}
+            <OtherTripsSection
+              trips={otherTrips}
+              onTripsChange={setOtherTrips}
             />
-          </View>
-        </ScrollView>
-      </Animated.View>
 
-      {/* Time Picker Modal */}
+            {/* Observations Section */}
+            <ObservationsSection
+              observations={observations}
+              onObservationsChange={setObservations}
+            />
+
+            {/* Save Button inside scroll view */}
+            <View style={styles.saveButtonContainer}>
+              <Button
+                title="Ajouter une feuille de route"
+                onPress={handleSave}
+                loading={isLoading}
+                disabled={isLoading}
+              />
+            </View>
+          </ScrollView>
+        </Animated.View>
+      </KeyboardAvoidingView>
+
+      {/* Time Picker Modal - Only for time slots */}
       <CustomTimePicker
         visible={timePickerVisible}
         timeSlot={selectedTimeSlot?.timeSlot || "Matin"}
@@ -439,10 +452,6 @@ export const RouteSheetEditScreen: React.FC = () => {
             ? slotTimes[selectedTimeSlot.id][
                 timePickerType === "start" ? "start" : "end"
               ]
-            : selectedTripId
-            ? otherTrips.find((t) => t.id === selectedTripId)?.[
-                timePickerType === "start" ? "startTime" : "endTime"
-              ] || "09:00"
             : "09:00"
         }
         onTimeSelect={handleTimeSelect}
