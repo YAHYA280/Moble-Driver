@@ -60,7 +60,7 @@ export const TimeSlotCard: React.FC<TimeSlotCardProps> = ({
       overflow: "hidden",
       borderWidth: timeSlot.isActive ? 2 : 1,
       borderColor: timeSlot.isActive ? slotColor : colors.border,
-      opacity: 1, // Always fully visible, no disabled opacity
+      opacity: disabled ? 0.7 : 1,
       ...Platform.select({
         ios: {
           shadowColor: colors.shadow,
@@ -101,7 +101,7 @@ export const TimeSlotCard: React.FC<TimeSlotCardProps> = ({
       backgroundColor: timeSlot.isActive ? slotColor : "transparent",
       alignItems: "center",
       justifyContent: "center",
-      opacity: 1, // Always fully visible
+      opacity: disabled ? 0.5 : 1,
     },
     content: {
       padding: 16,
@@ -131,7 +131,7 @@ export const TimeSlotCard: React.FC<TimeSlotCardProps> = ({
       paddingVertical: 12,
       paddingHorizontal: 16,
       backgroundColor: colors.backgroundSecondary,
-      opacity: 1, // Always fully visible
+      opacity: disabled ? 0.7 : 1,
     },
     timeText: {
       fontSize: 16,
@@ -139,18 +139,30 @@ export const TimeSlotCard: React.FC<TimeSlotCardProps> = ({
       fontWeight: "500",
     },
     disabledContent: {
-      opacity: 0.5,
+      opacity: 0.6,
+    },
+    disabledOverlay: {
+      position: "absolute",
+      top: 0,
+      left: 0,
+      right: 0,
+      bottom: 0,
+      backgroundColor: disabled ? colors.surface + "80" : "transparent",
+      zIndex: disabled ? 1 : -1,
     },
   });
 
   return (
     <View style={[styles.container, style]}>
+      {/* Disabled overlay for read-only mode */}
+      <View style={styles.disabledOverlay} />
+
       {/* Header */}
       <TouchableOpacity
         style={styles.header}
-        onPress={onToggleActive}
-        activeOpacity={0.7}
-        disabled={false} // Always allow interaction
+        onPress={disabled ? undefined : onToggleActive}
+        activeOpacity={disabled ? 1 : 0.7}
+        disabled={disabled}
       >
         <View style={styles.headerLeft}>
           <FontAwesome
@@ -162,8 +174,8 @@ export const TimeSlotCard: React.FC<TimeSlotCardProps> = ({
         </View>
         <TouchableOpacity
           style={styles.toggleButton}
-          onPress={onToggleActive}
-          disabled={false} // Always allow interaction
+          onPress={disabled ? undefined : onToggleActive}
+          disabled={disabled}
         >
           <ConditionalComponent isValid={timeSlot.isActive}>
             <FontAwesome name="check" size={12} color="white" />
@@ -174,15 +186,19 @@ export const TimeSlotCard: React.FC<TimeSlotCardProps> = ({
       {/* Content */}
       <ConditionalComponent isValid={timeSlot.isActive}>
         <View
-          style={[styles.content, !timeSlot.isActive && styles.disabledContent]}
+          style={[
+            styles.content,
+            (!timeSlot.isActive || disabled) && styles.disabledContent,
+          ]}
         >
           <View style={styles.timeRow}>
             <View style={styles.timeContainer}>
               <Text style={styles.timeLabel}>Départ - {timeSlot.timeSlot}</Text>
               <TouchableOpacity
                 style={styles.timeButton}
-                onPress={onStartTimePress}
-                disabled={false} // Always allow interaction
+                onPress={disabled ? undefined : onStartTimePress}
+                disabled={disabled}
+                activeOpacity={disabled ? 1 : 0.7}
               >
                 <Text style={styles.timeText}>{startTime}</Text>
                 <FontAwesome
@@ -196,8 +212,9 @@ export const TimeSlotCard: React.FC<TimeSlotCardProps> = ({
               <Text style={styles.timeLabel}>Fin - {timeSlot.timeSlot}</Text>
               <TouchableOpacity
                 style={styles.timeButton}
-                onPress={onEndTimePress}
-                disabled={false} // Always allow interaction
+                onPress={disabled ? undefined : onEndTimePress}
+                disabled={disabled}
+                activeOpacity={disabled ? 1 : 0.7}
               >
                 <Text style={styles.timeText}>{endTime}</Text>
                 <FontAwesome

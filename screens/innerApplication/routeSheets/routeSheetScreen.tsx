@@ -123,7 +123,8 @@ export const RouteSheetScreen: React.FC = () => {
   const handleEditRouteSheet = (routeSheet: RouteSheet) => {
     // Only allow editing current month
     if (isCurrentMonth(routeSheet)) {
-      router.push(`/(tabs)/routes/edit/${routeSheet.id}`);
+      // Navigate to create page instead of edit page
+      router.push("/(tabs)/routes/create");
     } else {
       Alert.alert(
         "Édition non autorisée",

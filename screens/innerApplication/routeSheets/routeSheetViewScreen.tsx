@@ -62,9 +62,11 @@ export const RouteSheetViewScreen: React.FC = () => {
 
     routeSheet.days.forEach((day: DayData) => {
       const hasActiveSlots = day.timeSlots.some((slot) => slot.isActive);
-      const isCompleted = day.isCompleted;
       const isModified = day.timeSlots.some(
-        (slot) => slot.isActive && slot.comments && slot.comments.trim() !== ""
+        (slot) =>
+          slot.isActive &&
+          slot.comments &&
+          (slot.comments.includes("[Modifié]") || slot.comments.trim() !== "")
       );
 
       if (hasActiveSlots) {
@@ -73,17 +75,6 @@ export const RouteSheetViewScreen: React.FC = () => {
           marked[day.date] = {
             marked: true,
             dotColor: "#f59e0b",
-            selected: day.date === selectedDate,
-            selectedColor:
-              day.date === selectedDate ? colors.primary : undefined,
-            selectedTextColor:
-              day.date === selectedDate ? "#ffffff" : undefined,
-          };
-        } else if (isCompleted) {
-          // Green for completed days
-          marked[day.date] = {
-            marked: true,
-            dotColor: "#22c55e",
             selected: day.date === selectedDate,
             selectedColor:
               day.date === selectedDate ? colors.primary : undefined,
@@ -138,12 +129,12 @@ export const RouteSheetViewScreen: React.FC = () => {
         if (isCurrentMonth) {
           // Navigate to edit screen for current month
           router.push(
-            `/(tabs)/routes/edit/${selectedRouteSheet.id}?date=${dateString}`
+            `/(tabs)/routes/edit/${selectedRouteSheet.id}?date=${dateString}&mode=view`
           );
         } else {
           // Navigate to read-only view for past months
           router.push(
-            `/(tabs)/routes/view/${selectedRouteSheet.id}?date=${dateString}&readonly=true`
+            `/(tabs)/routes/view/${selectedRouteSheet.id}/day/${dateString}`
           );
         }
       }
@@ -456,12 +447,6 @@ export const RouteSheetViewScreen: React.FC = () => {
                     ]}
                   />
                   <Text style={styles.legendText}>Rempli</Text>
-                </View>
-                <View style={styles.legendItem}>
-                  <View
-                    style={[styles.legendDot, { backgroundColor: "#22c55e" }]}
-                  />
-                  <Text style={styles.legendText}>Terminé</Text>
                 </View>
                 <View style={styles.legendItem}>
                   <View
