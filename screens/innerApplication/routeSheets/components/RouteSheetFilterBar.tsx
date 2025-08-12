@@ -35,12 +35,7 @@ export const RouteSheetFilterBar: React.FC<RouteSheetFilterBarProps> = ({
   const currentYear = new Date().getFullYear();
   const years = Array.from({ length: 3 }, (_, i) => currentYear - i);
 
-  const statusOptions = [
-    { value: "draft", label: "Brouillon" },
-    { value: "submitted", label: "Soumise" },
-    { value: "archived", label: "Archivée" },
-  ];
-
+  // Remove status options since we're not using status filtering anymore
   const activeFiltersCount = Object.keys(filters).filter(
     (key) =>
       key !== "searchQuery" &&
@@ -70,10 +65,6 @@ export const RouteSheetFilterBar: React.FC<RouteSheetFilterBarProps> = ({
     const displays = [];
 
     if (filters.year) displays.push(`${filters.year}`);
-    if (filters.status) {
-      const status = statusOptions.find((s) => s.value === filters.status);
-      if (status) displays.push(status.label);
-    }
 
     return displays.join(", ");
   };
@@ -338,36 +329,6 @@ export const RouteSheetFilterBar: React.FC<RouteSheetFilterBarProps> = ({
                             ]}
                           >
                             {year}
-                          </Text>
-                        </TouchableOpacity>
-                      ))}
-                    </View>
-                  </View>
-
-                  {/* Status Filter */}
-                  <View style={styles.filterSection}>
-                    <Text style={styles.sectionTitle}>Statut</Text>
-                    <View style={styles.optionRow}>
-                      {statusOptions.map((status) => (
-                        <TouchableOpacity
-                          key={status.value}
-                          style={[
-                            styles.optionChip,
-                            localFilters.status === status.value &&
-                              styles.activeOptionChip,
-                          ]}
-                          onPress={() =>
-                            handleFilterChange("status", status.value)
-                          }
-                        >
-                          <Text
-                            style={[
-                              styles.optionText,
-                              localFilters.status === status.value &&
-                                styles.activeOptionText,
-                            ]}
-                          >
-                            {status.label}
                           </Text>
                         </TouchableOpacity>
                       ))}

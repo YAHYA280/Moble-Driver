@@ -107,14 +107,29 @@ export const RouteSheetScreen: React.FC = () => {
     ]).start();
   }, []);
 
+  const isCurrentMonth = (routeSheet: RouteSheet) => {
+    const currentDate = new Date();
+    const currentMonth = `${currentDate.getFullYear()}-${String(
+      currentDate.getMonth() + 1
+    ).padStart(2, "0")}`;
+    return routeSheet.month === currentMonth;
+  };
+
   const handleRouteSheetPress = (routeSheet: RouteSheet) => {
     // Navigate to route sheet view screen for all sheets
     router.push(`/(tabs)/routes/view/${routeSheet.id}`);
   };
 
   const handleEditRouteSheet = (routeSheet: RouteSheet) => {
-    if (routeSheet.status === "draft") {
-      router.push(`./(tabs)/routes/edit/${routeSheet.id}`);
+    // Only allow editing current month
+    if (isCurrentMonth(routeSheet)) {
+      router.push(`/(tabs)/routes/edit/${routeSheet.id}`);
+    } else {
+      Alert.alert(
+        "Édition non autorisée",
+        "Vous ne pouvez modifier que la feuille de route du mois en cours.",
+        [{ text: "OK" }]
+      );
     }
   };
 
