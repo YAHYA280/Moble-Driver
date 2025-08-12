@@ -1,5 +1,5 @@
 import { router } from "expo-router";
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import {
   Animated,
   Dimensions,
@@ -27,6 +27,161 @@ export const CreateRouteSheetScreen: React.FC = () => {
   const buttonAnim = useRef(new Animated.Value(0)).current;
 
   const { currentRouteSheet, getCurrentMonthRouteSheet } = useRouteSheetStore();
+
+  // Create calendar theme that properly responds to theme changes
+  const calendarTheme = useMemo(
+    () => ({
+      backgroundColor: colors.surface,
+      calendarBackground: colors.surface,
+      textSectionTitleColor: colors.textSecondary,
+      selectedDayBackgroundColor: colors.primary,
+      selectedDayTextColor: "#ffffff",
+      todayTextColor: colors.primary,
+      dayTextColor: colors.text,
+      textDisabledColor: colors.textTertiary,
+      dotColor: colors.primary,
+      selectedDotColor: "#ffffff",
+      arrowColor: colors.primary,
+      disabledArrowColor: colors.textTertiary,
+      monthTextColor: colors.text,
+      indicatorColor: colors.primary,
+      textDayFontWeight: "500" as const,
+      textMonthFontWeight: "700" as const,
+      textDayHeaderFontWeight: "600" as const,
+      textDayFontSize: 16,
+      textMonthFontSize: 18,
+      textDayHeaderFontSize: 14,
+    }),
+    [colors]
+  );
+
+  // Create styles that properly respond to theme changes
+  const styles = useMemo(
+    () =>
+      StyleSheet.create({
+        container: {
+          flex: 1,
+          backgroundColor: colors.backgroundSecondary,
+        },
+        content: {
+          flex: 1,
+        },
+        monthHeader: {
+          alignItems: "center",
+          paddingVertical: 20,
+          paddingHorizontal: 20,
+        },
+        monthText: {
+          fontSize: 24,
+          fontWeight: "600",
+          color: colors.text,
+          marginBottom: 4,
+        },
+        yearText: {
+          fontSize: 16,
+          color: colors.textSecondary,
+          fontWeight: "400",
+        },
+        calendarContainer: {
+          backgroundColor: colors.surface,
+          borderRadius: 16,
+          marginHorizontal: 20,
+          marginBottom: 20,
+          overflow: "hidden",
+          ...Platform.select({
+            ios: {
+              shadowColor: colors.shadow,
+              shadowOffset: { width: 0, height: 4 },
+              shadowOpacity: colors.isDark ? 0.3 : 0.12,
+              shadowRadius: 16,
+            },
+            android: {
+              elevation: 8,
+            },
+            web: {
+              boxShadow: colors.isDark
+                ? "0 4px 16px rgba(0, 0, 0, 0.3)"
+                : "0 4px 16px rgba(0, 0, 0, 0.12)",
+            },
+          }),
+        },
+        legendContainer: {
+          flexDirection: "row",
+          justifyContent: "space-around",
+          paddingVertical: 16,
+          paddingHorizontal: 20,
+          backgroundColor: colors.surface,
+          borderRadius: 12,
+          marginHorizontal: 20,
+          marginBottom: 20,
+          ...Platform.select({
+            ios: {
+              shadowColor: colors.shadow,
+              shadowOffset: { width: 0, height: 2 },
+              shadowOpacity: colors.isDark ? 0.3 : 0.08,
+              shadowRadius: 8,
+            },
+            android: {
+              elevation: 4,
+            },
+            web: {
+              boxShadow: colors.isDark
+                ? "0 2px 8px rgba(0, 0, 0, 0.3)"
+                : "0 2px 8px rgba(0, 0, 0, 0.08)",
+            },
+          }),
+        },
+        legendItem: {
+          flexDirection: "row",
+          alignItems: "center",
+        },
+        legendDot: {
+          width: 8,
+          height: 8,
+          borderRadius: 4,
+          marginRight: 8,
+        },
+        legendText: {
+          fontSize: 12,
+          color: colors.textSecondary,
+          fontWeight: "500",
+        },
+        buttonContainer: {
+          paddingHorizontal: 20,
+          paddingTop: 20,
+          paddingBottom: Platform.OS === "ios" ? 34 : 20,
+          backgroundColor: colors.backgroundSecondary,
+        },
+        fillButton: {
+          backgroundColor: colors.primary,
+          borderRadius: 12,
+          paddingVertical: 16,
+          alignItems: "center",
+          justifyContent: "center",
+          ...Platform.select({
+            ios: {
+              shadowColor: colors.primary,
+              shadowOffset: { width: 0, height: 4 },
+              shadowOpacity: 0.3,
+              shadowRadius: 8,
+            },
+            android: {
+              elevation: 6,
+            },
+            web: {
+              boxShadow: `0 4px 8px ${colors.primary}40`,
+            },
+          }),
+        },
+        fillButtonText: {
+          color: "white",
+          fontSize: 16,
+          fontWeight: "600",
+          letterSpacing: 0.5,
+        },
+      }),
+    [colors]
+  );
 
   useEffect(() => {
     // Load current month route sheet
@@ -151,145 +306,6 @@ export const CreateRouteSheetScreen: React.FC = () => {
     return `${year}-${month}`;
   };
 
-  // Calendar theme that responds to theme changes
-  const calendarTheme = {
-    backgroundColor: colors.surface,
-    calendarBackground: colors.surface,
-    textSectionTitleColor: colors.textSecondary,
-    selectedDayBackgroundColor: colors.primary,
-    selectedDayTextColor: "#ffffff",
-    todayTextColor: colors.primary,
-    dayTextColor: colors.text,
-    textDisabledColor: colors.textTertiary,
-    dotColor: colors.primary,
-    selectedDotColor: "#ffffff",
-    arrowColor: colors.primary,
-    disabledArrowColor: colors.textTertiary,
-    monthTextColor: colors.text,
-    indicatorColor: colors.primary,
-    textDayFontWeight: "500" as const,
-    textMonthFontWeight: "700" as const,
-    textDayHeaderFontWeight: "600" as const,
-    textDayFontSize: 16,
-    textMonthFontSize: 18,
-    textDayHeaderFontSize: 14,
-  };
-
-  const styles = StyleSheet.create({
-    container: {
-      flex: 1,
-      backgroundColor: colors.backgroundSecondary,
-    },
-    content: {
-      flex: 1,
-    },
-    monthHeader: {
-      alignItems: "center",
-      paddingVertical: 20,
-      paddingHorizontal: 20,
-    },
-    monthText: {
-      fontSize: 24,
-      fontWeight: "600",
-      color: colors.text,
-      marginBottom: 4,
-    },
-    yearText: {
-      fontSize: 16,
-      color: colors.textSecondary,
-      fontWeight: "400",
-    },
-    calendarContainer: {
-      backgroundColor: colors.card,
-      borderRadius: 16,
-      marginHorizontal: 20,
-      marginBottom: 20,
-      overflow: "hidden",
-      ...Platform.select({
-        ios: {
-          shadowColor: colors.shadow,
-          shadowOffset: { width: 0, height: 4 },
-          shadowOpacity: colors.isDark ? 0.3 : 0.12,
-          shadowRadius: 16,
-        },
-        android: {
-          elevation: 8,
-        },
-        web: {
-          boxShadow: colors.isDark
-            ? "0 4px 16px rgba(0, 0, 0, 0.3)"
-            : "0 4px 16px rgba(0, 0, 0, 0.12)",
-        },
-      }),
-    },
-    legendContainer: {
-      flexDirection: "row",
-      justifyContent: "space-around",
-      paddingVertical: 16,
-      paddingHorizontal: 20,
-      backgroundColor: colors.card,
-      borderRadius: 12,
-      marginHorizontal: 20,
-      marginBottom: 20,
-      ...Platform.select({
-        ios: {
-          shadowColor: colors.shadow,
-          shadowOffset: { width: 0, height: 2 },
-          shadowOpacity: colors.isDark ? 0.3 : 0.08,
-          shadowRadius: 4,
-        },
-        android: {
-          elevation: 2,
-        },
-      }),
-    },
-    legendItem: {
-      flexDirection: "row",
-      alignItems: "center",
-    },
-    legendDot: {
-      width: 8,
-      height: 8,
-      borderRadius: 4,
-      marginRight: 8,
-    },
-    legendText: {
-      fontSize: 12,
-      color: colors.textSecondary,
-      fontWeight: "500",
-    },
-    buttonContainer: {
-      paddingHorizontal: 20,
-      paddingTop: 20,
-      paddingBottom: Platform.OS === "ios" ? 34 : 20,
-      backgroundColor: colors.backgroundSecondary,
-    },
-    fillButton: {
-      backgroundColor: colors.primary,
-      borderRadius: 12,
-      paddingVertical: 16,
-      alignItems: "center",
-      justifyContent: "center",
-      ...Platform.select({
-        ios: {
-          shadowColor: colors.primary,
-          shadowOffset: { width: 0, height: 4 },
-          shadowOpacity: 0.3,
-          shadowRadius: 8,
-        },
-        android: {
-          elevation: 6,
-        },
-      }),
-    },
-    fillButtonText: {
-      color: "white",
-      fontSize: 16,
-      fontWeight: "600",
-      letterSpacing: 0.5,
-    },
-  });
-
   return (
     <SafeAreaView style={styles.container}>
       {/* Animated Header */}
@@ -386,6 +402,7 @@ export const CreateRouteSheetScreen: React.FC = () => {
           ]}
         >
           <Calendar
+            key={colors.isDark ? "dark" : "light"} // Force re-render when theme changes
             current={getCurrentMonthString()}
             onDayPress={handleDayPress}
             markedDates={markedDates}
@@ -401,6 +418,8 @@ export const CreateRouteSheetScreen: React.FC = () => {
               paddingHorizontal: 10,
               paddingVertical: 10,
               backgroundColor: colors.surface,
+              borderRadius: 16,
+              overflow: "hidden",
             }}
           />
         </Animated.View>
