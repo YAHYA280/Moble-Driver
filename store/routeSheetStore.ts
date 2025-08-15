@@ -312,8 +312,6 @@ export const useRouteSheetStore = create<RouteSheetStore>((set, get) => ({
   },
 
   createRouteSheet: async (month: string) => {
-    console.log("createRouteSheet: Creating for month", month);
-
     // Simulate API call
     await new Promise((resolve) => setTimeout(resolve, 500));
 
@@ -375,7 +373,6 @@ export const useRouteSheetStore = create<RouteSheetStore>((set, get) => ({
       };
     });
 
-    console.log("createRouteSheet: Created new sheet", newRouteSheet.id);
     return newRouteSheet;
   },
 

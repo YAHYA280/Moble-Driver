@@ -171,47 +171,38 @@ export const RouteSheetEditScreen: React.FC = () => {
     setStartKm(value);
     setUserMadeChanges(true);
     setHasChanges(true);
-    console.log("🔥 START KM CHANGED");
   };
 
   const handleEndKmChange = (value: string) => {
     setEndKm(value);
     setUserMadeChanges(true);
     setHasChanges(true);
-    console.log("🔥 END KM CHANGED");
   };
 
   const handleFuelAmountChange = (value: string) => {
     setFuelAmount(value);
     setUserMadeChanges(true);
     setHasChanges(true);
-    console.log("🔥 FUEL CHANGED");
   };
 
   const handleObservationsChange = (value: string) => {
     setObservations(value);
     setUserMadeChanges(true);
     setHasChanges(true);
-    console.log("🔥 OBSERVATIONS CHANGED");
   };
 
   const handleOtherTripsChange = (trips: TripData[]) => {
     setOtherTrips(trips);
     setUserMadeChanges(true);
     setHasChanges(true);
-    console.log("🔥 OTHER TRIPS CHANGED");
   };
 
   const handleTimeSlotToggle = async (timeSlot: TimeSlotData) => {
     if (!dayData || !date) return;
 
-    console.log("🔥 TIME SLOT TOGGLED - SETTING CHANGES TO TRUE");
-
-    // IMMEDIATELY mark as changed when user clicks
     setUserMadeChanges(true);
     setHasChanges(true);
 
-    // Immediately update local state - this ensures change detection works
     const updatedTimeSlots = dayData.timeSlots.map((slot) =>
       slot.id === timeSlot.id ? { ...slot, isActive: !slot.isActive } : slot
     );
@@ -223,7 +214,6 @@ export const RouteSheetEditScreen: React.FC = () => {
     updateTimeSlotData(date, timeSlot.timeSlot, {
       isActive: !timeSlot.isActive,
     }).catch((error) => {
-      console.log("Store update error:", error);
       // Optionally revert local state if store update fails
     });
   };
@@ -240,8 +230,6 @@ export const RouteSheetEditScreen: React.FC = () => {
 
   const handleTimeSelect = (selectedTime: string) => {
     if (selectedTimeSlot) {
-      console.log("🔥 TIME CHANGED - SETTING CHANGES TO TRUE");
-
       // IMMEDIATELY mark as changed when user changes time
       setUserMadeChanges(true);
       setHasChanges(true);

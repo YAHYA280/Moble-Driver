@@ -118,7 +118,6 @@ export const RouteSheetViewScreen: React.FC = () => {
       );
       const hasData = dayData?.timeSlots.some((slot) => slot.isActive);
 
-      // Use the route sheet's month property for comparison
       const currentDate = new Date();
       const currentMonth = `${currentDate.getFullYear()}-${String(
         currentDate.getMonth() + 1
@@ -127,13 +126,9 @@ export const RouteSheetViewScreen: React.FC = () => {
       const isCurrentMonth = selectedRouteSheet.month === currentMonth;
 
       if (isCurrentMonth) {
-        // For current month, always go to create route sheet screen
-        console.log("Current month - navigating to create screen");
         router.push(`/(tabs)/routes/create`);
       } else {
-        // For past months, only allow viewing if there's data
         if (hasData) {
-          console.log("Past month with data - navigating to read-only view");
           router.push(
             `/(tabs)/routes/view/${selectedRouteSheet.id}/day/${dateString}`
           );
