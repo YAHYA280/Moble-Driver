@@ -79,6 +79,9 @@ export const RouteSheetEditScreen: React.FC = () => {
   const [isViewMode, setIsViewMode] = useState(mode === "view");
   const [hasChanges, setHasChanges] = useState(false);
 
+  // Simple change tracker - set to true whenever ANY action happens
+  const [userMadeChanges, setUserMadeChanges] = useState(false);
+
   // Time picker state
   const [timePickerVisible, setTimePickerVisible] = useState(false);
   const [selectedTimeSlot, setSelectedTimeSlot] = useState<TimeSlotData | null>(
@@ -91,6 +94,11 @@ export const RouteSheetEditScreen: React.FC = () => {
 
   // Time management for each slot
   const [slotTimes, setSlotTimes] = useState<
+    Record<string, { start: string; end: string }>
+  >({});
+
+  // Store original slot times for comparison
+  const [originalSlotTimes, setOriginalSlotTimes] = useState<
     Record<string, { start: string; end: string }>
   >({});
 
@@ -107,7 +115,8 @@ export const RouteSheetEditScreen: React.FC = () => {
       if (foundDay) {
         setDayData(foundDay);
         // Store original data for comparison
-        setOriginalDayData(JSON.parse(JSON.stringify(foundDay)));
+        const originalData = JSON.parse(JSON.stringify(foundDay));
+        setOriginalDayData(originalData);
 
         // Initialize times for each slot
         const initialTimes: Record<string, { start: string; end: string }> = {};
@@ -118,6 +127,8 @@ export const RouteSheetEditScreen: React.FC = () => {
           };
         });
         setSlotTimes(initialTimes);
+        // Store original times for comparison
+        setOriginalSlotTimes(JSON.parse(JSON.stringify(initialTimes)));
 
         // Initialize form with existing data if any
         const activeSlots = foundDay.timeSlots.filter((slot) => slot.isActive);
@@ -155,90 +166,52 @@ export const RouteSheetEditScreen: React.FC = () => {
     ]).start();
   }, [currentRouteSheet, date, mode]);
 
-  // Comprehensive change tracking - check all possible changes
-  useEffect(() => {
-    if (isViewMode && dayData && originalDayData) {
-      let hasAnyChanges = false;
+  // Also track changes when form fields change
+  const handleStartKmChange = (value: string) => {
+    setStartKm(value);
+    setUserMadeChanges(true);
+    setHasChanges(true);
+    console.log("🔥 START KM CHANGED");
+  };
 
-      // Check time slot changes (active/inactive state)
-      const originalActiveSlots = originalDayData.timeSlots
-        .filter((slot) => slot.isActive)
-        .map((slot) => slot.id);
-      const currentActiveSlots = dayData.timeSlots
-        .filter((slot) => slot.isActive)
-        .map((slot) => slot.id);
+  const handleEndKmChange = (value: string) => {
+    setEndKm(value);
+    setUserMadeChanges(true);
+    setHasChanges(true);
+    console.log("🔥 END KM CHANGED");
+  };
 
-      if (
-        originalActiveSlots.length !== currentActiveSlots.length ||
-        !originalActiveSlots.every((id) => currentActiveSlots.includes(id))
-      ) {
-        hasAnyChanges = true;
-      }
+  const handleFuelAmountChange = (value: string) => {
+    setFuelAmount(value);
+    setUserMadeChanges(true);
+    setHasChanges(true);
+    console.log("🔥 FUEL CHANGED");
+  };
 
-      // Check time changes
-      dayData.timeSlots.forEach((slot) => {
-        const originalSlot = originalDayData.timeSlots.find(
-          (s) => s.id === slot.id
-        );
-        const currentStartTime =
-          slotTimes[slot.id]?.start || getDefaultStartTime(slot.timeSlot);
-        const currentEndTime =
-          slotTimes[slot.id]?.end || getDefaultEndTime(slot.timeSlot);
-        const originalStartTime = getDefaultStartTime(slot.timeSlot);
-        const originalEndTime = getDefaultEndTime(slot.timeSlot);
+  const handleObservationsChange = (value: string) => {
+    setObservations(value);
+    setUserMadeChanges(true);
+    setHasChanges(true);
+    console.log("🔥 OBSERVATIONS CHANGED");
+  };
 
-        if (
-          currentStartTime !== originalStartTime ||
-          currentEndTime !== originalEndTime
-        ) {
-          hasAnyChanges = true;
-        }
-      });
-
-      // Check form field changes
-      const activeSlots = originalDayData.timeSlots.filter(
-        (slot) => slot.isActive
-      );
-      if (activeSlots.length > 0) {
-        const originalFirstSlot = activeSlots[0];
-        const originalStartKm =
-          originalFirstSlot.kilometrage.startKm.toString();
-        const originalEndKm = originalFirstSlot.kilometrage.endKm.toString();
-        const originalObservations = originalFirstSlot.comments || "";
-
-        if (
-          startKm !== originalStartKm ||
-          endKm !== originalEndKm ||
-          observations !== originalObservations
-        ) {
-          hasAnyChanges = true;
-        }
-      }
-
-      // Check other trips changes
-      const originalTrips = JSON.stringify([]);
-      const currentTrips = JSON.stringify(otherTrips);
-      if (originalTrips !== currentTrips) {
-        hasAnyChanges = true;
-      }
-
-      setHasChanges(hasAnyChanges);
-    }
-  }, [
-    dayData,
-    originalDayData,
-    slotTimes,
-    startKm,
-    endKm,
-    observations,
-    otherTrips,
-    isViewMode,
-  ]);
+  const handleOtherTripsChange = (trips: TripData[]) => {
+    setOtherTrips(trips);
+    setUserMadeChanges(true);
+    setHasChanges(true);
+    console.log("🔥 OTHER TRIPS CHANGED");
+  };
 
   const handleTimeSlotToggle = async (timeSlot: TimeSlotData) => {
     if (!dayData || !date) return;
 
-    // Allow time slot toggle in both create and view mode
+    console.log("🔥 TIME SLOT TOGGLED - SETTING CHANGES TO TRUE");
+
+    // IMMEDIATELY mark as changed when user clicks
+    setUserMadeChanges(true);
+    setHasChanges(true);
+
+    // Immediately update local state - this ensures change detection works
     const updatedTimeSlots = dayData.timeSlots.map((slot) =>
       slot.id === timeSlot.id ? { ...slot, isActive: !slot.isActive } : slot
     );
@@ -246,13 +219,13 @@ export const RouteSheetEditScreen: React.FC = () => {
     const updatedDayData = { ...dayData, timeSlots: updatedTimeSlots };
     setDayData(updatedDayData);
 
-    try {
-      await updateTimeSlotData(date, timeSlot.timeSlot, {
-        isActive: !timeSlot.isActive,
-      });
-    } catch (error) {
-      Alert.alert("Erreur", "Impossible de mettre à jour le créneau horaire.");
-    }
+    // Optional: Update store in background (don't await to avoid blocking UI)
+    updateTimeSlotData(date, timeSlot.timeSlot, {
+      isActive: !timeSlot.isActive,
+    }).catch((error) => {
+      console.log("Store update error:", error);
+      // Optionally revert local state if store update fails
+    });
   };
 
   const handleTimePress = (timeSlot: TimeSlotData, type: "start" | "end") => {
@@ -267,6 +240,12 @@ export const RouteSheetEditScreen: React.FC = () => {
 
   const handleTimeSelect = (selectedTime: string) => {
     if (selectedTimeSlot) {
+      console.log("🔥 TIME CHANGED - SETTING CHANGES TO TRUE");
+
+      // IMMEDIATELY mark as changed when user changes time
+      setUserMadeChanges(true);
+      setHasChanges(true);
+
       // Validate time order for time slots
       const currentTimes = slotTimes[selectedTimeSlot.id] || {
         start: getDefaultStartTime(selectedTimeSlot.timeSlot),
@@ -282,6 +261,7 @@ export const RouteSheetEditScreen: React.FC = () => {
         return; // Don't update if validation fails
       }
 
+      // Update slot times - this will trigger the hasChanges detection
       setSlotTimes((prev) => ({
         ...prev,
         [selectedTimeSlot.id]: {
@@ -555,25 +535,25 @@ export const RouteSheetEditScreen: React.FC = () => {
               startKm={startKm}
               endKm={endKm}
               fuelAmount={fuelAmount}
-              onStartKmChange={setStartKm}
-              onEndKmChange={setEndKm}
-              onFuelAmountChange={setFuelAmount}
+              onStartKmChange={handleStartKmChange}
+              onEndKmChange={handleEndKmChange}
+              onFuelAmountChange={handleFuelAmountChange}
             />
 
             {/* Other Trips Section */}
             <OtherTripsSection
               trips={otherTrips}
-              onTripsChange={setOtherTrips}
+              onTripsChange={handleOtherTripsChange}
             />
 
             {/* Observations Section */}
             <ObservationsSection
               observations={observations}
-              onObservationsChange={setObservations}
+              onObservationsChange={handleObservationsChange}
             />
 
-            {/* Save Button - Only show when there are changes or in create mode */}
-            {(hasChanges || !isViewMode) && (
+            {/* Save Button - Show when user made ANY changes */}
+            {(userMadeChanges || hasChanges || !isViewMode) && (
               <View style={styles.saveButtonContainer}>
                 <Button
                   title={getButtonText()}
@@ -581,7 +561,9 @@ export const RouteSheetEditScreen: React.FC = () => {
                   loading={isLoading}
                   disabled={isLoading}
                   style={
-                    hasChanges && isViewMode ? styles.modifiedButton : undefined
+                    (hasChanges || userMadeChanges) && isViewMode
+                      ? styles.modifiedButton
+                      : undefined
                   }
                 />
               </View>

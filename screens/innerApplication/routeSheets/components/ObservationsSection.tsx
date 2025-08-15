@@ -46,6 +46,9 @@ export const ObservationsSection: React.FC<ObservationsSectionProps> = ({
       marginBottom: 8,
       fontWeight: "500",
     },
+    inputContainer: {
+      minHeight: 100,
+    },
   });
 
   return (
@@ -58,7 +61,15 @@ export const ObservationsSection: React.FC<ObservationsSectionProps> = ({
         placeholder="Tapez un texte ici"
         multiline
         numberOfLines={4}
-        style={{ minHeight: 100 }}
+        style={[
+          styles.inputContainer,
+          Platform.select({
+            android: {
+              textAlignVertical: "top",
+              paddingTop: 12,
+            },
+          }),
+        ]}
         returnKeyType="done"
         blurOnSubmit={true}
       />

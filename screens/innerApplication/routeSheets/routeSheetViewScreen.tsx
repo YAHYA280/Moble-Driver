@@ -464,7 +464,7 @@ export const RouteSheetViewScreen: React.FC = () => {
               markedDates={markedDates}
               markingType="dot"
               enableSwipeMonths={false}
-              hideArrows={false}
+              hideArrows={true}
               hideExtraDays={true}
               disableMonthChange={true}
               firstDay={1}
