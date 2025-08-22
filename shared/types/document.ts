@@ -43,6 +43,7 @@ export interface DocumentFolder {
   color?: string;
   icon?: string;
   isShared: boolean;
+  isFavorite: boolean; // Added favorite property for folders
   size: number; // total size of documents in bytes
 }
 
@@ -119,7 +120,9 @@ export interface DocumentActions {
 
   // Favorites
   toggleFavorite: (documentId: string) => Promise<void>;
+  toggleFolderFavorite: (folderId: string) => Promise<void>; // Added folder favorite toggle
   getFavoriteDocuments: () => DocumentFile[];
+  getFavoriteFolders: () => DocumentFolder[]; // Added get favorite folders
 
   // Navigation
   navigateToFolder: (folderId: string | null) => void;
@@ -177,9 +180,9 @@ export const MIME_TYPES = {
 };
 
 export const DEFAULT_FOLDERS = [
-  { name: "Documents personnels", icon: "user", color: "#3b82f6" },
-  { name: "Documents véhicule", icon: "car", color: "#22c55e" },
-  { name: "Projets", icon: "folder", color: "#f59e0b" },
+  { name: "Documents personnels", icon: "user", color: "#746cd4" },
+  { name: "Documents véhicule", icon: "car", color: "#746cd4" },
+  { name: "Projets", icon: "folder", color: "#746cd4" },
 ];
 
 export const MAX_FILE_SIZE = 50 * 1024 * 1024; // 50MB

@@ -1,7 +1,9 @@
-// screens/innerApplication/documents/documentUploadScreen.tsx
+// screens/innerApplication/documents/documentUploadScreen.tsx - Improved
 
 import ConditionalComponent from "@/shared/components/conditionalComponent/conditionalComponent";
 import { FontAwesome } from "@expo/vector-icons";
+import * as DocumentPicker from "expo-document-picker";
+import * as ImagePicker from "expo-image-picker";
 import { router } from "expo-router";
 import React, { useRef, useState } from "react";
 import {
@@ -16,7 +18,6 @@ import {
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useTheme } from "../../../contexts/ThemeContext";
-import { Button } from "../../../shared/components/ui/Button";
 import { Header } from "../../../shared/components/ui/Header";
 import { Input } from "../../../shared/components/ui/Input";
 import {
@@ -28,7 +29,7 @@ import { useDocumentStore } from "../../../store/documentStore";
 
 export const DocumentUploadScreen: React.FC = () => {
   const { colors } = useTheme();
-  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [selectedFile, setSelectedFile] = useState<any | null>(null);
   const [documentName, setDocumentName] = useState("");
   const [documentType, setDocumentType] = useState<DocumentType>("Autre");
   const [description, setDescription] = useState("");
@@ -48,28 +49,106 @@ export const DocumentUploadScreen: React.FC = () => {
   }, []);
 
   const handleFileSelect = () => {
-    // Simulate file picker
     Alert.alert(
       "Sélectionner un fichier",
       "Choisissez la source de votre document",
       [
-        { text: "Caméra", onPress: () => simulateFileSelection("camera") },
-        { text: "Galerie", onPress: () => simulateFileSelection("gallery") },
-        { text: "Fichiers", onPress: () => simulateFileSelection("files") },
+        { text: "Caméra", onPress: () => selectFromCamera() },
+        { text: "Galerie", onPress: () => selectFromGallery() },
+        { text: "Fichiers", onPress: () => selectFromFiles() },
         { text: "Annuler", style: "cancel" },
       ]
     );
   };
 
-  const simulateFileSelection = (source: string) => {
-    // Create a mock file for demonstration
-    const mockFile = new File(["mock content"], `document_${Date.now()}.pdf`, {
-      type: "application/pdf",
-    });
+  const selectFromCamera = async () => {
+    try {
+      const { status } = await ImagePicker.requestCameraPermissionsAsync();
+      if (status !== "granted") {
+        Alert.alert("Erreur", "Permission d'accès à la caméra requise");
+        return;
+      }
 
-    setSelectedFile(mockFile);
-    setDocumentName(mockFile.name.replace(/\.[^/.]+$/, ""));
-    setDocumentType("PDF");
+      const result = await ImagePicker.launchCameraAsync({
+        mediaTypes: ImagePicker.MediaTypeOptions.Images,
+        allowsEditing: true,
+        aspect: [4, 3],
+        quality: 0.8,
+      });
+
+      if (!result.canceled && result.assets[0]) {
+        const asset = result.assets[0];
+        setSelectedFile({
+          uri: asset.uri,
+          name: `photo_${Date.now()}.jpg`,
+          type: "image/jpeg",
+          size: asset.fileSize || 0,
+        });
+        setDocumentName(`Photo ${new Date().toLocaleDateString()}`);
+        setDocumentType("Image");
+      }
+    } catch (error) {
+      Alert.alert("Erreur", "Erreur lors de la prise de photo");
+    }
+  };
+
+  const selectFromGallery = async () => {
+    try {
+      const { status } =
+        await ImagePicker.requestMediaLibraryPermissionsAsync();
+      if (status !== "granted") {
+        Alert.alert("Erreur", "Permission d'accès à la galerie requise");
+        return;
+      }
+
+      const result = await ImagePicker.launchImageLibraryAsync({
+        mediaTypes: ImagePicker.MediaTypeOptions.All,
+        allowsEditing: true,
+        aspect: [4, 3],
+        quality: 0.8,
+      });
+
+      if (!result.canceled && result.assets[0]) {
+        const asset = result.assets[0];
+        setSelectedFile({
+          uri: asset.uri,
+          name: asset.fileName || `image_${Date.now()}.jpg`,
+          type: asset.type || "image/jpeg",
+          size: asset.fileSize || 0,
+        });
+        setDocumentName(
+          asset.fileName?.replace(/\.[^/.]+$/, "") ||
+            `Image ${new Date().toLocaleDateString()}`
+        );
+        setDocumentType("Image");
+      }
+    } catch (error) {
+      Alert.alert("Erreur", "Erreur lors de la sélection d'image");
+    }
+  };
+
+  const selectFromFiles = async () => {
+    try {
+      const result = await DocumentPicker.getDocumentAsync({
+        type: "*/*",
+        copyToCacheDirectory: true,
+      });
+
+      if (!result.canceled && result.assets[0]) {
+        const file = result.assets[0];
+        setSelectedFile(file);
+        setDocumentName(file.name.replace(/\.[^/.]+$/, ""));
+
+        // Auto-detect document type based on file extension
+        const extension = file.name.split(".").pop()?.toLowerCase();
+        if (extension === "pdf") setDocumentType("PDF");
+        else if (["jpg", "jpeg", "png", "gif"].includes(extension || ""))
+          setDocumentType("Image");
+        else setDocumentType("Autre");
+      }
+    } catch (error) {
+      Alert.alert("Erreur", "Erreur lors de la sélection de fichier");
+    }
   };
 
   const handleAddTag = () => {
@@ -100,7 +179,12 @@ export const DocumentUploadScreen: React.FC = () => {
     }
 
     try {
-      await uploadDocument(selectedFile, undefined, {
+      // Create a File object for the upload function
+      const file = new File([selectedFile.uri], selectedFile.name, {
+        type: selectedFile.type || "application/octet-stream",
+      });
+
+      await uploadDocument(file, undefined, {
         name: documentName.trim(),
         type: documentType,
         description: description.trim() || undefined,
@@ -133,7 +217,7 @@ export const DocumentUploadScreen: React.FC = () => {
     },
     scrollContent: {
       padding: 16,
-      paddingBottom: 100,
+      paddingBottom: 120, // Extra space for upload button
     },
     section: {
       marginBottom: 24,
@@ -282,8 +366,49 @@ export const DocumentUploadScreen: React.FC = () => {
       backgroundColor: colors.primary,
       borderRadius: 4,
     },
+    uploadButtonContainer: {
+      position: "absolute",
+      bottom: Platform.select({
+        ios: 90, // Au-dessus de la tab bar iOS (49px) + safe area (34px) + margin (7px)
+        android: 70, // Au-dessus de la tab bar Android (56px) + margin (14px)
+      }),
+      left: 0,
+      right: 0,
+      backgroundColor: colors.background,
+      borderTopWidth: 1,
+      borderTopColor: colors.border,
+      paddingTop: 16,
+      paddingBottom: 16,
+      paddingHorizontal: 16,
+    },
     uploadButton: {
-      margin: 16,
+      backgroundColor: colors.primary,
+      paddingVertical: 16,
+      borderRadius: 12,
+      alignItems: "center",
+      justifyContent: "center",
+      flexDirection: "row",
+      ...Platform.select({
+        ios: {
+          shadowColor: colors.primary,
+          shadowOffset: { width: 0, height: 4 },
+          shadowOpacity: 0.3,
+          shadowRadius: 8,
+        },
+        android: {
+          elevation: 8,
+        },
+      }),
+    },
+    uploadButtonDisabled: {
+      backgroundColor: colors.textTertiary,
+      opacity: 0.6,
+    },
+    uploadButtonText: {
+      color: "white",
+      fontSize: 16,
+      fontWeight: "600",
+      marginLeft: 8,
     },
     errorContainer: {
       backgroundColor: colors.error + "15",
@@ -484,14 +609,21 @@ export const DocumentUploadScreen: React.FC = () => {
         </ConditionalComponent>
       </ScrollView>
 
-      {/* Upload Button */}
+      {/* Upload Button - Fixed at bottom */}
       <ConditionalComponent isValid={!!selectedFile && !isUploading}>
-        <View style={styles.uploadButton}>
-          <Button
-            title="Uploader le document"
+        <View style={styles.uploadButtonContainer}>
+          <TouchableOpacity
+            style={[
+              styles.uploadButton,
+              !documentName.trim() && styles.uploadButtonDisabled,
+            ]}
             onPress={handleUpload}
             disabled={!documentName.trim()}
-          />
+            activeOpacity={0.8}
+          >
+            <FontAwesome name="upload" size={16} color="white" />
+            <Text style={styles.uploadButtonText}>Uploader le document</Text>
+          </TouchableOpacity>
         </View>
       </ConditionalComponent>
     </SafeAreaView>

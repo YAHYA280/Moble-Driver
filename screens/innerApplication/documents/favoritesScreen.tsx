@@ -1,4 +1,4 @@
-// screens/innerApplication/documents/documentsScreen.tsx
+// screens/innerApplication/documents/favoritesScreen.tsx
 
 import ConditionalComponent from "@/shared/components/conditionalComponent/conditionalComponent";
 import { FontAwesome } from "@expo/vector-icons";
@@ -20,43 +20,33 @@ import { Header } from "../../../shared/components/ui/Header";
 import { SearchModal } from "../../../shared/components/ui/SearchModal";
 import { Sidebar } from "../../../shared/components/ui/Sidebar";
 import { useDocumentStore } from "../../../store/documentStore";
-import { DocumentCard } from "./components/DocumentCard";
-import { DocumentFilterModal } from "./components/DocumentFilterModal";
-import { FolderCard } from "./components/FolderCard";
-import { StorageIndicator } from "./components/StorageIndicator";
 
-export const DocumentsScreen: React.FC = () => {
+export const FavoritesScreen: React.FC = () => {
   const { colors } = useTheme();
   const [showSidebar, setShowSidebar] = useState(false);
   const [showSearchModal, setShowSearchModal] = useState(false);
-  const [showFilterModal, setShowFilterModal] = useState(false);
   const headerAnim = useRef(new Animated.Value(0)).current;
   const contentAnim = useRef(new Animated.Value(0)).current;
 
   const {
-    documents,
-    folders,
-    filteredDocuments,
-    filters,
-    currentFolderId,
-    storageInfo,
-    isLoading,
-    error,
-    fetchDocuments,
-    fetchFolders,
-    navigateToFolder,
-    goBack,
-    setFilters,
-    clearFilters,
-    selectDocument,
-    selectFolder,
+    getFavoriteDocuments,
+    getFavoriteFolders,
     toggleFavorite,
     toggleFolderFavorite,
     deleteDocument,
     deleteFolder,
     downloadDocument,
+    selectDocument,
+    isLoading,
+    error,
     clearError,
+    fetchDocuments,
+    fetchFolders,
+    clearFilters,
   } = useDocumentStore();
+
+  const favoriteDocuments = getFavoriteDocuments();
+  const favoriteFolders = getFavoriteFolders();
 
   useEffect(() => {
     fetchDocuments();
@@ -79,11 +69,13 @@ export const DocumentsScreen: React.FC = () => {
   }, []);
 
   const handleRefresh = () => {
-    fetchDocuments(currentFolderId || undefined);
+    fetchDocuments();
+    fetchFolders();
   };
 
   const handleSearch = (query: string) => {
-    setFilters({ searchQuery: query });
+    setShowSearchModal(false);
+    // Filter favorites based on search
   };
 
   const handleDocumentPress = (document: any) => {
@@ -92,8 +84,7 @@ export const DocumentsScreen: React.FC = () => {
   };
 
   const handleFolderPress = (folder: any) => {
-    selectFolder(folder);
-    navigateToFolder(folder.id);
+    router.push(`/documents/folder/${folder.id}`);
   };
 
   const handleDocumentLongPress = (document: any) => {
@@ -103,9 +94,7 @@ export const DocumentsScreen: React.FC = () => {
         onPress: () => downloadDocument(document.id),
       },
       {
-        text: document.isFavorite
-          ? "Retirer des favoris"
-          : "Ajouter aux favoris",
+        text: "Retirer des favoris",
         onPress: () => toggleFavorite(document.id),
       },
       {
@@ -135,7 +124,7 @@ export const DocumentsScreen: React.FC = () => {
   const handleFolderLongPress = (folder: any) => {
     Alert.alert("Actions sur le dossier", folder.name, [
       {
-        text: folder.isFavorite ? "Retirer des favoris" : "Ajouter aux favoris",
+        text: "Retirer des favoris",
         onPress: () => toggleFolderFavorite(folder.id),
       },
       {
@@ -166,33 +155,6 @@ export const DocumentsScreen: React.FC = () => {
     toggleFolderFavorite(folder.id);
   };
 
-  const handleAddFolder = () => {
-    Alert.prompt(
-      "Nouveau dossier",
-      "Entrez le nom du dossier",
-      [
-        { text: "Annuler", style: "cancel" },
-        {
-          text: "Créer",
-          onPress: (name) => {
-            if (name && name.trim()) {
-              Alert.alert("Succès", `Dossier "${name}" créé avec succès`);
-            }
-          },
-        },
-      ],
-      "plain-text"
-    );
-  };
-
-  const handleUploadDocument = () => {
-    router.push("/documents/upload");
-  };
-
-  const handleNotificationPress = () => {
-    router.push("/notifications?returnTo=/documents");
-  };
-
   const handleLogout = () => {
     Alert.alert("Déconnexion", "Êtes-vous sûr de vouloir vous déconnecter ?", [
       { text: "Annuler", style: "cancel" },
@@ -213,10 +175,10 @@ export const DocumentsScreen: React.FC = () => {
       label: "Document",
       icon: "file-text" as const,
       onPress: () => {
-        clearFilters();
         setShowSidebar(false);
+        router.push("/documents");
       },
-      isActive: true,
+      isActive: false,
     },
     {
       id: "requests",
@@ -234,9 +196,8 @@ export const DocumentsScreen: React.FC = () => {
       icon: "star" as const,
       onPress: () => {
         setShowSidebar(false);
-        router.push("/documents/favorites");
       },
-      isActive: false,
+      isActive: true,
     },
     {
       id: "upload",
@@ -250,16 +211,6 @@ export const DocumentsScreen: React.FC = () => {
     },
   ];
 
-  // Get folders to display (only root folders if not in a folder)
-  const foldersToDisplay = folders.filter((folder) => {
-    if (currentFolderId) {
-      return folder.parentId === currentFolderId;
-    }
-    return !folder.parentId;
-  });
-
-  const totalItems = foldersToDisplay.length + filteredDocuments.length;
-
   const styles = StyleSheet.create({
     container: {
       flex: 1,
@@ -271,46 +222,14 @@ export const DocumentsScreen: React.FC = () => {
     scrollContent: {
       paddingBottom: 100,
     },
-    storageContainer: {
-      paddingHorizontal: 16,
-      paddingTop: 20,
-      paddingBottom: 16,
-    },
-    actionsContainer: {
-      flexDirection: "row",
-      paddingHorizontal: 16,
-      paddingVertical: 12,
-      gap: 12,
-    },
-    actionButton: {
-      flex: 1,
-      flexDirection: "row",
-      alignItems: "center",
-      justifyContent: "center",
-      paddingVertical: 12,
-      paddingHorizontal: 16,
-      borderRadius: 12,
-      backgroundColor: colors.primary + "15",
-      borderWidth: 1,
-      borderColor: colors.primary + "30",
-    },
-    actionText: {
-      fontSize: 14,
-      fontWeight: "600",
-      color: colors.primary,
-      marginLeft: 8,
-    },
     sectionContainer: {
       paddingHorizontal: 16,
-      paddingVertical: 16,
+      paddingVertical: 20,
     },
     sectionHeader: {
       flexDirection: "row",
       justifyContent: "space-between",
       alignItems: "center",
-      marginBottom: 16,
-    },
-    sectionHeaderSimple: {
       marginBottom: 16,
     },
     sectionTitle: {
@@ -319,52 +238,83 @@ export const DocumentsScreen: React.FC = () => {
       color: colors.text,
     },
     viewAllButton: {
-      paddingHorizontal: 8,
-      paddingVertical: 4,
+      paddingHorizontal: 12,
+      paddingVertical: 6,
     },
     viewAllText: {
       fontSize: 14,
       color: colors.primary,
       fontWeight: "500",
     },
-    sortContainer: {
-      flexDirection: "row",
-      justifyContent: "space-between",
-      alignItems: "center",
-      marginBottom: 16,
-    },
-    sortButton: {
-      flexDirection: "row",
-      alignItems: "center",
-      paddingHorizontal: 12,
-      paddingVertical: 8,
-      borderRadius: 20,
-      borderWidth: 1,
-      borderColor: colors.border,
-      backgroundColor: colors.card,
-    },
-    sortText: {
-      fontSize: 14,
-      color: colors.textSecondary,
-      marginRight: 8,
-    },
-    filterButton: {
-      width: 40,
-      height: 40,
-      borderRadius: 20,
-      alignItems: "center",
-      justifyContent: "center",
-      backgroundColor: colors.card,
-      borderWidth: 1,
-      borderColor: colors.border,
-    },
     foldersGrid: {
       flexDirection: "row",
       flexWrap: "wrap",
       gap: 12,
     },
+    folderCardContainer: {
+      width: "30%",
+      aspectRatio: 1,
+      borderRadius: 16,
+      backgroundColor: colors.primary + "10",
+      alignItems: "center",
+      justifyContent: "center",
+      position: "relative",
+      padding: 12,
+    },
+    starIcon: {
+      position: "absolute",
+      top: 8,
+      right: 8,
+    },
+    folderIcon: {
+      marginBottom: 8,
+    },
+    folderName: {
+      fontSize: 12,
+      fontWeight: "600",
+      color: colors.text,
+      textAlign: "center",
+    },
+    folderCount: {
+      fontSize: 10,
+      color: colors.textSecondary,
+      textAlign: "center",
+      marginTop: 2,
+    },
     documentsContainer: {
-      marginTop: 0,
+      paddingHorizontal: 16,
+    },
+    documentItem: {
+      flexDirection: "row",
+      alignItems: "center",
+      padding: 16,
+      backgroundColor: colors.card,
+      borderRadius: 12,
+      marginBottom: 12,
+    },
+    documentIcon: {
+      width: 40,
+      height: 40,
+      borderRadius: 8,
+      alignItems: "center",
+      justifyContent: "center",
+      marginRight: 12,
+    },
+    documentInfo: {
+      flex: 1,
+    },
+    documentName: {
+      fontSize: 14,
+      fontWeight: "600",
+      color: colors.text,
+    },
+    documentMeta: {
+      fontSize: 12,
+      color: colors.textSecondary,
+      marginTop: 2,
+    },
+    favoriteIconContainer: {
+      padding: 8,
     },
     emptyState: {
       flex: 1,
@@ -401,6 +351,30 @@ export const DocumentsScreen: React.FC = () => {
     },
   });
 
+  const getDocumentTypeColor = (type: string) => {
+    const typeColors: { [key: string]: string } = {
+      PDF: "#ef4444",
+      Image: "#22c55e",
+      Contrat: "#3b82f6",
+      Permis: "#f59e0b",
+      Assurance: "#8b5cf6",
+      Autre: "#6b7280",
+    };
+    return typeColors[type] || "#6b7280";
+  };
+
+  const getDocumentTypeIcon = (type: string) => {
+    const typeIcons: { [key: string]: string } = {
+      PDF: "file-pdf-o",
+      Image: "file-image-o",
+      Contrat: "file-text",
+      Permis: "credit-card",
+      Assurance: "shield",
+      Autre: "file-o",
+    };
+    return typeIcons[type] || "file-o";
+  };
+
   return (
     <SafeAreaView style={styles.container}>
       {/* Header */}
@@ -419,22 +393,18 @@ export const DocumentsScreen: React.FC = () => {
       >
         <Header
           leftIcon={{
-            icon: currentFolderId ? "chevron-left" : "bars",
-            onPress: currentFolderId ? goBack : () => setShowSidebar(true),
+            icon: "bars",
+            onPress: () => setShowSidebar(true),
           }}
-          title="Documents"
+          title="Centre de favoris"
           rightIcons={[
-            {
-              icon: "filter",
-              onPress: () => setShowFilterModal(true),
-            },
             {
               icon: "search",
               onPress: () => setShowSearchModal(true),
             },
             {
               icon: "bell",
-              onPress: handleNotificationPress,
+              onPress: () => router.push("/notifications"),
               badge: 3,
             },
           ]}
@@ -463,99 +433,101 @@ export const DocumentsScreen: React.FC = () => {
             />
           }
         >
-          {/* Storage Indicator */}
-          <View style={styles.storageContainer}>
-            <StorageIndicator storageInfo={storageInfo} />
-          </View>
-
-          {/* Action Buttons */}
-          <View style={styles.actionsContainer}>
-            <TouchableOpacity
-              style={styles.actionButton}
-              onPress={handleAddFolder}
-            >
-              <FontAwesome name="folder-o" size={16} color={colors.primary} />
-              <Text style={styles.actionText}>Nouveau dossier</Text>
-            </TouchableOpacity>
-
-            <TouchableOpacity
-              style={styles.actionButton}
-              onPress={handleUploadDocument}
-            >
-              <FontAwesome name="plus" size={16} color={colors.primary} />
-              <Text style={styles.actionText}>Ajouter document</Text>
-            </TouchableOpacity>
-          </View>
-
-          {/* Mes dossiers Section */}
+          {/* Favorite Folders Section */}
           <View style={styles.sectionContainer}>
-            <View style={styles.sectionHeaderSimple}>
-              <Text style={styles.sectionTitle}>Mes dossiers</Text>
+            <View style={styles.sectionHeader}>
+              <Text style={styles.sectionTitle}>Mes dossiers favoris</Text>
+              <TouchableOpacity style={styles.viewAllButton}>
+                <Text style={styles.viewAllText}>Voir tout</Text>
+              </TouchableOpacity>
             </View>
 
-            <ConditionalComponent isValid={foldersToDisplay.length > 0}>
+            <ConditionalComponent isValid={favoriteFolders.length > 0}>
               <View style={styles.foldersGrid}>
-                {foldersToDisplay.map((folder) => (
-                  <FolderCard
+                {favoriteFolders.slice(0, 3).map((folder) => (
+                  <TouchableOpacity
                     key={folder.id}
-                    folder={folder}
+                    style={styles.folderCardContainer}
                     onPress={() => handleFolderPress(folder)}
                     onLongPress={() => handleFolderLongPress(folder)}
-                    onFavoritePress={() => handleFolderFavoritePress(folder)}
-                  />
+                  >
+                    <FontAwesome
+                      name="star"
+                      size={12}
+                      color={colors.warning}
+                      style={styles.starIcon}
+                    />
+                    <FontAwesome
+                      name={(folder.icon as any) || "folder"}
+                      size={32}
+                      color={colors.primary}
+                      style={styles.folderIcon}
+                    />
+                    <Text style={styles.folderName} numberOfLines={2}>
+                      {folder.name}
+                    </Text>
+                    <Text style={styles.folderCount}>
+                      {folder.documentsCount} Éléments
+                    </Text>
+                  </TouchableOpacity>
                 ))}
               </View>
             </ConditionalComponent>
           </View>
 
-          {/* Mes Fichiers Section */}
+          {/* Favorite Documents Section */}
           <View style={styles.sectionContainer}>
             <View style={styles.sectionHeader}>
-              <Text style={styles.sectionTitle}>Mes Fichiers</Text>
-              <TouchableOpacity
-                style={styles.viewAllButton}
-                onPress={() => router.push("/documents/all")}
-              >
+              <Text style={styles.sectionTitle}>Raccourcis favoris</Text>
+              <TouchableOpacity style={styles.viewAllButton}>
                 <Text style={styles.viewAllText}>Voir tout</Text>
               </TouchableOpacity>
             </View>
 
-            <View style={styles.sortContainer}>
-              <TouchableOpacity style={styles.sortButton}>
-                <Text style={styles.sortText}>Vu pour la dernière fois</Text>
-                <FontAwesome
-                  name="chevron-down"
-                  size={12}
-                  color={colors.textSecondary}
-                />
-              </TouchableOpacity>
-              <TouchableOpacity
-                style={styles.filterButton}
-                onPress={() => setShowFilterModal(true)}
-              >
-                <FontAwesome
-                  name="filter"
-                  size={16}
-                  color={colors.textSecondary}
-                />
-              </TouchableOpacity>
-            </View>
-
-            <ConditionalComponent isValid={filteredDocuments.length > 0}>
+            <ConditionalComponent isValid={favoriteDocuments.length > 0}>
               <View style={styles.documentsContainer}>
-                {filteredDocuments.slice(0, 5).map((document, index) => (
-                  <DocumentCard
+                {favoriteDocuments.map((document) => (
+                  <TouchableOpacity
                     key={document.id}
-                    document={document}
+                    style={styles.documentItem}
                     onPress={() => handleDocumentPress(document)}
                     onLongPress={() => handleDocumentLongPress(document)}
-                    style={{
-                      marginBottom:
-                        index === filteredDocuments.slice(0, 5).length - 1
-                          ? 0
-                          : 12,
-                    }}
-                  />
+                  >
+                    <View
+                      style={[
+                        styles.documentIcon,
+                        {
+                          backgroundColor:
+                            getDocumentTypeColor(document.type) + "15",
+                        },
+                      ]}
+                    >
+                      <FontAwesome
+                        name={getDocumentTypeIcon(document.type) as any}
+                        size={16}
+                        color={getDocumentTypeColor(document.type)}
+                      />
+                    </View>
+                    <View style={styles.documentInfo}>
+                      <Text style={styles.documentName} numberOfLines={1}>
+                        {document.name}
+                      </Text>
+                      <Text style={styles.documentMeta}>
+                        {document.type} •{" "}
+                        {(document.size / (1024 * 1024)).toFixed(1)} MB
+                      </Text>
+                    </View>
+                    <TouchableOpacity
+                      style={styles.favoriteIconContainer}
+                      onPress={() => toggleFavorite(document.id)}
+                    >
+                      <FontAwesome
+                        name="star"
+                        size={16}
+                        color={colors.warning}
+                      />
+                    </TouchableOpacity>
+                  </TouchableOpacity>
                 ))}
               </View>
             </ConditionalComponent>
@@ -564,18 +536,14 @@ export const DocumentsScreen: React.FC = () => {
           {/* Empty State */}
           <ConditionalComponent
             isValid={
-              foldersToDisplay.length === 0 && filteredDocuments.length === 0
+              favoriteFolders.length === 0 && favoriteDocuments.length === 0
             }
           >
             <View style={styles.emptyState}>
-              <Text style={styles.emptyTitle}>Aucun élément trouvé</Text>
+              <Text style={styles.emptyTitle}>Aucun favori</Text>
               <Text style={styles.emptySubtitle}>
-                <ConditionalComponent
-                  isValid={Object.keys(filters).length > 0}
-                  defaultComponent="Vos documents et dossiers apparaîtront ici."
-                >
-                  Aucun élément ne correspond à vos critères de recherche.
-                </ConditionalComponent>
+                Ajoutez des documents et dossiers à vos favoris pour les
+                retrouver rapidement ici.
               </Text>
             </View>
           </ConditionalComponent>
@@ -587,17 +555,9 @@ export const DocumentsScreen: React.FC = () => {
         visible={showSearchModal}
         onClose={() => setShowSearchModal(false)}
         onSearch={handleSearch}
-        placeholder="Rechercher des documents..."
-        initialQuery={filters.searchQuery || ""}
-        title="Rechercher documents"
-      />
-
-      {/* Filter Modal */}
-      <DocumentFilterModal
-        visible={showFilterModal}
-        onClose={() => setShowFilterModal(false)}
-        onApplyFilters={setFilters}
-        currentFilters={filters}
+        placeholder="Rechercher dans les favoris..."
+        initialQuery=""
+        title="Rechercher favoris"
       />
 
       {/* Sidebar */}

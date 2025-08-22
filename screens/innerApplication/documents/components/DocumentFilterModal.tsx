@@ -1,10 +1,11 @@
-// screens/innerApplication/documents/components/DocumentFilterModal.tsx
+// screens/innerApplication/documents/components/DocumentFilterModal.tsx - Corrected
 
 import ConditionalComponent from "@/shared/components/conditionalComponent/conditionalComponent";
 import { FontAwesome } from "@expo/vector-icons";
 import React, { useEffect, useRef, useState } from "react";
 import {
   Animated,
+  Dimensions,
   Modal,
   Platform,
   ScrollView,
@@ -14,7 +15,6 @@ import {
   TouchableWithoutFeedback,
   View,
 } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
 import { useThemeColors } from "../../../../hooks/useTheme";
 import { Button } from "../../../../shared/components/ui/Button";
 import { Checkbox } from "../../../../shared/components/ui/Checkbox";
@@ -24,6 +24,8 @@ import {
   DocumentFilters,
   DocumentType,
 } from "../../../../shared/types/document";
+
+const { height: screenHeight } = Dimensions.get("window");
 
 interface DocumentFilterModalProps {
   visible: boolean;
@@ -39,7 +41,7 @@ export const DocumentFilterModal: React.FC<DocumentFilterModalProps> = ({
   currentFilters,
 }) => {
   const colors = useThemeColors();
-  const slideAnim = useRef(new Animated.Value(0)).current;
+  const slideAnim = useRef(new Animated.Value(screenHeight)).current;
   const overlayAnim = useRef(new Animated.Value(0)).current;
 
   // Filter state
@@ -73,9 +75,9 @@ export const DocumentFilterModal: React.FC<DocumentFilterModalProps> = ({
     if (visible) {
       Animated.parallel([
         Animated.timing(slideAnim, {
-          toValue: 1,
+          toValue: screenHeight * 0.1, // Start from 10% of screen height
           duration: 300,
-          useNativeDriver: true,
+          useNativeDriver: false,
         }),
         Animated.timing(overlayAnim, {
           toValue: 1,
@@ -86,9 +88,9 @@ export const DocumentFilterModal: React.FC<DocumentFilterModalProps> = ({
     } else {
       Animated.parallel([
         Animated.timing(slideAnim, {
-          toValue: 0,
+          toValue: screenHeight,
           duration: 250,
-          useNativeDriver: true,
+          useNativeDriver: false,
         }),
         Animated.timing(overlayAnim, {
           toValue: 0,
@@ -137,11 +139,11 @@ export const DocumentFilterModal: React.FC<DocumentFilterModalProps> = ({
     }
 
     if (sizeMin) {
-      filters.sizeMin = parseInt(sizeMin) * 1024 * 1024; // Convert MB to bytes
+      filters.sizeMin = parseInt(sizeMin) * 1024 * 1024;
     }
 
     if (sizeMax) {
-      filters.sizeMax = parseInt(sizeMax) * 1024 * 1024; // Convert MB to bytes
+      filters.sizeMax = parseInt(sizeMax) * 1024 * 1024;
     }
 
     onApplyFilters(filters);
@@ -173,13 +175,16 @@ export const DocumentFilterModal: React.FC<DocumentFilterModalProps> = ({
     modalOverlay: {
       flex: 1,
       backgroundColor: "rgba(0, 0, 0, 0.5)",
-      justifyContent: "flex-end",
     },
     container: {
+      position: "absolute",
+      left: 0,
+      right: 0,
+      bottom: 0,
+      height: screenHeight * 0.9,
       backgroundColor: colors.surface,
       borderTopLeftRadius: 20,
       borderTopRightRadius: 20,
-      maxHeight: "90%",
       ...Platform.select({
         ios: {
           shadowColor: colors.shadow,
@@ -280,6 +285,10 @@ export const DocumentFilterModal: React.FC<DocumentFilterModalProps> = ({
       gap: 12,
       borderTopWidth: 1,
       borderTopColor: colors.border,
+      paddingBottom: Platform.select({
+        ios: 34, // Safe area for iOS
+        android: 20,
+      }),
     },
     footerButton: {
       flex: 1,
@@ -299,170 +308,152 @@ export const DocumentFilterModal: React.FC<DocumentFilterModalProps> = ({
         />
       </TouchableWithoutFeedback>
 
-      <SafeAreaView
-        style={{ position: "absolute", bottom: 0, left: 0, right: 0 }}
+      <Animated.View
+        style={[
+          styles.container,
+          {
+            transform: [{ translateY: slideAnim }],
+          },
+        ]}
       >
-        <Animated.View
-          style={[
-            styles.container,
-            {
-              transform: [
-                {
-                  translateY: slideAnim.interpolate({
-                    inputRange: [0, 1],
-                    outputRange: [500, 0],
-                  }),
-                },
-              ],
-            },
-          ]}
-        >
-          {/* Header */}
-          <View style={styles.header}>
-            <Text style={styles.title}>Filtres</Text>
-            <TouchableOpacity style={styles.closeButton} onPress={onClose}>
-              <FontAwesome
-                name="times"
-                size={16}
-                color={colors.textSecondary}
-              />
-            </TouchableOpacity>
+        {/* Header */}
+        <View style={styles.header}>
+          <Text style={styles.title}>Filtres</Text>
+          <TouchableOpacity style={styles.closeButton} onPress={onClose}>
+            <FontAwesome name="times" size={16} color={colors.textSecondary} />
+          </TouchableOpacity>
+        </View>
+
+        {/* Content */}
+        <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
+          {/* Document Types */}
+          <View style={styles.section}>
+            <Text style={styles.sectionTitle}>Types de documents</Text>
+            <View style={styles.checkboxGroup}>
+              {Object.entries(DOCUMENT_TYPES).map(([type, config]) => (
+                <TouchableOpacity
+                  key={type}
+                  style={styles.typeItem}
+                  onPress={() => handleTypeToggle(type as DocumentType)}
+                >
+                  <View
+                    style={[
+                      styles.typeIcon,
+                      { backgroundColor: config.color + "15" },
+                    ]}
+                  >
+                    <FontAwesome
+                      name={config.icon as any}
+                      size={16}
+                      color={config.color}
+                    />
+                  </View>
+                  <Text style={styles.typeLabel}>{config.label}</Text>
+                  <Checkbox
+                    checked={selectedTypes.includes(type as DocumentType)}
+                    onPress={() => handleTypeToggle(type as DocumentType)}
+                  />
+                </TouchableOpacity>
+              ))}
+            </View>
           </View>
 
-          {/* Content */}
-          <ScrollView
-            style={styles.content}
-            showsVerticalScrollIndicator={false}
-          >
-            {/* Document Types */}
-            <View style={styles.section}>
-              <Text style={styles.sectionTitle}>Types de documents</Text>
-              <View style={styles.checkboxGroup}>
-                {Object.entries(DOCUMENT_TYPES).map(([type, config]) => (
-                  <TouchableOpacity
-                    key={type}
-                    style={styles.typeItem}
-                    onPress={() => handleTypeToggle(type as DocumentType)}
-                  >
-                    <View
-                      style={[
-                        styles.typeIcon,
-                        { backgroundColor: config.color + "15" },
-                      ]}
-                    >
-                      <FontAwesome
-                        name={config.icon as any}
-                        size={16}
-                        color={config.color}
-                      />
-                    </View>
-                    <Text style={styles.typeLabel}>{config.label}</Text>
-                    <Checkbox
-                      checked={selectedTypes.includes(type as DocumentType)}
-                      onPress={() => handleTypeToggle(type as DocumentType)}
-                    />
-                  </TouchableOpacity>
-                ))}
-              </View>
+          {/* Status */}
+          <View style={styles.section}>
+            <Text style={styles.sectionTitle}>Statut</Text>
+            <View style={styles.checkboxGroup}>
+              {[
+                { value: "active", label: "Actif" },
+                { value: "expired", label: "Expiré" },
+                { value: "pending", label: "En attente" },
+              ].map((status) => (
+                <Checkbox
+                  key={status.value}
+                  checked={selectedStatuses.includes(status.value)}
+                  onPress={() => handleStatusToggle(status.value)}
+                  label={status.label}
+                />
+              ))}
             </View>
+          </View>
 
-            {/* Status */}
-            <View style={styles.section}>
-              <Text style={styles.sectionTitle}>Statut</Text>
-              <View style={styles.checkboxGroup}>
-                {[
-                  { value: "active", label: "Actif" },
-                  { value: "expired", label: "Expiré" },
-                  { value: "pending", label: "En attente" },
-                ].map((status) => (
-                  <Checkbox
-                    key={status.value}
-                    checked={selectedStatuses.includes(status.value)}
-                    onPress={() => handleStatusToggle(status.value)}
-                    label={status.label}
-                  />
-                ))}
-              </View>
-            </View>
+          {/* Favorites */}
+          <View style={styles.section}>
+            <Checkbox
+              checked={onlyFavorites}
+              onPress={() => setOnlyFavorites(!onlyFavorites)}
+              label="Favoris uniquement"
+              size="large"
+            />
+          </View>
 
-            {/* Favorites */}
-            <View style={styles.section}>
-              <Checkbox
-                checked={onlyFavorites}
-                onPress={() => setOnlyFavorites(!onlyFavorites)}
-                label="Favoris uniquement"
-                size="large"
-              />
-            </View>
-
-            {/* Date Range */}
-            <View style={styles.section}>
-              <Text style={styles.sectionTitle}>Période</Text>
-              <View style={styles.dateRow}>
-                <View style={styles.dateInput}>
-                  <Input
-                    label="Du"
-                    value={dateFrom}
-                    onChangeText={setDateFrom}
-                    placeholder="YYYY-MM-DD"
-                  />
-                </View>
-                <View style={styles.dateInput}>
-                  <Input
-                    label="Au"
-                    value={dateTo}
-                    onChangeText={setDateTo}
-                    placeholder="YYYY-MM-DD"
-                  />
-                </View>
-              </View>
-            </View>
-
-            {/* File Size */}
-            <View style={styles.section}>
-              <Text style={styles.sectionTitle}>Taille du fichier</Text>
-              <View style={styles.sizeRow}>
-                <View style={styles.sizeInput}>
-                  <Input
-                    label="Taille min"
-                    value={sizeMin}
-                    onChangeText={setSizeMin}
-                    placeholder="0"
-                    keyboardType="numeric"
-                  />
-                  <Text style={styles.sizeUnit}>MB</Text>
-                </View>
-                <View style={styles.sizeInput}>
-                  <Input
-                    label="Taille max"
-                    value={sizeMax}
-                    onChangeText={setSizeMax}
-                    placeholder="50"
-                    keyboardType="numeric"
-                  />
-                  <Text style={styles.sizeUnit}>MB</Text>
-                </View>
-              </View>
-            </View>
-          </ScrollView>
-
-          {/* Footer */}
-          <View style={styles.footer}>
-            <ConditionalComponent isValid={!!hasActiveFilters}>
-              <View style={styles.footerButton}>
-                <Button
-                  title="Effacer"
-                  variant="outline"
-                  onPress={handleClearFilters}
+          {/* Date Range */}
+          <View style={styles.section}>
+            <Text style={styles.sectionTitle}>Période</Text>
+            <View style={styles.dateRow}>
+              <View style={styles.dateInput}>
+                <Input
+                  label="Du"
+                  value={dateFrom}
+                  onChangeText={setDateFrom}
+                  placeholder="YYYY-MM-DD"
                 />
               </View>
-            </ConditionalComponent>
-            <View style={styles.footerButton}>
-              <Button title="Appliquer" onPress={handleApplyFilters} />
+              <View style={styles.dateInput}>
+                <Input
+                  label="Au"
+                  value={dateTo}
+                  onChangeText={setDateTo}
+                  placeholder="YYYY-MM-DD"
+                />
+              </View>
             </View>
           </View>
-        </Animated.View>
-      </SafeAreaView>
+
+          {/* File Size */}
+          <View style={styles.section}>
+            <Text style={styles.sectionTitle}>Taille du fichier</Text>
+            <View style={styles.sizeRow}>
+              <View style={styles.sizeInput}>
+                <Input
+                  label="Taille min"
+                  value={sizeMin}
+                  onChangeText={setSizeMin}
+                  placeholder="0"
+                  keyboardType="numeric"
+                />
+                <Text style={styles.sizeUnit}>MB</Text>
+              </View>
+              <View style={styles.sizeInput}>
+                <Input
+                  label="Taille max"
+                  value={sizeMax}
+                  onChangeText={setSizeMax}
+                  placeholder="50"
+                  keyboardType="numeric"
+                />
+                <Text style={styles.sizeUnit}>MB</Text>
+              </View>
+            </View>
+          </View>
+        </ScrollView>
+
+        {/* Footer */}
+        <View style={styles.footer}>
+          <ConditionalComponent isValid={!!hasActiveFilters}>
+            <View style={styles.footerButton}>
+              <Button
+                title="Effacer"
+                variant="outline"
+                onPress={handleClearFilters}
+              />
+            </View>
+          </ConditionalComponent>
+          <View style={styles.footerButton}>
+            <Button title="Appliquer" onPress={handleApplyFilters} />
+          </View>
+        </View>
+      </Animated.View>
     </Modal>
   );
 };

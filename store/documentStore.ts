@@ -1,4 +1,4 @@
-// store/documentStore.ts
+// store/documentStore.ts - Complete updated version
 
 import { create } from "zustand";
 import {
@@ -281,9 +281,10 @@ const generateMockFolders = (): DocumentFolder[] => {
       createdDate: new Date().toISOString(),
       modifiedDate: new Date().toISOString(),
       documentsCount: 1,
-      color: "#3b82f6",
+      color: "#746cd4",
       icon: "user",
       isShared: false,
+      isFavorite: false,
       size: 0.5 * 1024 * 1024,
     },
     {
@@ -292,9 +293,10 @@ const generateMockFolders = (): DocumentFolder[] => {
       createdDate: new Date().toISOString(),
       modifiedDate: new Date().toISOString(),
       documentsCount: 0,
-      color: "#22c55e",
+      color: "#746cd4",
       icon: "car",
       isShared: false,
+      isFavorite: true,
       size: 0,
     },
     {
@@ -303,9 +305,10 @@ const generateMockFolders = (): DocumentFolder[] => {
       createdDate: new Date().toISOString(),
       modifiedDate: new Date().toISOString(),
       documentsCount: 0,
-      color: "#f59e0b",
+      color: "#746cd4",
       icon: "folder",
       isShared: false,
+      isFavorite: false,
       size: 0,
     },
   ];
@@ -529,6 +532,7 @@ export const useDocumentStore = create<DocumentStore>((set, get) => ({
       set({ error: "Erreur lors du téléchargement" });
     }
   },
+
   duplicateDocument: async (id) => {
     const document = get().documents.find((doc) => doc.id === id);
     if (!document) throw new Error("Document not found");
@@ -577,7 +581,10 @@ export const useDocumentStore = create<DocumentStore>((set, get) => ({
         modifiedDate: new Date().toISOString(),
         documentsCount: 0,
         isShared: false,
+        isFavorite: false,
         size: 0,
+        color: "#746cd4",
+        icon: "folder",
       };
 
       set((state) => ({
@@ -674,8 +681,21 @@ export const useDocumentStore = create<DocumentStore>((set, get) => ({
     });
   },
 
+  toggleFolderFavorite: async (folderId) => {
+    const folder = get().folders.find((f) => f.id === folderId);
+    if (!folder) return;
+
+    await get().updateFolder(folderId, {
+      isFavorite: !folder.isFavorite,
+    });
+  },
+
   getFavoriteDocuments: () => {
     return get().documents.filter((doc) => doc.isFavorite);
+  },
+
+  getFavoriteFolders: () => {
+    return get().folders.filter((folder) => folder.isFavorite);
   },
 
   navigateToFolder: (folderId) => {

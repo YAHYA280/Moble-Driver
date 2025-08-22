@@ -17,6 +17,7 @@ interface FolderCardProps {
   folder: DocumentFolder;
   onPress: () => void;
   onLongPress?: () => void;
+  onFavoritePress?: () => void;
   style?: ViewStyle;
 }
 
@@ -24,9 +25,14 @@ export const FolderCard: React.FC<FolderCardProps> = ({
   folder,
   onPress,
   onLongPress,
+  onFavoritePress,
   style,
 }) => {
   const colors = useThemeColors();
+
+  const handleFavoritePress = () => {
+    onFavoritePress?.();
+  };
 
   const styles = StyleSheet.create({
     container: {
@@ -37,6 +43,7 @@ export const FolderCard: React.FC<FolderCardProps> = ({
       backgroundColor: colors.card,
       alignItems: "center",
       justifyContent: "center",
+      position: "relative",
       ...Platform.select({
         ios: {
           shadowColor: colors.shadow,
@@ -57,6 +64,18 @@ export const FolderCard: React.FC<FolderCardProps> = ({
         },
       }),
     },
+    favoriteButton: {
+      position: "absolute",
+      top: 12,
+      right: 12,
+      width: 24,
+      height: 24,
+      borderRadius: 12,
+      alignItems: "center",
+      justifyContent: "center",
+      backgroundColor: colors.backgroundSecondary,
+      zIndex: 1,
+    },
     iconContainer: {
       width: 56,
       height: 56,
@@ -64,7 +83,7 @@ export const FolderCard: React.FC<FolderCardProps> = ({
       alignItems: "center",
       justifyContent: "center",
       marginBottom: 12,
-      backgroundColor: (folder.color || colors.primary) + "15",
+      backgroundColor: colors.primary + "15",
     },
     name: {
       fontSize: 14,
@@ -87,13 +106,29 @@ export const FolderCard: React.FC<FolderCardProps> = ({
       onLongPress={onLongPress}
       activeOpacity={0.7}
     >
+      {/* Favorite Button */}
+      <TouchableOpacity
+        style={styles.favoriteButton}
+        onPress={handleFavoritePress}
+        hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+      >
+        <FontAwesome
+          name={folder.isFavorite ? "star" : "star-o"}
+          size={12}
+          color={folder.isFavorite ? colors.warning : colors.textTertiary}
+        />
+      </TouchableOpacity>
+
+      {/* Folder Icon */}
       <View style={styles.iconContainer}>
         <FontAwesome
           name={(folder.icon as any) || "folder"}
           size={24}
-          color={folder.color || colors.primary}
+          color={colors.primary}
         />
       </View>
+
+      {/* Folder Info */}
       <Text style={styles.name} numberOfLines={2}>
         {folder.name}
       </Text>
