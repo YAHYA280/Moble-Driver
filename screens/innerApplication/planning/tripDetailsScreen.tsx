@@ -59,7 +59,7 @@ export const TripDetailsScreen: React.FC = () => {
   };
 
   const handleContactPress = (phoneNumber: string) => {
-    console.log(`Calling ${phoneNumber}`);
+    // console.log(`Calling ${phoneNumber}`);
   };
 
   if (!trip || trip.id !== id) {

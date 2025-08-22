@@ -1,4 +1,3 @@
-// screens/innerApplication/planning/components/planning/ErrorSection.tsx
 import React from "react";
 import { StyleSheet, Text, View } from "react-native";
 import { useTheme } from "../../../../../contexts/ThemeContext";

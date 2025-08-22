@@ -1,5 +1,3 @@
-// store/routeSheetStore.ts - Fixed createRouteSheet function
-
 import { create } from "zustand";
 import {
   DayData,

@@ -1,3 +1,4 @@
+import ConditionalComponent from "@/shared/components/conditionalComponent/conditionalComponent";
 import { router } from "expo-router";
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import {
@@ -508,7 +509,7 @@ export const CreateRouteSheetScreen: React.FC = () => {
         </Animated.View>
 
         {/* Action Button */}
-        {selectedDate && (
+        <ConditionalComponent isValid={!!selectedDate}>
           <Animated.View
             style={[
               styles.buttonContainer,
@@ -533,7 +534,7 @@ export const CreateRouteSheetScreen: React.FC = () => {
               <Text style={styles.buttonText}>{getButtonText()}</Text>
             </TouchableOpacity>
           </Animated.View>
-        )}
+        </ConditionalComponent>
       </View>
     </SafeAreaView>
   );

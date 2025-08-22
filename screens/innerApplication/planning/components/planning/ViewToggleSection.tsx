@@ -1,4 +1,3 @@
-// screens/innerApplication/planning/components/planning/ViewToggleSection.tsx
 import FontAwesome from "@expo/vector-icons/build/FontAwesome";
 import React from "react";
 import { Animated, StyleSheet, Text, TouchableOpacity } from "react-native";

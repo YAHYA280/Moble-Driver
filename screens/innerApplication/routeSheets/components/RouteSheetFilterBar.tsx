@@ -1,3 +1,4 @@
+import ConditionalComponent from "@/shared/components/conditionalComponent/conditionalComponent";
 import { FontAwesome } from "@expo/vector-icons";
 import React, { useState } from "react";
 import {
@@ -35,7 +36,6 @@ export const RouteSheetFilterBar: React.FC<RouteSheetFilterBarProps> = ({
   const currentYear = new Date().getFullYear();
   const years = Array.from({ length: 3 }, (_, i) => currentYear - i);
 
-  // Remove status options since we're not using status filtering anymore
   const activeFiltersCount = Object.keys(filters).filter(
     (key) =>
       key !== "searchQuery" &&
@@ -254,14 +254,14 @@ export const RouteSheetFilterBar: React.FC<RouteSheetFilterBarProps> = ({
               >
                 Filtrer
               </Text>
-              {activeFiltersCount > 0 && (
+              <ConditionalComponent isValid={activeFiltersCount > 0}>
                 <View style={styles.badge}>
                   <Text style={styles.badgeText}>{activeFiltersCount}</Text>
                 </View>
-              )}
+              </ConditionalComponent>
             </TouchableOpacity>
 
-            {activeFiltersCount > 0 && (
+            <ConditionalComponent isValid={activeFiltersCount > 0}>
               <TouchableOpacity
                 style={styles.clearButton}
                 onPress={handleClearFilters}
@@ -269,15 +269,15 @@ export const RouteSheetFilterBar: React.FC<RouteSheetFilterBarProps> = ({
               >
                 <Text style={styles.clearButtonText}>Effacer</Text>
               </TouchableOpacity>
-            )}
+            </ConditionalComponent>
           </View>
         </View>
 
-        {activeFiltersCount > 0 && (
+        <ConditionalComponent isValid={activeFiltersCount > 0}>
           <Text style={styles.activeFiltersText}>
             Filtres actifs: {getActiveFiltersDisplay()}
           </Text>
-        )}
+        </ConditionalComponent>
       </View>
 
       <Modal

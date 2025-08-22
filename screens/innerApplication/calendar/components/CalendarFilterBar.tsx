@@ -29,28 +29,17 @@ interface CalendarFilterBarProps {
   style?: ViewStyle;
 }
 
-export const CalendarFilterBar: React.FC<CalendarFilterBarProps> = ({
-  filters,
-  onFiltersChange,
-  onClearFilters,
-  onViewToggle,
-  currentView,
-  style,
-}) => {
-  const colors = useThemeColors();
-  const [showFilterModal, setShowFilterModal] = useState(false);
-  const [localFilters, setLocalFilters] = useState<CalendarFilters>(filters);
+const appointmentTypes: AppointmentType[] = [
+  "visite-medicale",
+  "formation",
+  "entretien-rh",
+  "maintenance",
+  "reunion",
+  "autre",
+];
 
-  const appointmentTypes: AppointmentType[] = [
-    "visite-medicale",
-    "formation",
-    "entretien-rh",
-    "maintenance",
-    "reunion",
-    "autre",
-  ];
-
-  const activeFiltersCount = Object.keys(filters).filter(
+const calculateActiveFiltersCount = (filters: CalendarFilters) => {
+  return Object.keys(filters).filter(
     (key) =>
       key !== "searchQuery" &&
       filters[key as keyof CalendarFilters] !== undefined &&
@@ -58,44 +47,20 @@ export const CalendarFilterBar: React.FC<CalendarFilterBarProps> = ({
         ? (filters[key as keyof CalendarFilters] as any[]).length > 0
         : true)
   ).length;
+};
 
-  const handleApplyFilters = () => {
-    onFiltersChange(localFilters);
-    setShowFilterModal(false);
-  };
+const getActiveFiltersDisplay = (filters: CalendarFilters) => {
+  const displays = [];
 
-  const handleClearFilters = () => {
-    const clearedFilters = {};
-    setLocalFilters(clearedFilters);
-    onClearFilters();
-    setShowFilterModal(false);
-  };
+  if (filters.types && filters.types.length > 0) {
+    displays.push(`${filters.types.length} type(s)`);
+  }
 
-  const handleTypeToggle = (type: AppointmentType) => {
-    setLocalFilters((prev) => {
-      const currentTypes = prev.types || [];
-      const newTypes = currentTypes.includes(type)
-        ? currentTypes.filter((t) => t !== type)
-        : [...currentTypes, type];
+  return displays.join(", ");
+};
 
-      return {
-        ...prev,
-        types: newTypes.length > 0 ? newTypes : undefined,
-      };
-    });
-  };
-
-  const getActiveFiltersDisplay = () => {
-    const displays = [];
-
-    if (filters.types && filters.types.length > 0) {
-      displays.push(`${filters.types.length} type(s)`);
-    }
-
-    return displays.join(", ");
-  };
-
-  const styles = StyleSheet.create({
+const createStyles = (colors: any) =>
+  StyleSheet.create({
     container: {
       backgroundColor: colors.surface,
       paddingVertical: 12,
@@ -268,6 +233,47 @@ export const CalendarFilterBar: React.FC<CalendarFilterBarProps> = ({
     },
   });
 
+export const CalendarFilterBar: React.FC<CalendarFilterBarProps> = ({
+  filters,
+  onFiltersChange,
+  onClearFilters,
+  onViewToggle,
+  currentView,
+  style,
+}) => {
+  const colors = useThemeColors();
+  const [showFilterModal, setShowFilterModal] = useState(false);
+  const [localFilters, setLocalFilters] = useState<CalendarFilters>(filters);
+
+  const activeFiltersCount = calculateActiveFiltersCount(filters);
+  const styles = createStyles(colors);
+
+  const handleApplyFilters = () => {
+    onFiltersChange(localFilters);
+    setShowFilterModal(false);
+  };
+
+  const handleClearFilters = () => {
+    const clearedFilters = {};
+    setLocalFilters(clearedFilters);
+    onClearFilters();
+    setShowFilterModal(false);
+  };
+
+  const handleTypeToggle = (type: AppointmentType) => {
+    setLocalFilters((prev) => {
+      const currentTypes = prev.types || [];
+      const newTypes = currentTypes.includes(type)
+        ? currentTypes.filter((t) => t !== type)
+        : [...currentTypes, type];
+
+      return {
+        ...prev,
+        types: newTypes.length > 0 ? newTypes : undefined,
+      };
+    });
+  };
+
   return (
     <>
       <View style={[styles.container, style]}>
@@ -332,7 +338,7 @@ export const CalendarFilterBar: React.FC<CalendarFilterBarProps> = ({
 
         {activeFiltersCount > 0 && (
           <Text style={styles.activeFiltersText}>
-            Filtres actifs: {getActiveFiltersDisplay()}
+            Filtres actifs: {getActiveFiltersDisplay(filters)}
           </Text>
         )}
       </View>

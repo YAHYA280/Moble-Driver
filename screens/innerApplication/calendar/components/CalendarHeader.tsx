@@ -26,94 +26,16 @@ interface CalendarHeaderProps {
   title: string;
   subtitle?: string;
   emoji?: string;
-
   rightIcons?: IconButton[];
-
   backgroundColor?: string;
   titleColor?: string;
   subtitleColor?: string;
   style?: ViewStyle;
-
   onTitlePress?: () => void;
 }
 
-export const CalendarHeader: React.FC<CalendarHeaderProps> = ({
-  title,
-  subtitle,
-  emoji,
-  rightIcons = [],
-  backgroundColor,
-  titleColor,
-  subtitleColor,
-  style,
-  onTitlePress,
-}) => {
-  const colors = useThemeColors();
-
-  const renderIconButton = (iconButton: IconButton, index: number) => (
-    <TouchableOpacity
-      key={index}
-      style={styles.iconButton}
-      onPress={iconButton.onPress}
-      activeOpacity={0.7}
-    >
-      <View style={styles.iconContainer}>
-        <FontAwesome
-          name={iconButton.icon}
-          size={iconButton.size || 20}
-          color={iconButton.color || colors.icon}
-        />
-        <ConditionalComponent
-          isValid={!!(iconButton.badge && iconButton.badge > 0)}
-        >
-          <View style={styles.badge}>
-            <Text style={styles.badgeText}>
-              {iconButton.badge && iconButton.badge > 99
-                ? "99+"
-                : iconButton.badge}
-            </Text>
-          </View>
-        </ConditionalComponent>
-      </View>
-    </TouchableOpacity>
-  );
-
-  const renderTitle = () => {
-    const TitleWrapper = onTitlePress ? TouchableOpacity : View;
-
-    return (
-      <TitleWrapper
-        style={styles.titleContainer}
-        onPress={onTitlePress}
-        activeOpacity={onTitlePress ? 0.7 : 1}
-      >
-        <View style={styles.titleRow}>
-          <Text
-            style={[styles.title, { color: titleColor || colors.text }]}
-            numberOfLines={1}
-          >
-            {title}
-          </Text>
-          <ConditionalComponent isValid={!!emoji}>
-            <Text style={styles.emoji}>{emoji}</Text>
-          </ConditionalComponent>
-        </View>
-        <ConditionalComponent isValid={!!subtitle}>
-          <Text
-            style={[
-              styles.subtitle,
-              { color: subtitleColor || colors.textSecondary },
-            ]}
-            numberOfLines={1}
-          >
-            {subtitle}
-          </Text>
-        </ConditionalComponent>
-      </TitleWrapper>
-    );
-  };
-
-  const styles = StyleSheet.create({
+const createStyles = (colors: any, backgroundColor?: string) =>
+  StyleSheet.create({
     container: {
       flexDirection: "row",
       alignItems: "center",
@@ -222,13 +144,113 @@ export const CalendarHeader: React.FC<CalendarHeaderProps> = ({
     },
   });
 
+const renderIconButton = (
+  iconButton: IconButton,
+  index: number,
+  colors: any,
+  styles: any
+) => (
+  <TouchableOpacity
+    key={index}
+    style={styles.iconButton}
+    onPress={iconButton.onPress}
+    activeOpacity={0.7}
+  >
+    <View style={styles.iconContainer}>
+      <FontAwesome
+        name={iconButton.icon}
+        size={iconButton.size || 20}
+        color={iconButton.color || colors.icon}
+      />
+      <ConditionalComponent
+        isValid={!!(iconButton.badge && iconButton.badge > 0)}
+      >
+        <View style={styles.badge}>
+          <Text style={styles.badgeText}>
+            {iconButton.badge && iconButton.badge > 99
+              ? "99+"
+              : iconButton.badge}
+          </Text>
+        </View>
+      </ConditionalComponent>
+    </View>
+  </TouchableOpacity>
+);
+
+const renderTitle = (
+  title: string,
+  subtitle?: string,
+  emoji?: string,
+  onTitlePress?: () => void,
+  titleColor?: string,
+  subtitleColor?: string,
+  colors?: any,
+  styles?: any
+) => {
+  const TitleWrapper = onTitlePress ? TouchableOpacity : View;
+
+  return (
+    <TitleWrapper
+      style={styles.titleContainer}
+      onPress={onTitlePress}
+      activeOpacity={onTitlePress ? 0.7 : 1}
+    >
+      <View style={styles.titleRow}>
+        <Text
+          style={[styles.title, { color: titleColor || colors.text }]}
+          numberOfLines={1}
+        >
+          {title}
+        </Text>
+        <ConditionalComponent isValid={!!emoji}>
+          <Text style={styles.emoji}>{emoji}</Text>
+        </ConditionalComponent>
+      </View>
+      <ConditionalComponent isValid={!!subtitle}>
+        <Text
+          style={[
+            styles.subtitle,
+            { color: subtitleColor || colors.textSecondary },
+          ]}
+          numberOfLines={1}
+        >
+          {subtitle}
+        </Text>
+      </ConditionalComponent>
+    </TitleWrapper>
+  );
+};
+
+export const CalendarHeader: React.FC<CalendarHeaderProps> = ({
+  title,
+  subtitle,
+  emoji,
+  rightIcons = [],
+  backgroundColor,
+  titleColor,
+  subtitleColor,
+  style,
+  onTitlePress,
+}) => {
+  const colors = useThemeColors();
+  const styles = createStyles(colors, backgroundColor);
+
   return (
     <View style={[styles.container, style]}>
-      {renderTitle()}
+      {renderTitle(
+        title,
+        subtitle,
+        emoji,
+        onTitlePress,
+        titleColor,
+        subtitleColor,
+        colors,
+        styles
+      )}
 
       <View style={styles.rightSection}>
         {rightIcons.map((iconButton, index) =>
-          renderIconButton(iconButton, index)
+          renderIconButton(iconButton, index, colors, styles)
         )}
       </View>
     </View>

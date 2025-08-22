@@ -306,9 +306,9 @@ export const RouteSheetDayViewScreen: React.FC = () => {
                   slotTimes[timeSlot.id]?.end ||
                   getDefaultEndTime(timeSlot.timeSlot)
                 }
-                onToggleActive={() => {}} // No action
-                onStartTimePress={() => {}} // No action
-                onEndTimePress={() => {}} // No action
+                onToggleActive={() => {}}
+                onStartTimePress={() => {}}
+                onEndTimePress={() => {}}
                 disabled={true}
               />
             ))}
@@ -321,9 +321,9 @@ export const RouteSheetDayViewScreen: React.FC = () => {
               startKm={startKm}
               endKm={endKm}
               fuelAmount={fuelAmount}
-              onStartKmChange={() => {}} // No action
-              onEndKmChange={() => {}} // No action
-              onFuelAmountChange={() => {}} // No action
+              onStartKmChange={() => {}}
+              onEndKmChange={() => {}}
+              onFuelAmountChange={() => {}}
             />
           </View>
 
@@ -332,7 +332,7 @@ export const RouteSheetDayViewScreen: React.FC = () => {
             <View style={styles.readOnlyOverlay} />
             <OtherTripsSection
               trips={otherTrips}
-              onTripsChange={() => {}} // No action
+              onTripsChange={() => {}}
               disabled={true}
             />
           </View>
@@ -342,7 +342,7 @@ export const RouteSheetDayViewScreen: React.FC = () => {
             <View style={styles.readOnlyOverlay} />
             <ObservationsSection
               observations={observations}
-              onObservationsChange={() => {}} // No action
+              onObservationsChange={() => {}}
             />
           </View>
         </ScrollView>

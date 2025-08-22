@@ -195,14 +195,14 @@ export const OtherTripsSection: React.FC<OtherTripsSectionProps> = ({
         <Text style={[styles.tripTitle, { color: colors.text }]}>
           {trip.name}
         </Text>
-        {!disabled && (
+        <ConditionalComponent isValid={!disabled}>
           <TouchableOpacity
             style={styles.removeButton}
             onPress={() => removeTrip(trip.id)}
           >
             <FontAwesome name="times" size={16} color={colors.error} />
           </TouchableOpacity>
-        )}
+        </ConditionalComponent>
       </View>
 
       <View style={styles.timeRow}>
@@ -506,7 +506,7 @@ export const OtherTripsSection: React.FC<OtherTripsSectionProps> = ({
 
       <ConditionalComponent isValid={isExpanded}>
         <View style={styles.content}>
-          {!disabled && (
+          <ConditionalComponent isValid={!disabled}>
             <TouchableOpacity
               style={styles.addButton}
               onPress={() => setShowTripOptions(true)}
@@ -514,7 +514,7 @@ export const OtherTripsSection: React.FC<OtherTripsSectionProps> = ({
               <FontAwesome name="plus" size={16} color={colors.primary} />
               <Text style={styles.addButtonText}>Ajouter un trajet</Text>
             </TouchableOpacity>
-          )}
+          </ConditionalComponent>
 
           {trips.map(renderTripItem)}
         </View>
@@ -560,7 +560,9 @@ export const OtherTripsSection: React.FC<OtherTripsSectionProps> = ({
       </Modal>
 
       {/* Native Time Picker */}
-      {showTimePicker && Platform.OS === "android" && (
+      <ConditionalComponent
+        isValid={showTimePicker && Platform.OS === "android"}
+      >
         <DateTimePicker
           value={tempTime}
           mode="time"
@@ -568,10 +570,10 @@ export const OtherTripsSection: React.FC<OtherTripsSectionProps> = ({
           display="default"
           onChange={handleTimeChange}
         />
-      )}
+      </ConditionalComponent>
 
       {/* iOS Modal Time Picker */}
-      {showTimePicker && Platform.OS === "ios" && (
+      <ConditionalComponent isValid={showTimePicker && Platform.OS === "ios"}>
         <Modal
           animationType="slide"
           transparent={true}
@@ -616,7 +618,7 @@ export const OtherTripsSection: React.FC<OtherTripsSectionProps> = ({
             </View>
           </TouchableWithoutFeedback>
         </Modal>
-      )}
+      </ConditionalComponent>
     </View>
   );
 };

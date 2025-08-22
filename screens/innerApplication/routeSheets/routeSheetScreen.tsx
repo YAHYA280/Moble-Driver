@@ -1,3 +1,4 @@
+import ConditionalComponent from "@/shared/components/conditionalComponent/conditionalComponent";
 import { router } from "expo-router";
 import React, { useEffect, useRef, useState } from "react";
 import {
@@ -355,11 +356,12 @@ export const RouteSheetScreen: React.FC = () => {
       />
 
       {/* Error Display */}
-      {error && (
+      {/* Error Display */}
+      <ConditionalComponent isValid={!!error}>
         <View style={styles.errorContainer}>
           <Text style={styles.errorText}>{error}</Text>
         </View>
-      )}
+      </ConditionalComponent>
 
       {/* Route Sheets List */}
       <Animated.View

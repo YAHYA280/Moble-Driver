@@ -1,4 +1,3 @@
-// screens/innerApplication/planning/components/planning/CalendarSection.tsx
 import ConditionalComponent from "@/shared/components/conditionalComponent/conditionalComponent";
 import React from "react";
 import { Animated, Platform, StyleSheet } from "react-native";

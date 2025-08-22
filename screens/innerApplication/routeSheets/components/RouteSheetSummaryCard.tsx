@@ -1,3 +1,4 @@
+import ConditionalComponent from "@/shared/components/conditionalComponent/conditionalComponent";
 import React from "react";
 import { Platform, StyleSheet, Text, View, ViewStyle } from "react-native";
 import { useThemeColors } from "../../../../hooks/useTheme";
@@ -150,11 +151,6 @@ export const RouteSheetSummaryCard: React.FC<RouteSheetSummaryCardProps> = ({
         </View>
 
         <View style={styles.statItem}>
-          <Text style={styles.statValue}>{getCompletedDays()}</Text>
-          <Text style={styles.statLabel}>Jours complétés</Text>
-        </View>
-
-        <View style={styles.statItem}>
           <Text style={styles.statValue}>{routeSheet.totalKilometrage}</Text>
           <Text style={styles.statLabel}>Total km</Text>
         </View>
@@ -193,14 +189,14 @@ export const RouteSheetSummaryCard: React.FC<RouteSheetSummaryCardProps> = ({
         <Text style={styles.infoValue}>{getLastModifiedDate()}</Text>
       </View>
 
-      {routeSheet.submittedAt && (
+      <ConditionalComponent isValid={!!routeSheet.submittedAt}>
         <View style={styles.infoRow}>
           <Text style={styles.infoLabel}>Soumise le</Text>
           <Text style={styles.infoValue}>
-            {new Date(routeSheet.submittedAt).toLocaleDateString("fr-FR")}
+            {new Date(routeSheet.submittedAt!).toLocaleDateString("fr-FR")}
           </Text>
         </View>
-      )}
+      </ConditionalComponent>
     </View>
   );
 };

@@ -1,3 +1,4 @@
+import ConditionalComponent from "@/shared/components/conditionalComponent/conditionalComponent";
 import { FontAwesome } from "@expo/vector-icons";
 import React from "react";
 import {
@@ -217,7 +218,7 @@ export const RouteSheetCard: React.FC<RouteSheetCardProps> = ({
       {/* Right Action Button */}
       <View style={styles.rightSection}>
         {/* Download Button - Only for previous months */}
-        {!canEdit && (
+        <ConditionalComponent isValid={!canEdit}>
           <TouchableOpacity
             style={[styles.actionButton, styles.downloadButton]}
             onPress={handleDownload}
@@ -225,10 +226,10 @@ export const RouteSheetCard: React.FC<RouteSheetCardProps> = ({
           >
             <FontAwesome name="download" size={16} color={colors.primary} />
           </TouchableOpacity>
-        )}
+        </ConditionalComponent>
 
         {/* Edit Button - Only for current month */}
-        {canEdit && onEdit && (
+        <ConditionalComponent isValid={canEdit && !!onEdit}>
           <TouchableOpacity
             style={[styles.actionButton, styles.editButton]}
             onPress={onEdit}
@@ -236,7 +237,7 @@ export const RouteSheetCard: React.FC<RouteSheetCardProps> = ({
           >
             <FontAwesome name="edit" size={16} color={colors.success} />
           </TouchableOpacity>
-        )}
+        </ConditionalComponent>
       </View>
     </TouchableOpacity>
   );

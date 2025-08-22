@@ -1,4 +1,3 @@
-// screens/innerApplication/planning/components/TripCard.tsx
 import ConditionalComponent from "@/shared/components/conditionalComponent/conditionalComponent";
 import { FontAwesome } from "@expo/vector-icons";
 import React from "react";

@@ -24,59 +24,45 @@ interface CalendarDayProps {
   style?: ViewStyle;
 }
 
-const CalendarDay: React.FC<CalendarDayProps> = ({
-  day,
-  date,
-  appointments,
-  isToday = false,
-  isSelected = false,
-  isCurrentMonth = true,
-  onPress,
-  style,
-}) => {
-  const colors = useThemeColors();
+const getUniqueAppointmentTypes = (appointments: Appointment[]) => {
+  return [...new Set(appointments.map((a) => a.type))].slice(0, 3);
+};
 
-  const handlePress = () => {
-    if (day && date) {
-      onPress(date);
-    }
-  };
+const getShadowStyle = (isSelected: boolean, colors: any) => {
+  if (!isSelected) return {};
 
-  // Get unique appointment types for this day
-  const appointmentTypes = [...new Set(appointments.map((a) => a.type))].slice(
-    0,
-    3
-  ); // Limit to 3 dots max
+  if (Platform.OS === "ios") {
+    return {
+      shadowColor: colors.primary,
+      shadowOffset: { width: 0, height: 2 },
+      shadowOpacity: 0.3,
+      shadowRadius: 4,
+    };
+  }
 
-  // Create shadow styles conditionally
-  const getShadowStyle = () => {
-    if (!isSelected) return {};
+  if (Platform.OS === "android") {
+    return {
+      elevation: 3,
+    };
+  }
 
-    if (Platform.OS === "ios") {
-      return {
-        shadowColor: colors.primary,
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.3,
-        shadowRadius: 4,
-      };
-    }
+  if (Platform.OS === "web") {
+    return {
+      boxShadow: `0 2px 4px ${colors.primary}40`,
+    };
+  }
 
-    if (Platform.OS === "android") {
-      return {
-        elevation: 3,
-      };
-    }
+  return {};
+};
 
-    if (Platform.OS === "web") {
-      return {
-        boxShadow: `0 2px 4px ${colors.primary}40`,
-      };
-    }
-
-    return {};
-  };
-
-  const styles = StyleSheet.create({
+const createStyles = (
+  colors: any,
+  isSelected: boolean,
+  isToday: boolean,
+  day: number | null,
+  isCurrentMonth: boolean
+) =>
+  StyleSheet.create({
     dayContainer: {
       flex: 1,
       aspectRatio: 1,
@@ -89,7 +75,7 @@ const CalendarDay: React.FC<CalendarDayProps> = ({
         : isToday
         ? colors.primary + "20"
         : "transparent",
-      ...getShadowStyle(),
+      ...getShadowStyle(isSelected, colors),
     },
     dayText: {
       fontSize: 16,
@@ -115,6 +101,27 @@ const CalendarDay: React.FC<CalendarDayProps> = ({
       marginHorizontal: 1,
     },
   });
+
+const CalendarDay: React.FC<CalendarDayProps> = ({
+  day,
+  date,
+  appointments,
+  isToday = false,
+  isSelected = false,
+  isCurrentMonth = true,
+  onPress,
+  style,
+}) => {
+  const colors = useThemeColors();
+
+  const handlePress = () => {
+    if (day && date) {
+      onPress(date);
+    }
+  };
+
+  const appointmentTypes = getUniqueAppointmentTypes(appointments);
+  const styles = createStyles(colors, isSelected, isToday, day, isCurrentMonth);
 
   return (
     <TouchableOpacity

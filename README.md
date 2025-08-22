@@ -62,15 +62,10 @@ vsn-driver-front/
 │   │   └── conditionalComponent/ # Conditional rendering
 │   └── types/                   # TypeScript interfaces
 ├── contexts/                    # React contexts
-
 ├── hooks/                       # Custom hooks
-
 ├── store/                       # State management
-
 ├── constants/                   # App constants
-
 ├── utils/                       # Utility functions
-
 └── assets/                      # Static assets
     ├── images/                  # App images
     └── fonts/                   # Custom fonts
@@ -163,6 +158,11 @@ npx expo start --web
   - [ ] TypeScript compilation successful
   - [ ] No console.log statements in production code
   - [ ] All imports are used and properly typed
+  - [ ] No commented-out code left in files
+  - [ ] No hard-coded configuration values
+  - [ ] Code properly formatted (Prettier/ESLint)
+  - [ ] All merge conflicts resolved
+  - [ ] No localhost URLs in code
 
 #### Code Style
 
@@ -172,6 +172,20 @@ npx expo start --web
 - Proper type definitions
 - Use meaningful variable and function names
 - Follow consistent indentation (2 spaces)
+- **Naming conventions**:
+  - Use camelCase for variables, functions, and properties
+  - Use PascalCase for components and types
+  - Use descriptive, understandable names in English only
+- **Language consistency**:
+  - Never mix languages in code (English only for code, French for UI text)
+  - Use English for all variable names, function names, and comments
+  - French text only in user-facing strings and UI labels
+- **Code cleanliness**:
+  - No console.log, console.warn, or System.out statements in production code
+  - No commented-out code blocks
+  - No hard-coded configuration values (use constants or environment variables)
+  - Format code using Prettier/ESLint before committing
+  - No localhost URLs in code
 
 #### Component Development Rules
 
@@ -196,6 +210,13 @@ npx expo start --web
     <Component />
   </ConditionalComponent>;
   ```
+
+#### Additional Frontend Rules
+
+- **Conditional Rendering**: Always use ConditionalComponent for inline conditional rendering instead of && operators
+- **Business Logic**: Never add business logic in controllers - keep controllers thin and delegate to services
+- **Architecture**: Maintain clear separation between UI components and business logic
+- **State Management**: Use proper state management patterns (Zustand, Context) for complex state
 
 #### File Naming Conventions
 
@@ -236,14 +257,15 @@ import type { ComponentProps } from "@/types";
 1. **Never push directly to develop**
 2. **Create feature branches** with descriptive names
 3. **Always pull latest changes** before creating new branches
-4. **Run quality checks** before every commit:
+4. **Resolve all merge conflicts** before sharing the merge request
+5. **Run quality checks** before every commit:
    ```bash
    # Add to your pre-commit routine
    npm run lint
    npx tsc --noEmit
    npm test # when tests are added
    ```
-5. **Use conventional commit messages**:
+6. **Use conventional commit messages**:
    - `feat:` for new features
    - `fix:` for bug fixes
    - `refactor:` for code refactoring
@@ -257,6 +279,9 @@ import type { ComponentProps } from "@/types";
 - Provide meaningful error messages
 - Use proper TypeScript error types
 - Implement proper loading and error states in UI
+- **Never return HTTP status 404 or 500** directly to users
+- Use application-specific exceptions from mc-starter when available
+- Handle errors gracefully with user-friendly feedback
 
 ## 🚀 Build
 

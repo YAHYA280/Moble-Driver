@@ -19,51 +19,6 @@ import { AppointmentCard } from "./AppointmentCard";
 
 const { height: screenHeight } = Dimensions.get("window");
 
-// Separate component for animated appointment item
-const AnimatedAppointmentItem: React.FC<{
-  item: Appointment;
-  index: number;
-  onPress: (appointment: Appointment) => void;
-}> = ({ item, index, onPress }) => {
-  const itemAnim = useRef(new Animated.Value(0)).current;
-
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      Animated.timing(itemAnim, {
-        toValue: 1,
-        duration: 300,
-        delay: index * 100,
-        useNativeDriver: true,
-      }).start();
-    }, 100);
-
-    return () => clearTimeout(timer);
-  }, [index, itemAnim]);
-
-  return (
-    <Animated.View
-      style={{
-        opacity: itemAnim,
-        transform: [
-          {
-            translateY: itemAnim.interpolate({
-              inputRange: [0, 1],
-              outputRange: [30, 0],
-            }),
-          },
-        ],
-      }}
-    >
-      <AppointmentCard
-        appointment={item}
-        onPress={() => onPress(item)}
-        showDate={false}
-        style={{ marginHorizontal: 0, marginVertical: 6 }}
-      />
-    </Animated.View>
-  );
-};
-
 interface DayAppointmentsModalProps {
   visible: boolean;
   date: string;
@@ -72,74 +27,18 @@ interface DayAppointmentsModalProps {
   onAppointmentPress: (appointment: Appointment) => void;
 }
 
-export const DayAppointmentsModal: React.FC<DayAppointmentsModalProps> = ({
-  visible,
-  date,
-  appointments,
-  onClose,
-  onAppointmentPress,
-}) => {
-  const colors = useThemeColors();
-  const modalAnim = useRef(new Animated.Value(0)).current;
-  const overlayAnim = useRef(new Animated.Value(0)).current;
-  const contentAnim = useRef(new Animated.Value(screenHeight)).current;
+const formatDate = (dateString: string): string => {
+  const date = new Date(dateString);
+  return date.toLocaleDateString("fr-FR", {
+    weekday: "long",
+    year: "numeric",
+    month: "long",
+    day: "numeric",
+  });
+};
 
-  useEffect(() => {
-    if (visible) {
-      Animated.parallel([
-        Animated.timing(overlayAnim, {
-          toValue: 1,
-          duration: 250,
-          useNativeDriver: true,
-        }),
-        Animated.spring(contentAnim, {
-          toValue: 0,
-          tension: 100,
-          friction: 8,
-          useNativeDriver: true,
-        }),
-      ]).start();
-    } else {
-      Animated.parallel([
-        Animated.timing(overlayAnim, {
-          toValue: 0,
-          duration: 200,
-          useNativeDriver: true,
-        }),
-        Animated.timing(contentAnim, {
-          toValue: screenHeight,
-          duration: 250,
-          useNativeDriver: true,
-        }),
-      ]).start();
-    }
-  }, [visible, overlayAnim, contentAnim]);
-
-  const formatDate = (dateString: string) => {
-    const date = new Date(dateString);
-    return date.toLocaleDateString("fr-FR", {
-      weekday: "long",
-      year: "numeric",
-      month: "long",
-      day: "numeric",
-    });
-  };
-
-  const renderAppointmentItem = ({
-    item,
-    index,
-  }: {
-    item: Appointment;
-    index: number;
-  }) => (
-    <AnimatedAppointmentItem
-      item={item}
-      index={index}
-      onPress={onAppointmentPress}
-    />
-  );
-
-  const styles = StyleSheet.create({
+const createStyles = (colors: any) =>
+  StyleSheet.create({
     modalOverlay: {
       flex: 1,
       backgroundColor: "rgba(0, 0, 0, 0.5)",
@@ -232,6 +131,109 @@ export const DayAppointmentsModal: React.FC<DayAppointmentsModalProps> = ({
       lineHeight: 20,
     },
   });
+
+// Separate component for animated appointment item
+const AnimatedAppointmentItem: React.FC<{
+  item: Appointment;
+  index: number;
+  onPress: (appointment: Appointment) => void;
+}> = ({ item, index, onPress }) => {
+  const itemAnim = useRef(new Animated.Value(0)).current;
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      Animated.timing(itemAnim, {
+        toValue: 1,
+        duration: 300,
+        delay: index * 100,
+        useNativeDriver: true,
+      }).start();
+    }, 100);
+
+    return () => clearTimeout(timer);
+  }, [index, itemAnim]);
+
+  return (
+    <Animated.View
+      style={{
+        opacity: itemAnim,
+        transform: [
+          {
+            translateY: itemAnim.interpolate({
+              inputRange: [0, 1],
+              outputRange: [30, 0],
+            }),
+          },
+        ],
+      }}
+    >
+      <AppointmentCard
+        appointment={item}
+        onPress={() => onPress(item)}
+        showDate={false}
+        style={{ marginHorizontal: 0, marginVertical: 6 }}
+      />
+    </Animated.View>
+  );
+};
+
+export const DayAppointmentsModal: React.FC<DayAppointmentsModalProps> = ({
+  visible,
+  date,
+  appointments,
+  onClose,
+  onAppointmentPress,
+}) => {
+  const colors = useThemeColors();
+  const modalAnim = useRef(new Animated.Value(0)).current;
+  const overlayAnim = useRef(new Animated.Value(0)).current;
+  const contentAnim = useRef(new Animated.Value(screenHeight)).current;
+  const styles = createStyles(colors);
+
+  useEffect(() => {
+    if (visible) {
+      Animated.parallel([
+        Animated.timing(overlayAnim, {
+          toValue: 1,
+          duration: 250,
+          useNativeDriver: true,
+        }),
+        Animated.spring(contentAnim, {
+          toValue: 0,
+          tension: 100,
+          friction: 8,
+          useNativeDriver: true,
+        }),
+      ]).start();
+    } else {
+      Animated.parallel([
+        Animated.timing(overlayAnim, {
+          toValue: 0,
+          duration: 200,
+          useNativeDriver: true,
+        }),
+        Animated.timing(contentAnim, {
+          toValue: screenHeight,
+          duration: 250,
+          useNativeDriver: true,
+        }),
+      ]).start();
+    }
+  }, [visible, overlayAnim, contentAnim]);
+
+  const renderAppointmentItem = ({
+    item,
+    index,
+  }: {
+    item: Appointment;
+    index: number;
+  }) => (
+    <AnimatedAppointmentItem
+      item={item}
+      index={index}
+      onPress={onAppointmentPress}
+    />
+  );
 
   return (
     <Modal

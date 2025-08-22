@@ -1,4 +1,3 @@
-// screens/innerApplication/calendar/components/AppointmentCard.tsx
 import ConditionalComponent from "@/shared/components/conditionalComponent/conditionalComponent";
 import { FontAwesome } from "@expo/vector-icons";
 import React from "react";
@@ -26,44 +25,35 @@ interface AppointmentCardProps {
   showDate?: boolean;
 }
 
-const AppointmentCard: React.FC<AppointmentCardProps> = ({
-  appointment,
-  onPress,
-  style,
-  showDate = false,
-}) => {
-  const colors = useThemeColors();
+const formatTime = (time: string) => {
+  return time.substring(0, 5);
+};
 
-  const formatTime = (time: string) => {
-    return time.substring(0, 5); // Remove seconds if present
-  };
+const formatDate = (date: string) => {
+  const dateObj = new Date(date);
+  const day = dateObj.getDate().toString().padStart(2, "0");
+  const month = (dateObj.getMonth() + 1).toString().padStart(2, "0");
+  const year = dateObj.getFullYear();
+  return `${day}/${month}/${year}`;
+};
 
-  const formatDate = (date: string) => {
-    const dateObj = new Date(date);
-    const day = dateObj.getDate().toString().padStart(2, "0");
-    const month = (dateObj.getMonth() + 1).toString().padStart(2, "0");
-    const year = dateObj.getFullYear();
-    return `${day}/${month}/${year}`;
-  };
+const getStatusColor = (appointment: Appointment, colors: any) => {
+  switch (appointment.status) {
+    case "confirme":
+      return colors.success;
+    case "prevu":
+      return colors.warning;
+    case "annule":
+      return colors.error;
+    case "reporte":
+      return colors.info;
+    default:
+      return colors.textSecondary;
+  }
+};
 
-  const getStatusColor = () => {
-    switch (appointment.status) {
-      case "confirme":
-        return colors.success;
-      case "prevu":
-        return colors.warning;
-      case "annule":
-        return colors.error;
-      case "reporte":
-        return colors.info;
-      default:
-        return colors.textSecondary;
-    }
-  };
-
-  const typeColor = APPOINTMENT_TYPE_COLORS[appointment.type];
-
-  const styles = StyleSheet.create({
+const createStyles = (colors: any, typeColor: string) =>
+  StyleSheet.create({
     container: {
       flexDirection: "row",
       alignItems: "center",
@@ -187,6 +177,16 @@ const AppointmentCard: React.FC<AppointmentCardProps> = ({
     },
   });
 
+const AppointmentCard: React.FC<AppointmentCardProps> = ({
+  appointment,
+  onPress,
+  style,
+  showDate = false,
+}) => {
+  const colors = useThemeColors();
+  const typeColor = APPOINTMENT_TYPE_COLORS[appointment.type];
+  const styles = createStyles(colors, typeColor);
+
   return (
     <TouchableOpacity
       style={[styles.container, style]}
@@ -239,9 +239,17 @@ const AppointmentCard: React.FC<AppointmentCardProps> = ({
         <View style={styles.statusRow}>
           <View style={styles.statusContainer}>
             <View
-              style={[styles.statusDot, { backgroundColor: getStatusColor() }]}
+              style={[
+                styles.statusDot,
+                { backgroundColor: getStatusColor(appointment, colors) },
+              ]}
             />
-            <Text style={[styles.statusText, { color: getStatusColor() }]}>
+            <Text
+              style={[
+                styles.statusText,
+                { color: getStatusColor(appointment, colors) },
+              ]}
+            >
               {APPOINTMENT_STATUS_LABELS[appointment.status]}
             </Text>
           </View>

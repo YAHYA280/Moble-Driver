@@ -14,18 +14,13 @@ interface CalendarMonthViewProps {
   style?: ViewStyle;
 }
 
-const CalendarMonthView: React.FC<CalendarMonthViewProps> = ({
-  currentDate,
-  appointments,
-  selectedDate,
-  onDayPress,
-  style,
-}) => {
-  const colors = useThemeColors();
+interface CalendarDayData {
+  day: number | null;
+  date: string;
+  isCurrentMonth: boolean;
+}
 
-  const today = new Date();
-  const todayStr = today.toISOString().split("T")[0];
-
+const generateCalendarDays = (currentDate: Date): CalendarDayData[] => {
   const year = currentDate.getFullYear();
   const month = currentDate.getMonth();
 
@@ -39,12 +34,7 @@ const CalendarMonthView: React.FC<CalendarMonthViewProps> = ({
   const prevMonth = new Date(year, month - 1, 0);
   const daysInPrevMonth = prevMonth.getDate();
 
-  // Generate calendar grid
-  const calendarDays: {
-    day: number | null;
-    date: string;
-    isCurrentMonth: boolean;
-  }[] = [];
+  const calendarDays: CalendarDayData[] = [];
 
   // Previous month days
   for (let i = firstDayWeekday - 1; i >= 0; i--) {
@@ -66,16 +56,37 @@ const CalendarMonthView: React.FC<CalendarMonthViewProps> = ({
     calendarDays.push({ day, date, isCurrentMonth: false });
   }
 
-  // Group appointments by date
-  const appointmentsByDate = appointments.reduce((acc, appointment) => {
+  return calendarDays;
+};
+
+const groupAppointmentsByDate = (
+  appointments: Appointment[]
+): Record<string, Appointment[]> => {
+  return appointments.reduce((acc, appointment) => {
     if (!acc[appointment.date]) {
       acc[appointment.date] = [];
     }
     acc[appointment.date].push(appointment);
     return acc;
   }, {} as Record<string, Appointment[]>);
+};
 
-  const styles = StyleSheet.create({
+const splitIntoWeeks = (
+  calendarDays: CalendarDayData[]
+): CalendarDayData[][] => {
+  const weeks: CalendarDayData[][] = [];
+  for (let i = 0; i < calendarDays.length; i += 7) {
+    weeks.push(calendarDays.slice(i, i + 7));
+  }
+  return weeks;
+};
+
+const getTodayString = (): string => {
+  return new Date().toISOString().split("T")[0];
+};
+
+const createStyles = (colors: any) =>
+  StyleSheet.create({
     container: {
       backgroundColor: colors.surface,
       paddingHorizontal: 8,
@@ -103,11 +114,20 @@ const CalendarMonthView: React.FC<CalendarMonthViewProps> = ({
     },
   });
 
-  // Split calendar days into weeks
-  const weeks: (typeof calendarDays)[] = [];
-  for (let i = 0; i < calendarDays.length; i += 7) {
-    weeks.push(calendarDays.slice(i, i + 7));
-  }
+const CalendarMonthView: React.FC<CalendarMonthViewProps> = ({
+  currentDate,
+  appointments,
+  selectedDate,
+  onDayPress,
+  style,
+}) => {
+  const colors = useThemeColors();
+  const styles = createStyles(colors);
+
+  const todayStr = getTodayString();
+  const calendarDays = generateCalendarDays(currentDate);
+  const appointmentsByDate = groupAppointmentsByDate(appointments);
+  const weeks = splitIntoWeeks(calendarDays);
 
   return (
     <View style={[styles.container, style]}>
