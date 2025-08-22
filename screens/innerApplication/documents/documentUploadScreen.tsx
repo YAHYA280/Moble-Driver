@@ -1,0 +1,499 @@
+// screens/innerApplication/documents/documentUploadScreen.tsx
+
+import ConditionalComponent from "@/shared/components/conditionalComponent/conditionalComponent";
+import { FontAwesome } from "@expo/vector-icons";
+import { router } from "expo-router";
+import React, { useRef, useState } from "react";
+import {
+  Alert,
+  Animated,
+  Platform,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+} from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
+import { useTheme } from "../../../contexts/ThemeContext";
+import { Button } from "../../../shared/components/ui/Button";
+import { Header } from "../../../shared/components/ui/Header";
+import { Input } from "../../../shared/components/ui/Input";
+import {
+  DOCUMENT_TYPES,
+  DocumentType,
+  MAX_FILE_SIZE,
+} from "../../../shared/types/document";
+import { useDocumentStore } from "../../../store/documentStore";
+
+export const DocumentUploadScreen: React.FC = () => {
+  const { colors } = useTheme();
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [documentName, setDocumentName] = useState("");
+  const [documentType, setDocumentType] = useState<DocumentType>("Autre");
+  const [description, setDescription] = useState("");
+  const [tags, setTags] = useState<string[]>([]);
+  const [newTag, setNewTag] = useState("");
+  const headerAnim = useRef(new Animated.Value(0)).current;
+
+  const { uploadDocument, isUploading, uploadProgress, error, clearError } =
+    useDocumentStore();
+
+  React.useEffect(() => {
+    Animated.timing(headerAnim, {
+      toValue: 1,
+      duration: 600,
+      useNativeDriver: true,
+    }).start();
+  }, []);
+
+  const handleFileSelect = () => {
+    // Simulate file picker
+    Alert.alert(
+      "Sélectionner un fichier",
+      "Choisissez la source de votre document",
+      [
+        { text: "Caméra", onPress: () => simulateFileSelection("camera") },
+        { text: "Galerie", onPress: () => simulateFileSelection("gallery") },
+        { text: "Fichiers", onPress: () => simulateFileSelection("files") },
+        { text: "Annuler", style: "cancel" },
+      ]
+    );
+  };
+
+  const simulateFileSelection = (source: string) => {
+    // Create a mock file for demonstration
+    const mockFile = new File(["mock content"], `document_${Date.now()}.pdf`, {
+      type: "application/pdf",
+    });
+
+    setSelectedFile(mockFile);
+    setDocumentName(mockFile.name.replace(/\.[^/.]+$/, ""));
+    setDocumentType("PDF");
+  };
+
+  const handleAddTag = () => {
+    if (newTag.trim() && !tags.includes(newTag.trim())) {
+      setTags([...tags, newTag.trim()]);
+      setNewTag("");
+    }
+  };
+
+  const handleRemoveTag = (tagToRemove: string) => {
+    setTags(tags.filter((tag) => tag !== tagToRemove));
+  };
+
+  const handleUpload = async () => {
+    if (!selectedFile) {
+      Alert.alert("Erreur", "Veuillez sélectionner un fichier");
+      return;
+    }
+
+    if (!documentName.trim()) {
+      Alert.alert("Erreur", "Veuillez saisir un nom pour le document");
+      return;
+    }
+
+    if (selectedFile.size > MAX_FILE_SIZE) {
+      Alert.alert("Erreur", "Le fichier est trop volumineux (max 50MB)");
+      return;
+    }
+
+    try {
+      await uploadDocument(selectedFile, undefined, {
+        name: documentName.trim(),
+        type: documentType,
+        description: description.trim() || undefined,
+        tags,
+      });
+
+      Alert.alert("Succès", "Le document a été uploadé avec succès", [
+        { text: "OK", onPress: () => router.back() },
+      ]);
+    } catch (error) {
+      Alert.alert("Erreur", "Erreur lors de l'upload du document");
+    }
+  };
+
+  const formatFileSize = (bytes: number): string => {
+    if (bytes === 0) return "0 B";
+    const k = 1024;
+    const sizes = ["B", "KB", "MB", "GB"];
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    return parseFloat((bytes / Math.pow(k, i)).toFixed(1)) + " " + sizes[i];
+  };
+
+  const styles = StyleSheet.create({
+    container: {
+      flex: 1,
+      backgroundColor: colors.backgroundSecondary,
+    },
+    content: {
+      flex: 1,
+    },
+    scrollContent: {
+      padding: 16,
+      paddingBottom: 100,
+    },
+    section: {
+      marginBottom: 24,
+    },
+    sectionTitle: {
+      fontSize: 18,
+      fontWeight: "600",
+      color: colors.text,
+      marginBottom: 12,
+    },
+    fileSelectButton: {
+      flexDirection: "row",
+      alignItems: "center",
+      justifyContent: "center",
+      padding: 20,
+      borderRadius: 12,
+      borderWidth: 2,
+      borderStyle: "dashed",
+      borderColor: colors.primary,
+      backgroundColor: colors.primary + "10",
+    },
+    fileSelectIcon: {
+      marginRight: 12,
+    },
+    fileSelectText: {
+      fontSize: 16,
+      fontWeight: "600",
+      color: colors.primary,
+    },
+    selectedFileCard: {
+      flexDirection: "row",
+      alignItems: "center",
+      padding: 16,
+      borderRadius: 12,
+      backgroundColor: colors.card,
+      ...Platform.select({
+        ios: {
+          shadowColor: colors.shadow,
+          shadowOffset: { width: 0, height: 2 },
+          shadowOpacity: colors.isDark ? 0.3 : 0.08,
+          shadowRadius: 8,
+        },
+        android: {
+          elevation: 4,
+        },
+      }),
+    },
+    fileIcon: {
+      width: 48,
+      height: 48,
+      borderRadius: 8,
+      alignItems: "center",
+      justifyContent: "center",
+      marginRight: 12,
+      backgroundColor: colors.primary + "15",
+    },
+    fileInfo: {
+      flex: 1,
+    },
+    fileName: {
+      fontSize: 16,
+      fontWeight: "600",
+      color: colors.text,
+      marginBottom: 4,
+    },
+    fileSize: {
+      fontSize: 14,
+      color: colors.textSecondary,
+    },
+    removeFileButton: {
+      padding: 8,
+    },
+    typeSelector: {
+      flexDirection: "row",
+      flexWrap: "wrap",
+      gap: 8,
+      marginTop: 8,
+    },
+    typeButton: {
+      paddingHorizontal: 16,
+      paddingVertical: 8,
+      borderRadius: 20,
+      borderWidth: 1,
+      borderColor: colors.border,
+      backgroundColor: colors.card,
+    },
+    selectedTypeButton: {
+      backgroundColor: colors.primary,
+      borderColor: colors.primary,
+    },
+    typeButtonText: {
+      fontSize: 14,
+      color: colors.text,
+      fontWeight: "500",
+    },
+    selectedTypeButtonText: {
+      color: "white",
+    },
+    tagsContainer: {
+      marginTop: 8,
+    },
+    tagInput: {
+      marginBottom: 12,
+    },
+    tagsDisplay: {
+      flexDirection: "row",
+      flexWrap: "wrap",
+      gap: 8,
+    },
+    tag: {
+      flexDirection: "row",
+      alignItems: "center",
+      paddingHorizontal: 12,
+      paddingVertical: 6,
+      borderRadius: 16,
+      backgroundColor: colors.primary + "15",
+    },
+    tagText: {
+      fontSize: 14,
+      color: colors.primary,
+      marginRight: 6,
+    },
+    tagRemoveButton: {
+      padding: 2,
+    },
+    progressContainer: {
+      marginTop: 16,
+      padding: 16,
+      borderRadius: 12,
+      backgroundColor: colors.card,
+    },
+    progressText: {
+      fontSize: 16,
+      fontWeight: "600",
+      color: colors.text,
+      marginBottom: 8,
+    },
+    progressBar: {
+      height: 8,
+      backgroundColor: colors.backgroundSecondary,
+      borderRadius: 4,
+      overflow: "hidden",
+    },
+    progressFill: {
+      height: "100%",
+      backgroundColor: colors.primary,
+      borderRadius: 4,
+    },
+    uploadButton: {
+      margin: 16,
+    },
+    errorContainer: {
+      backgroundColor: colors.error + "15",
+      margin: 16,
+      padding: 16,
+      borderRadius: 8,
+      borderLeftWidth: 4,
+      borderLeftColor: colors.error,
+    },
+    errorText: {
+      color: colors.error,
+      fontSize: 14,
+      fontWeight: "500",
+    },
+  });
+
+  return (
+    <SafeAreaView style={styles.container}>
+      {/* Header */}
+      <Animated.View
+        style={{
+          opacity: headerAnim,
+          transform: [
+            {
+              translateY: headerAnim.interpolate({
+                inputRange: [0, 1],
+                outputRange: [-50, 0],
+              }),
+            },
+          ],
+        }}
+      >
+        <Header
+          leftIcon={{
+            icon: "chevron-left",
+            onPress: () => router.back(),
+          }}
+          title="Ajouter un document"
+        />
+      </Animated.View>
+
+      {/* Error Display */}
+      <ConditionalComponent isValid={!!error}>
+        <View style={styles.errorContainer}>
+          <Text style={styles.errorText}>{error}</Text>
+        </View>
+      </ConditionalComponent>
+
+      {/* Content */}
+      <ScrollView
+        style={styles.content}
+        showsVerticalScrollIndicator={false}
+        contentContainerStyle={styles.scrollContent}
+      >
+        {/* File Selection */}
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>Fichier</Text>
+          <ConditionalComponent
+            isValid={!selectedFile}
+            defaultComponent={
+              <View style={styles.selectedFileCard}>
+                <View style={styles.fileIcon}>
+                  <FontAwesome
+                    name={DOCUMENT_TYPES[documentType].icon as any}
+                    size={20}
+                    color={colors.primary}
+                  />
+                </View>
+                <View style={styles.fileInfo}>
+                  <Text style={styles.fileName}>{selectedFile?.name}</Text>
+                  <Text style={styles.fileSize}>
+                    {selectedFile && formatFileSize(selectedFile.size)}
+                  </Text>
+                </View>
+                <TouchableOpacity
+                  style={styles.removeFileButton}
+                  onPress={() => setSelectedFile(null)}
+                >
+                  <FontAwesome name="times" size={20} color={colors.error} />
+                </TouchableOpacity>
+              </View>
+            }
+          >
+            <TouchableOpacity
+              style={styles.fileSelectButton}
+              onPress={handleFileSelect}
+            >
+              <FontAwesome
+                name="cloud-upload"
+                size={24}
+                color={colors.primary}
+                style={styles.fileSelectIcon}
+              />
+              <Text style={styles.fileSelectText}>Sélectionner un fichier</Text>
+            </TouchableOpacity>
+          </ConditionalComponent>
+        </View>
+
+        {/* Document Details */}
+        <ConditionalComponent isValid={!!selectedFile}>
+          <View style={styles.section}>
+            <Text style={styles.sectionTitle}>Informations</Text>
+
+            <Input
+              label="Nom du document *"
+              value={documentName}
+              onChangeText={setDocumentName}
+              placeholder="Saisissez le nom du document"
+            />
+
+            <Input
+              label="Description"
+              value={description}
+              onChangeText={setDescription}
+              placeholder="Description optionnelle"
+              multiline
+              numberOfLines={3}
+            />
+
+            {/* Type Selection */}
+            <Text
+              style={[styles.sectionTitle, { marginTop: 16, marginBottom: 8 }]}
+            >
+              Type de document
+            </Text>
+            <View style={styles.typeSelector}>
+              {Object.entries(DOCUMENT_TYPES).map(([type, config]) => (
+                <TouchableOpacity
+                  key={type}
+                  style={[
+                    styles.typeButton,
+                    documentType === type && styles.selectedTypeButton,
+                  ]}
+                  onPress={() => setDocumentType(type as DocumentType)}
+                >
+                  <Text
+                    style={[
+                      styles.typeButtonText,
+                      documentType === type && styles.selectedTypeButtonText,
+                    ]}
+                  >
+                    {config.label}
+                  </Text>
+                </TouchableOpacity>
+              ))}
+            </View>
+
+            {/* Tags */}
+            <View style={styles.tagsContainer}>
+              <Text style={[styles.sectionTitle, { marginBottom: 8 }]}>
+                Tags
+              </Text>
+              <View style={styles.tagInput}>
+                <Input
+                  value={newTag}
+                  onChangeText={setNewTag}
+                  placeholder="Ajouter un tag"
+                  rightIcon="plus"
+                  onRightIconPress={handleAddTag}
+                  onSubmitEditing={handleAddTag}
+                />
+              </View>
+              <ConditionalComponent isValid={tags.length > 0}>
+                <View style={styles.tagsDisplay}>
+                  {tags.map((tag) => (
+                    <View key={tag} style={styles.tag}>
+                      <Text style={styles.tagText}>{tag}</Text>
+                      <TouchableOpacity
+                        style={styles.tagRemoveButton}
+                        onPress={() => handleRemoveTag(tag)}
+                      >
+                        <FontAwesome
+                          name="times"
+                          size={12}
+                          color={colors.primary}
+                        />
+                      </TouchableOpacity>
+                    </View>
+                  ))}
+                </View>
+              </ConditionalComponent>
+            </View>
+          </View>
+        </ConditionalComponent>
+
+        {/* Upload Progress */}
+        <ConditionalComponent isValid={isUploading}>
+          <View style={styles.progressContainer}>
+            <Text style={styles.progressText}>
+              Upload en cours... {uploadProgress}%
+            </Text>
+            <View style={styles.progressBar}>
+              <View
+                style={[styles.progressFill, { width: `${uploadProgress}%` }]}
+              />
+            </View>
+          </View>
+        </ConditionalComponent>
+      </ScrollView>
+
+      {/* Upload Button */}
+      <ConditionalComponent isValid={!!selectedFile && !isUploading}>
+        <View style={styles.uploadButton}>
+          <Button
+            title="Uploader le document"
+            onPress={handleUpload}
+            disabled={!documentName.trim()}
+          />
+        </View>
+      </ConditionalComponent>
+    </SafeAreaView>
+  );
+};
