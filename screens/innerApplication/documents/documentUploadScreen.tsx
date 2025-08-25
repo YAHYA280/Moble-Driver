@@ -1,4 +1,4 @@
-// screens/innerApplication/documents/documentUploadScreen.tsx - Improved
+// screens/innerApplication/documents/documentUploadScreen.tsx - Fixed
 
 import ConditionalComponent from "@/shared/components/conditionalComponent/conditionalComponent";
 import { FontAwesome } from "@expo/vector-icons";
@@ -217,7 +217,7 @@ export const DocumentUploadScreen: React.FC = () => {
     },
     scrollContent: {
       padding: 16,
-      paddingBottom: 120, // Extra space for upload button
+      paddingBottom: 120, // Increased padding for more scroll space
     },
     section: {
       marginBottom: 24,
@@ -366,20 +366,10 @@ export const DocumentUploadScreen: React.FC = () => {
       backgroundColor: colors.primary,
       borderRadius: 4,
     },
+    // FIXED: Upload button now inside scrollable content
     uploadButtonContainer: {
-      position: "absolute",
-      bottom: Platform.select({
-        ios: 90, // Au-dessus de la tab bar iOS (49px) + safe area (34px) + margin (7px)
-        android: 70, // Au-dessus de la tab bar Android (56px) + margin (14px)
-      }),
-      left: 0,
-      right: 0,
-      backgroundColor: colors.background,
-      borderTopWidth: 1,
-      borderTopColor: colors.border,
-      paddingTop: 16,
-      paddingBottom: 16,
-      paddingHorizontal: 16,
+      marginTop: 32, // Increased top margin
+      marginBottom: 60, // Increased bottom margin for more scroll space
     },
     uploadButton: {
       backgroundColor: colors.primary,
@@ -457,7 +447,7 @@ export const DocumentUploadScreen: React.FC = () => {
         </View>
       </ConditionalComponent>
 
-      {/* Content */}
+      {/* Content - Now everything is scrollable including the upload button */}
       <ScrollView
         style={styles.content}
         showsVerticalScrollIndicator={false}
@@ -607,25 +597,25 @@ export const DocumentUploadScreen: React.FC = () => {
             </View>
           </View>
         </ConditionalComponent>
-      </ScrollView>
 
-      {/* Upload Button - Fixed at bottom */}
-      <ConditionalComponent isValid={!!selectedFile && !isUploading}>
-        <View style={styles.uploadButtonContainer}>
-          <TouchableOpacity
-            style={[
-              styles.uploadButton,
-              !documentName.trim() && styles.uploadButtonDisabled,
-            ]}
-            onPress={handleUpload}
-            disabled={!documentName.trim()}
-            activeOpacity={0.8}
-          >
-            <FontAwesome name="upload" size={16} color="white" />
-            <Text style={styles.uploadButtonText}>Uploader le document</Text>
-          </TouchableOpacity>
-        </View>
-      </ConditionalComponent>
+        {/* Upload Button - Now inside ScrollView */}
+        <ConditionalComponent isValid={!!selectedFile && !isUploading}>
+          <View style={styles.uploadButtonContainer}>
+            <TouchableOpacity
+              style={[
+                styles.uploadButton,
+                !documentName.trim() && styles.uploadButtonDisabled,
+              ]}
+              onPress={handleUpload}
+              disabled={!documentName.trim()}
+              activeOpacity={0.8}
+            >
+              <FontAwesome name="upload" size={16} color="white" />
+              <Text style={styles.uploadButtonText}>Uploader le document</Text>
+            </TouchableOpacity>
+          </View>
+        </ConditionalComponent>
+      </ScrollView>
     </SafeAreaView>
   );
 };
