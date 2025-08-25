@@ -1,5 +1,12 @@
+// screens/innerApplication/documents/components/index.ts - Updated
+
 export { DocumentCard } from "./DocumentCard";
 export { DocumentFilterModal } from "./DocumentFilterModal";
 export { DocumentsHeader } from "./DocumentsHeader";
 export { FolderCard } from "./FolderCard";
 export { StorageIndicator } from "./StorageIndicator";
+export { DocumentForm } from "./Upload/DocumentForm";
+export { FileSelector } from "./Upload/FileSelector";
+export { SelectedFileCard } from "./Upload/SelectedFileCard";
+export { TagManager } from "./Upload/TagManager";
+export { UploadProgress } from "./Upload/UploadProgress";
