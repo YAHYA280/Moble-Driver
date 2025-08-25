@@ -1,5 +1,3 @@
-// screens/innerApplication/documents/folderViewScreen.tsx
-
 import ConditionalComponent from "@/shared/components/conditionalComponent/conditionalComponent";
 import { FontAwesome } from "@expo/vector-icons";
 import { router, useLocalSearchParams } from "expo-router";
@@ -46,7 +44,6 @@ export const FolderViewScreen: React.FC = () => {
     toggleFavorite,
     deleteDocument,
     downloadDocument,
-    clearError,
   } = useDocumentStore();
 
   const currentFolder = folders.find((f) => f.id === id);
@@ -349,7 +346,7 @@ export const FolderViewScreen: React.FC = () => {
 
           {/* Documents Header with actions */}
           <DocumentsHeader
-            foldersCount={0} // No subfolders in current implementation
+            foldersCount={0}
             documentsCount={filteredDocuments.length}
             onAddFolder={handleAddSubFolder}
             onUploadDocument={handleUploadDocument}

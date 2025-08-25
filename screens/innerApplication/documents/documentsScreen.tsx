@@ -597,6 +597,7 @@ export const DocumentsScreen: React.FC = () => {
         visible={showFilterModal}
         onClose={() => setShowFilterModal(false)}
         onApplyFilters={setFilters}
+        onClearFilters={clearFilters}
         currentFilters={filters}
       />
 

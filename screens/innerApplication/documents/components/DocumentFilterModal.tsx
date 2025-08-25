@@ -31,7 +31,7 @@ interface DocumentFilterModalProps {
   visible: boolean;
   onClose: () => void;
   onApplyFilters: (filters: DocumentFilters) => void;
-  onClearFilters?: () => void; // Add optional clear filters callback
+  onClearFilters?: () => void;
   currentFilters: DocumentFilters;
 }
 
@@ -39,7 +39,7 @@ export const DocumentFilterModal: React.FC<DocumentFilterModalProps> = ({
   visible,
   onClose,
   onApplyFilters,
-  onClearFilters, // Add this prop
+  onClearFilters,
   currentFilters,
 }) => {
   const colors = useThemeColors();
@@ -47,37 +47,38 @@ export const DocumentFilterModal: React.FC<DocumentFilterModalProps> = ({
   const overlayAnim = useRef(new Animated.Value(0)).current;
 
   // Filter state
-  const [selectedTypes, setSelectedTypes] = useState<DocumentType[]>(
-    currentFilters.type || []
-  );
-  const [selectedStatuses, setSelectedStatuses] = useState<string[]>(
-    currentFilters.status || []
-  );
-  const [onlyFavorites, setOnlyFavorites] = useState(
-    currentFilters.isFavorite || false
-  );
-  const [dateFrom, setDateFrom] = useState(
-    currentFilters.dateFrom?.toISOString().split("T")[0] || ""
-  );
-  const [dateTo, setDateTo] = useState(
-    currentFilters.dateTo?.toISOString().split("T")[0] || ""
-  );
-  const [sizeMin, setSizeMin] = useState(
-    currentFilters.sizeMin
-      ? String(Math.round(currentFilters.sizeMin / (1024 * 1024)))
-      : ""
-  );
-  const [sizeMax, setSizeMax] = useState(
-    currentFilters.sizeMax
-      ? String(Math.round(currentFilters.sizeMax / (1024 * 1024)))
-      : ""
-  );
+  const [selectedTypes, setSelectedTypes] = useState<DocumentType[]>([]);
+  const [selectedStatuses, setSelectedStatuses] = useState<string[]>([]);
+  const [onlyFavorites, setOnlyFavorites] = useState(false);
+  const [dateFrom, setDateFrom] = useState("");
+  const [dateTo, setDateTo] = useState("");
+  const [sizeMin, setSizeMin] = useState("");
+  const [sizeMax, setSizeMax] = useState("");
+
+  // Initialize state from current filters
+  useEffect(() => {
+    setSelectedTypes(currentFilters.type || []);
+    setSelectedStatuses(currentFilters.status || []);
+    setOnlyFavorites(currentFilters.isFavorite || false);
+    setDateFrom(currentFilters.dateFrom?.toISOString().split("T")[0] || "");
+    setDateTo(currentFilters.dateTo?.toISOString().split("T")[0] || "");
+    setSizeMin(
+      currentFilters.sizeMin
+        ? String(Math.round(currentFilters.sizeMin / (1024 * 1024)))
+        : ""
+    );
+    setSizeMax(
+      currentFilters.sizeMax
+        ? String(Math.round(currentFilters.sizeMax / (1024 * 1024)))
+        : ""
+    );
+  }, [currentFilters, visible]);
 
   useEffect(() => {
     if (visible) {
       Animated.parallel([
         Animated.timing(slideAnim, {
-          toValue: 0, // Back to screenHeight * 0.1
+          toValue: 0,
           duration: 300,
           useNativeDriver: false,
         }),
@@ -152,10 +153,7 @@ export const DocumentFilterModal: React.FC<DocumentFilterModalProps> = ({
     onClose();
   };
 
-  const handleClearFilters = () => {
-    console.log("handleClearFilters called");
-
-    // Reset local state first
+  const resetLocalState = () => {
     setSelectedTypes([]);
     setSelectedStatuses([]);
     setOnlyFavorites(false);
@@ -163,17 +161,17 @@ export const DocumentFilterModal: React.FC<DocumentFilterModalProps> = ({
     setDateTo("");
     setSizeMin("");
     setSizeMax("");
+  };
 
-    // Use onClearFilters if provided, otherwise use onApplyFilters with empty object
+  const handleClearFilters = () => {
+    resetLocalState();
+
     if (onClearFilters) {
-      console.log("Calling onClearFilters");
       onClearFilters();
     } else {
-      console.log("Calling onApplyFilters with empty object");
       onApplyFilters({});
     }
 
-    // Close modal
     onClose();
   };
 
@@ -181,10 +179,10 @@ export const DocumentFilterModal: React.FC<DocumentFilterModalProps> = ({
     selectedTypes.length > 0 ||
     selectedStatuses.length > 0 ||
     onlyFavorites ||
-    dateFrom ||
-    dateTo ||
-    sizeMin ||
-    sizeMax;
+    dateFrom.trim() !== "" ||
+    dateTo.trim() !== "" ||
+    sizeMin.trim() !== "" ||
+    sizeMax.trim() !== "";
 
   const styles = StyleSheet.create({
     modalOverlay: {
@@ -195,15 +193,15 @@ export const DocumentFilterModal: React.FC<DocumentFilterModalProps> = ({
       position: "absolute",
       left: 0,
       right: 0,
-      bottom: 0, // Back to bottom: 0
+      bottom: 0,
       height: screenHeight * 0.9,
       backgroundColor: colors.surface,
-      borderTopLeftRadius: 20, // Back to rounded corners
+      borderTopLeftRadius: 20,
       borderTopRightRadius: 20,
       ...Platform.select({
         ios: {
           shadowColor: colors.shadow,
-          shadowOffset: { width: 0, height: -4 }, // Shadow going upward
+          shadowOffset: { width: 0, height: -4 },
           shadowOpacity: colors.isDark ? 0.3 : 0.15,
           shadowRadius: 8,
         },
@@ -304,9 +302,9 @@ export const DocumentFilterModal: React.FC<DocumentFilterModalProps> = ({
       gap: 12,
       borderTopWidth: 1,
       borderTopColor: colors.border,
-      backgroundColor: colors.surface, // Ensure background color
+      backgroundColor: colors.surface,
       paddingBottom: Platform.select({
-        ios: 34, // Safe area for iOS
+        ios: 34,
         android: 20,
       }),
     },
@@ -466,7 +464,7 @@ export const DocumentFilterModal: React.FC<DocumentFilterModalProps> = ({
 
           {/* Footer - Fixed at bottom */}
           <View style={styles.footer}>
-            <ConditionalComponent isValid={!!hasActiveFilters}>
+            <ConditionalComponent isValid={hasActiveFilters}>
               <View style={styles.footerButton}>
                 <Button
                   title="Effacer"

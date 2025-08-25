@@ -1,5 +1,3 @@
-// screens/innerApplication/documents/allDocumentsScreen.tsx
-
 import ConditionalComponent from "@/shared/components/conditionalComponent/conditionalComponent";
 import { FontAwesome } from "@expo/vector-icons";
 import { router } from "expo-router";
@@ -46,7 +44,6 @@ export const AllDocumentsScreen: React.FC = () => {
   useEffect(() => {
     fetchDocuments();
 
-    // Animations
     Animated.timing(headerAnim, {
       toValue: 1,
       duration: 600,

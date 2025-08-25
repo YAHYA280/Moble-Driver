@@ -1,5 +1,3 @@
-// screens/innerApplication/documents/favoritesScreen.tsx
-
 import ConditionalComponent from "@/shared/components/conditionalComponent/conditionalComponent";
 import { FontAwesome } from "@expo/vector-icons";
 import { router } from "expo-router";
@@ -39,10 +37,8 @@ export const FavoritesScreen: React.FC = () => {
     selectDocument,
     isLoading,
     error,
-    clearError,
     fetchDocuments,
     fetchFolders,
-    clearFilters,
   } = useDocumentStore();
 
   const favoriteDocuments = getFavoriteDocuments();
@@ -75,7 +71,6 @@ export const FavoritesScreen: React.FC = () => {
 
   const handleSearch = (query: string) => {
     setShowSearchModal(false);
-    // Filter favorites based on search
   };
 
   const handleDocumentPress = (document: any) => {
