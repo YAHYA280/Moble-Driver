@@ -1,3 +1,4 @@
+import ConditionalComponent from "@/shared/components/conditionalComponent/conditionalComponent";
 import { FontAwesome } from "@expo/vector-icons";
 import React from "react";
 import {
@@ -46,6 +47,37 @@ export const DocumentCard: React.FC<DocumentCardProps> = ({
       year: "numeric",
     });
   };
+
+  const getStatusConfig = () => {
+    switch (document.status) {
+      case "active":
+        return {
+          backgroundColor: colors.success + "15",
+          textColor: colors.success,
+          label: "Actif",
+        };
+      case "expired":
+        return {
+          backgroundColor: colors.error + "15",
+          textColor: colors.error,
+          label: "Expiré",
+        };
+      case "pending":
+        return {
+          backgroundColor: colors.warning + "15",
+          textColor: colors.warning,
+          label: "En attente",
+        };
+      default:
+        return {
+          backgroundColor: colors.textTertiary + "15",
+          textColor: colors.textTertiary,
+          label: "Inconnu",
+        };
+    }
+  };
+
+  const statusConfig = getStatusConfig();
 
   const styles = StyleSheet.create({
     container: {
@@ -150,37 +182,6 @@ export const DocumentCard: React.FC<DocumentCardProps> = ({
     },
   });
 
-  const getStatusConfig = () => {
-    switch (document.status) {
-      case "active":
-        return {
-          backgroundColor: colors.success + "15",
-          textColor: colors.success,
-          label: "Actif",
-        };
-      case "expired":
-        return {
-          backgroundColor: colors.error + "15",
-          textColor: colors.error,
-          label: "Expiré",
-        };
-      case "pending":
-        return {
-          backgroundColor: colors.warning + "15",
-          textColor: colors.warning,
-          label: "En attente",
-        };
-      default:
-        return {
-          backgroundColor: colors.textTertiary + "15",
-          textColor: colors.textTertiary,
-          label: "Inconnu",
-        };
-    }
-  };
-
-  const statusConfig = getStatusConfig();
-
   return (
     <TouchableOpacity
       style={[styles.container, style]}
@@ -203,14 +204,14 @@ export const DocumentCard: React.FC<DocumentCardProps> = ({
           <Text style={styles.name} numberOfLines={1}>
             {document.name}
           </Text>
-          {document.isFavorite && (
+          <ConditionalComponent isValid={document.isFavorite}>
             <FontAwesome
               name="star"
               size={14}
               color={colors.warning}
               style={styles.favoriteIcon}
             />
-          )}
+          </ConditionalComponent>
         </View>
 
         <View style={styles.metadataRow}>

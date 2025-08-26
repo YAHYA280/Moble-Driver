@@ -1,5 +1,3 @@
-// screens/innerApplication/documents/components/DocumentsHeader.tsx
-
 import { FontAwesome } from "@expo/vector-icons";
 import React from "react";
 import { StyleSheet, Text, TouchableOpacity, View } from "react-native";

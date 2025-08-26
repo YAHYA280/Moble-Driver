@@ -1,5 +1,3 @@
-// screens/innerApplication/documents/components/StorageIndicator.tsx
-
 import { FontAwesome } from "@expo/vector-icons";
 import React from "react";
 import { Platform, StyleSheet, Text, View } from "react-native";

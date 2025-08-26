@@ -1,5 +1,3 @@
-// screens/innerApplication/documents/components/FileSelector.tsx
-
 import { FontAwesome } from "@expo/vector-icons";
 import React from "react";
 import { StyleSheet, Text, TouchableOpacity, ViewStyle } from "react-native";

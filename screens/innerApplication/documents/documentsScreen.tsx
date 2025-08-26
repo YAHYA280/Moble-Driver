@@ -1,5 +1,3 @@
-// screens/innerApplication/documents/documentsScreen.tsx
-
 import ConditionalComponent from "@/shared/components/conditionalComponent/conditionalComponent";
 import { FontAwesome } from "@expo/vector-icons";
 import { router } from "expo-router";

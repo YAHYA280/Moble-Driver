@@ -1,5 +1,3 @@
-// screens/innerApplication/documents/components/index.ts - Updated
-
 export { DocumentCard } from "./DocumentCard";
 export { DocumentFilterModal } from "./DocumentFilterModal";
 export { DocumentsHeader } from "./DocumentsHeader";

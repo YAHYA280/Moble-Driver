@@ -1,5 +1,3 @@
-// screens/innerApplication/documents/components/DocumentFilterModal.tsx - Fixed
-
 import ConditionalComponent from "@/shared/components/conditionalComponent/conditionalComponent";
 import { FontAwesome } from "@expo/vector-icons";
 import React, { useEffect, useRef, useState } from "react";

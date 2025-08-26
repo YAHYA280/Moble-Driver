@@ -1,5 +1,3 @@
-// shared/types/document.ts
-
 export type DocumentType =
   | "PDF"
   | "Image"

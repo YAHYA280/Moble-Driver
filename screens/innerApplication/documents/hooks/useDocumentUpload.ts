@@ -1,5 +1,3 @@
-// hooks/useDocumentUpload.ts
-
 import { DocumentType, MAX_FILE_SIZE } from "@/shared/types/document";
 import * as DocumentPicker from "expo-document-picker";
 import * as ImagePicker from "expo-image-picker";

@@ -1,5 +1,3 @@
-// store/documentStore.ts - Fixed clearFilters function
-
 import { create } from "zustand";
 import {
   DocumentActions,

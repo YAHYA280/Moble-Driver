@@ -1,5 +1,3 @@
-// app/(tabs)/documents/index.tsx
-
 import React from "react";
 import { DocumentsScreen } from "../../../screens/innerApplication/documents/documentsScreen";
 

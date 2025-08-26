@@ -1,5 +1,3 @@
-// screens/innerApplication/documents/components/SelectedFileCard.tsx
-
 import { FontAwesome } from "@expo/vector-icons";
 import React from "react";
 import {

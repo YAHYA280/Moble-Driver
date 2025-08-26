@@ -1,5 +1,3 @@
-// screens/innerApplication/documents/components/DocumentForm.tsx
-
 import React from "react";
 import {
   StyleSheet,

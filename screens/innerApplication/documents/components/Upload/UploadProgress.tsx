@@ -1,5 +1,4 @@
-// screens/innerApplication/documents/components/UploadProgress.tsx - Fixed
-
+import ConditionalComponent from "@/shared/components/conditionalComponent/conditionalComponent";
 import React from "react";
 import {
   Animated,
@@ -31,11 +30,9 @@ export const UploadProgress: React.FC<UploadProgressProps> = ({
     Animated.timing(progressAnim, {
       toValue: progress,
       duration: 300,
-      useNativeDriver: false, // We're animating width, so we can't use native driver
+      useNativeDriver: false,
     }).start();
   }, [progress]);
-
-  if (!isUploading) return null;
 
   const styles = StyleSheet.create({
     container: {
@@ -100,36 +97,40 @@ export const UploadProgress: React.FC<UploadProgressProps> = ({
   });
 
   return (
-    <View style={[styles.container, style]}>
-      <View style={styles.header}>
-        <Text style={styles.progressText}>Upload en cours...</Text>
-        <Text style={styles.progressPercentage}>{Math.round(progress)}%</Text>
-      </View>
+    <ConditionalComponent isValid={isUploading}>
+      <View style={[styles.container, style]}>
+        <View style={styles.header}>
+          <Text style={styles.progressText}>Upload en cours...</Text>
+          <Text style={styles.progressPercentage}>{Math.round(progress)}%</Text>
+        </View>
 
-      {fileName && (
-        <Text style={styles.fileName} numberOfLines={1}>
-          {fileName}
+        <ConditionalComponent isValid={!!fileName}>
+          <Text style={styles.fileName} numberOfLines={1}>
+            {fileName}
+          </Text>
+        </ConditionalComponent>
+
+        <View style={styles.progressBarContainer}>
+          <Animated.View
+            style={[
+              styles.progressBar,
+              {
+                width: progressAnim.interpolate({
+                  inputRange: [0, 100],
+                  outputRange: ["0%", "100%"],
+                  extrapolate: "clamp",
+                }),
+              },
+            ]}
+          />
+        </View>
+
+        <Text style={styles.statusText}>
+          {progress < 100
+            ? "Téléchargement en cours..."
+            : "Traitement final..."}
         </Text>
-      )}
-
-      <View style={styles.progressBarContainer}>
-        <Animated.View
-          style={[
-            styles.progressBar,
-            {
-              width: progressAnim.interpolate({
-                inputRange: [0, 100],
-                outputRange: ["0%", "100%"],
-                extrapolate: "clamp",
-              }),
-            },
-          ]}
-        />
       </View>
-
-      <Text style={styles.statusText}>
-        {progress < 100 ? "Téléchargement en cours..." : "Traitement final..."}
-      </Text>
-    </View>
+    </ConditionalComponent>
   );
 };
