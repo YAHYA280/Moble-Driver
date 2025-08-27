@@ -97,7 +97,7 @@ export const DemandesScreen: React.FC = () => {
     ]);
   };
 
-  // Sidebar items for demandes
+  // SIMPLIFIED: Only 2 sidebar items
   const sidebarItems = [
     {
       id: "all",
@@ -108,51 +108,6 @@ export const DemandesScreen: React.FC = () => {
         setShowSidebar(false);
       },
       isActive: true,
-    },
-    {
-      id: "pending",
-      label: "En attente",
-      icon: "clock-o" as const,
-      onPress: () => {
-        setFilters({ status: ["pending"] });
-        setShowSidebar(false);
-      },
-      isActive: false,
-      badge: demandes.filter((d) => d.status === "pending").length,
-    },
-    {
-      id: "accepted",
-      label: "Acceptées",
-      icon: "check-circle" as const,
-      onPress: () => {
-        setFilters({ status: ["accepted"] });
-        setShowSidebar(false);
-      },
-      isActive: false,
-      badge: demandes.filter((d) => d.status === "accepted").length,
-    },
-    {
-      id: "refused",
-      label: "Refusées",
-      icon: "times-circle" as const,
-      onPress: () => {
-        setFilters({ status: ["refused"] });
-        setShowSidebar(false);
-      },
-      isActive: false,
-      badge: demandes.filter((d) => d.status === "refused").length,
-    },
-    {
-      id: "urgent",
-      label: "Demandes urgentes",
-      icon: "exclamation-triangle" as const,
-      onPress: () => {
-        // Filter urgent demandes (you'd need to add this filter to your store)
-        Alert.alert("Info", "Filtrage des demandes urgentes à implémenter");
-        setShowSidebar(false);
-      },
-      isActive: false,
-      badge: demandes.filter((d) => d.isUrgent).length,
     },
     {
       id: "add",
@@ -365,7 +320,7 @@ export const DemandesScreen: React.FC = () => {
       >
         <Header
           leftIcon={{
-            icon: "bars", // Changed to bars for sidebar
+            icon: "bars",
             onPress: () => setShowSidebar(true),
           }}
           title="Mes demandes"
@@ -540,7 +495,7 @@ export const DemandesScreen: React.FC = () => {
         currentFilters={filters}
       />
 
-      {/* Sidebar */}
+      {/* SIMPLIFIED Sidebar - Only 2 items */}
       <Sidebar
         title="Mes demandes"
         items={sidebarItems}

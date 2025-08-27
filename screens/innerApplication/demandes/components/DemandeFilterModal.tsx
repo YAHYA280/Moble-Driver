@@ -6,7 +6,6 @@ import {
   Dimensions,
   Modal,
   Platform,
-  ScrollView,
   StyleSheet,
   Text,
   TouchableOpacity,
@@ -16,13 +15,10 @@ import {
 import { useThemeColors } from "../../../../hooks/useTheme";
 import { Button } from "../../../../shared/components/ui/Button";
 import { Checkbox } from "../../../../shared/components/ui/Checkbox";
-import { Input } from "../../../../shared/components/ui/Input";
 import {
   DEMANDE_STATUS,
-  DEMANDE_TYPES,
   DemandeFilters,
   DemandeStatus,
-  DemandeType,
 } from "../../../../shared/types/demande";
 
 const { height: screenHeight } = Dimensions.get("window");
@@ -46,20 +42,12 @@ export const DemandeFilterModal: React.FC<DemandeFilterModalProps> = ({
   const slideAnim = useRef(new Animated.Value(screenHeight)).current;
   const overlayAnim = useRef(new Animated.Value(0)).current;
 
-  // Filter state
-  const [selectedTypes, setSelectedTypes] = useState<DemandeType[]>([]);
+  // Simplified filter state - only status
   const [selectedStatuses, setSelectedStatuses] = useState<DemandeStatus[]>([]);
-  const [onlyUrgent, setOnlyUrgent] = useState(false);
-  const [dateFrom, setDateFrom] = useState("");
-  const [dateTo, setDateTo] = useState("");
 
   // Initialize state from current filters
   useEffect(() => {
-    setSelectedTypes(currentFilters.type || []);
     setSelectedStatuses(currentFilters.status || []);
-    setOnlyUrgent(currentFilters.isUrgent || false);
-    setDateFrom(currentFilters.dateFrom?.toISOString().split("T")[0] || "");
-    setDateTo(currentFilters.dateTo?.toISOString().split("T")[0] || "");
   }, [currentFilters, visible]);
 
   useEffect(() => {
@@ -92,12 +80,6 @@ export const DemandeFilterModal: React.FC<DemandeFilterModalProps> = ({
     }
   }, [visible]);
 
-  const handleTypeToggle = (type: DemandeType) => {
-    setSelectedTypes((prev) =>
-      prev.includes(type) ? prev.filter((t) => t !== type) : [...prev, type]
-    );
-  };
-
   const handleStatusToggle = (status: DemandeStatus) => {
     setSelectedStatuses((prev) =>
       prev.includes(status)
@@ -109,40 +91,16 @@ export const DemandeFilterModal: React.FC<DemandeFilterModalProps> = ({
   const handleApplyFilters = () => {
     const filters: DemandeFilters = {};
 
-    if (selectedTypes.length > 0) {
-      filters.type = selectedTypes;
-    }
-
     if (selectedStatuses.length > 0) {
       filters.status = selectedStatuses;
-    }
-
-    if (onlyUrgent) {
-      filters.isUrgent = true;
-    }
-
-    if (dateFrom) {
-      filters.dateFrom = new Date(dateFrom);
-    }
-
-    if (dateTo) {
-      filters.dateTo = new Date(dateTo);
     }
 
     onApplyFilters(filters);
     onClose();
   };
 
-  const resetLocalState = () => {
-    setSelectedTypes([]);
-    setSelectedStatuses([]);
-    setOnlyUrgent(false);
-    setDateFrom("");
-    setDateTo("");
-  };
-
   const handleClearFilters = () => {
-    resetLocalState();
+    setSelectedStatuses([]);
 
     if (onClearFilters) {
       onClearFilters();
@@ -153,12 +111,7 @@ export const DemandeFilterModal: React.FC<DemandeFilterModalProps> = ({
     onClose();
   };
 
-  const hasActiveFilters =
-    selectedTypes.length > 0 ||
-    selectedStatuses.length > 0 ||
-    onlyUrgent ||
-    dateFrom.trim() !== "" ||
-    dateTo.trim() !== "";
+  const hasActiveFilters = selectedStatuses.length > 0;
 
   const styles = StyleSheet.create({
     modalOverlay: {
@@ -170,7 +123,7 @@ export const DemandeFilterModal: React.FC<DemandeFilterModalProps> = ({
       left: 0,
       right: 0,
       bottom: 0,
-      height: screenHeight * 0.9,
+      height: screenHeight * 0.6, // Smaller modal
       backgroundColor: colors.surface,
       borderTopLeftRadius: 20,
       borderTopRightRadius: 20,
@@ -183,11 +136,6 @@ export const DemandeFilterModal: React.FC<DemandeFilterModalProps> = ({
         },
         android: {
           elevation: 8,
-        },
-        web: {
-          boxShadow: colors.isDark
-            ? "0 -4px 8px rgba(0, 0, 0, 0.3)"
-            : "0 -4px 8px rgba(0, 0, 0, 0.15)",
         },
       }),
     },
@@ -224,58 +172,36 @@ export const DemandeFilterModal: React.FC<DemandeFilterModalProps> = ({
       marginBottom: 24,
     },
     sectionTitle: {
-      fontSize: 16,
+      fontSize: 18,
       fontWeight: "600",
       color: colors.text,
-      marginBottom: 12,
+      marginBottom: 16,
+      textAlign: "center",
     },
     checkboxGroup: {
-      gap: 12,
-    },
-    typeItem: {
-      flexDirection: "row",
-      alignItems: "center",
-      paddingVertical: 8,
-    },
-    typeIcon: {
-      width: 32,
-      height: 32,
-      borderRadius: 8,
-      alignItems: "center",
-      justifyContent: "center",
-      marginRight: 12,
-    },
-    typeLabel: {
-      flex: 1,
-      fontSize: 14,
-      color: colors.text,
-      fontWeight: "500",
+      gap: 16,
     },
     statusItem: {
       flexDirection: "row",
       alignItems: "center",
-      paddingVertical: 8,
+      paddingVertical: 12,
+      paddingHorizontal: 16,
+      borderRadius: 12,
+      backgroundColor: colors.card,
     },
     statusIcon: {
-      width: 32,
-      height: 32,
-      borderRadius: 8,
+      width: 40,
+      height: 40,
+      borderRadius: 12,
       alignItems: "center",
       justifyContent: "center",
-      marginRight: 12,
+      marginRight: 16,
     },
     statusLabel: {
       flex: 1,
-      fontSize: 14,
+      fontSize: 16,
       color: colors.text,
       fontWeight: "500",
-    },
-    dateRow: {
-      flexDirection: "row",
-      gap: 12,
-    },
-    dateInput: {
-      flex: 1,
     },
     footer: {
       flexDirection: "row",
@@ -284,10 +210,6 @@ export const DemandeFilterModal: React.FC<DemandeFilterModalProps> = ({
       borderTopWidth: 1,
       borderTopColor: colors.border,
       backgroundColor: colors.surface,
-      paddingBottom: Platform.select({
-        ios: 34,
-        android: 20,
-      }),
     },
     footerButton: {
       flex: 1,
@@ -317,7 +239,7 @@ export const DemandeFilterModal: React.FC<DemandeFilterModalProps> = ({
       >
         {/* Header */}
         <View style={styles.header}>
-          <Text style={styles.title}>Filtres</Text>
+          <Text style={styles.title}>Filtrer par statut</Text>
           <TouchableOpacity style={styles.closeButton} onPress={onClose}>
             <FontAwesome name="times" size={16} color={colors.textSecondary} />
           </TouchableOpacity>
@@ -325,115 +247,40 @@ export const DemandeFilterModal: React.FC<DemandeFilterModalProps> = ({
 
         {/* Content Container */}
         <View style={styles.contentContainer}>
-          {/* Scrollable Content */}
-          <ScrollView
-            style={styles.content}
-            showsVerticalScrollIndicator={false}
-            contentContainerStyle={{ paddingBottom: 20 }}
-          >
-            {/* Demande Types */}
-            <View style={styles.section}>
-              <Text style={styles.sectionTitle}>Types de demandes</Text>
-              <View style={styles.checkboxGroup}>
-                {Object.entries(DEMANDE_TYPES).map(([type, config]) => (
-                  <TouchableOpacity
-                    key={type}
-                    style={styles.typeItem}
-                    onPress={() => handleTypeToggle(type as DemandeType)}
-                  >
-                    <View
-                      style={[
-                        styles.typeIcon,
-                        { backgroundColor: config.color + "15" },
-                      ]}
-                    >
-                      <FontAwesome
-                        name={config.icon as any}
-                        size={16}
-                        color={config.color}
-                      />
-                    </View>
-                    <Text style={styles.typeLabel}>{config.label}</Text>
-                    <Checkbox
-                      checked={selectedTypes.includes(type as DemandeType)}
-                      onPress={() => handleTypeToggle(type as DemandeType)}
-                    />
-                  </TouchableOpacity>
-                ))}
-              </View>
-            </View>
+          {/* Content */}
+          <View style={styles.content}>
+            <Text style={styles.sectionTitle}>Choisir le statut</Text>
 
-            {/* Status */}
-            <View style={styles.section}>
-              <Text style={styles.sectionTitle}>Statut</Text>
-              <View style={styles.checkboxGroup}>
-                {Object.entries(DEMANDE_STATUS).map(([status, config]) => (
-                  <TouchableOpacity
-                    key={status}
-                    style={styles.statusItem}
+            <View style={styles.checkboxGroup}>
+              {Object.entries(DEMANDE_STATUS).map(([status, config]) => (
+                <TouchableOpacity
+                  key={status}
+                  style={styles.statusItem}
+                  onPress={() => handleStatusToggle(status as DemandeStatus)}
+                >
+                  <View
+                    style={[
+                      styles.statusIcon,
+                      { backgroundColor: config.color + "15" },
+                    ]}
+                  >
+                    <FontAwesome
+                      name={config.icon as any}
+                      size={20}
+                      color={config.color}
+                    />
+                  </View>
+                  <Text style={styles.statusLabel}>{config.label}</Text>
+                  <Checkbox
+                    checked={selectedStatuses.includes(status as DemandeStatus)}
                     onPress={() => handleStatusToggle(status as DemandeStatus)}
-                  >
-                    <View
-                      style={[
-                        styles.statusIcon,
-                        { backgroundColor: config.color + "15" },
-                      ]}
-                    >
-                      <FontAwesome
-                        name={config.icon as any}
-                        size={16}
-                        color={config.color}
-                      />
-                    </View>
-                    <Text style={styles.statusLabel}>{config.label}</Text>
-                    <Checkbox
-                      checked={selectedStatuses.includes(
-                        status as DemandeStatus
-                      )}
-                      onPress={() =>
-                        handleStatusToggle(status as DemandeStatus)
-                      }
-                    />
-                  </TouchableOpacity>
-                ))}
-              </View>
-            </View>
-
-            {/* Urgent */}
-            <View style={styles.section}>
-              <Checkbox
-                checked={onlyUrgent}
-                onPress={() => setOnlyUrgent(!onlyUrgent)}
-                label="Demandes urgentes uniquement"
-                size="large"
-              />
-            </View>
-
-            {/* Date Range */}
-            <View style={styles.section}>
-              <Text style={styles.sectionTitle}>Période de demande</Text>
-              <View style={styles.dateRow}>
-                <View style={styles.dateInput}>
-                  <Input
-                    label="Du"
-                    value={dateFrom}
-                    onChangeText={setDateFrom}
-                    placeholder="YYYY-MM-DD"
                   />
-                </View>
-                <View style={styles.dateInput}>
-                  <Input
-                    label="Au"
-                    value={dateTo}
-                    onChangeText={setDateTo}
-                    placeholder="YYYY-MM-DD"
-                  />
-                </View>
-              </View>
+                </TouchableOpacity>
+              ))}
             </View>
-          </ScrollView>
+          </View>
 
-          {/* Footer - Fixed at bottom */}
+          {/* Footer */}
           <View style={styles.footer}>
             <ConditionalComponent isValid={hasActiveFilters}>
               <View style={styles.footerButton}>

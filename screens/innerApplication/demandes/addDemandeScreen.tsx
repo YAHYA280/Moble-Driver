@@ -32,7 +32,6 @@ interface FormData {
   startDate: string;
   endDate: string;
   employeeComment: string;
-  isUrgent: boolean;
 }
 
 export const AddDemandeScreen: React.FC = () => {
@@ -47,7 +46,6 @@ export const AddDemandeScreen: React.FC = () => {
     startDate: "",
     endDate: "",
     employeeComment: "",
-    isUrgent: false,
   });
   const [attachments, setAttachments] = useState<SelectedFile[]>([]);
 
@@ -81,7 +79,34 @@ export const AddDemandeScreen: React.FC = () => {
   };
 
   const handleFormDataChange = (data: Partial<FormData>) => {
-    setFormData((prev) => ({ ...prev, ...data }));
+    setFormData((prev) => {
+      const newData = { ...prev, ...data };
+
+      // Date validation: ensure start date is before end date
+      if (data.startDate && prev.endDate) {
+        const startDate = new Date(data.startDate);
+        const endDate = new Date(prev.endDate);
+        if (startDate >= endDate) {
+          // If start date is after or equal to end date, clear end date
+          newData.endDate = "";
+        }
+      }
+
+      if (data.endDate && prev.startDate) {
+        const startDate = new Date(prev.startDate);
+        const endDate = new Date(data.endDate);
+        if (endDate <= startDate) {
+          // If end date is before or equal to start date, show error
+          Alert.alert(
+            "Erreur de date",
+            "La date de fin doit être postérieure à la date de début"
+          );
+          return prev; // Don't update if invalid
+        }
+      }
+
+      return newData;
+    });
   };
 
   const validateForm = (): string | null => {
@@ -135,7 +160,7 @@ export const AddDemandeScreen: React.FC = () => {
         endDate: formData.endDate,
         employeeComment: formData.employeeComment.trim() || undefined,
         attachments: files,
-        isUrgent: formData.isUrgent,
+        // Removed: isUrgent
       });
 
       Alert.alert("Succès", "Votre demande a été soumise avec succès", [
@@ -163,7 +188,7 @@ export const AddDemandeScreen: React.FC = () => {
     },
     scrollContent: {
       padding: 16,
-      paddingBottom: 120,
+      paddingBottom: 60, // Increased bottom padding
     },
     step: {
       marginBottom: 32,
@@ -192,15 +217,9 @@ export const AddDemandeScreen: React.FC = () => {
       fontWeight: "600",
       color: colors.text,
     },
-    submitButtonContainer: {
-      position: "absolute",
-      bottom: 0,
-      left: 0,
-      right: 0,
-      padding: 16,
-      backgroundColor: colors.surface,
-      borderTopWidth: 1,
-      borderTopColor: colors.border,
+    submitSection: {
+      marginTop: 40,
+      marginBottom: 40,
     },
     submitButton: {
       backgroundColor: colors.primary,
@@ -336,33 +355,33 @@ export const AddDemandeScreen: React.FC = () => {
               />
             </View>
           </ConditionalComponent>
-        </ScrollView>
 
-        {/* Submit Button */}
-        <ConditionalComponent isValid={!!selectedType}>
-          <View style={styles.submitButtonContainer}>
-            <TouchableOpacity
-              style={[
-                styles.submitButton,
-                !canSubmit && styles.submitButtonDisabled,
-              ]}
-              onPress={handleSubmit}
-              disabled={!canSubmit}
-              activeOpacity={0.8}
-            >
-              <ConditionalComponent
-                isValid={isSubmitting}
-                defaultComponent={
-                  <Text style={styles.submitButtonText}>
-                    Soumettre la demande
-                  </Text>
-                }
+          {/* Submit Button - Now in scrollable area */}
+          <ConditionalComponent isValid={!!selectedType}>
+            <View style={styles.submitSection}>
+              <TouchableOpacity
+                style={[
+                  styles.submitButton,
+                  !canSubmit && styles.submitButtonDisabled,
+                ]}
+                onPress={handleSubmit}
+                disabled={!canSubmit}
+                activeOpacity={0.8}
               >
-                <Text style={styles.loadingText}>Envoi en cours...</Text>
-              </ConditionalComponent>
-            </TouchableOpacity>
-          </View>
-        </ConditionalComponent>
+                <ConditionalComponent
+                  isValid={isSubmitting}
+                  defaultComponent={
+                    <Text style={styles.submitButtonText}>
+                      Soumettre la demande
+                    </Text>
+                  }
+                >
+                  <Text style={styles.loadingText}>Envoi en cours...</Text>
+                </ConditionalComponent>
+              </TouchableOpacity>
+            </View>
+          </ConditionalComponent>
+        </ScrollView>
       </Animated.View>
     </SafeAreaView>
   );

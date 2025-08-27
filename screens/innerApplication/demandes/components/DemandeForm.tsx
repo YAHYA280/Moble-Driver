@@ -1,8 +1,9 @@
 import ConditionalComponent from "@/shared/components/conditionalComponent/conditionalComponent";
 import { FontAwesome } from "@expo/vector-icons";
-import React from "react";
+import DateTimePicker from "@react-native-community/datetimepicker";
+import React, { useState } from "react";
 import {
-  Alert,
+  Platform,
   StyleSheet,
   Text,
   TouchableOpacity,
@@ -19,7 +20,6 @@ interface DemandeFormData {
   startDate: string;
   endDate: string;
   employeeComment: string;
-  isUrgent: boolean;
 }
 
 interface DemandeFormProps {
@@ -38,13 +38,9 @@ export const DemandeForm: React.FC<DemandeFormProps> = ({
   const colors = useThemeColors();
   const typeConfig = DEMANDE_TYPES[selectedType];
 
-  const handleDatePress = (type: "start" | "end") => {
-    // In a real app, you would open a date picker
-    Alert.alert(
-      "Sélectionner une date",
-      "Fonctionnalité de sélection de date à implémenter"
-    );
-  };
+  // Date picker state
+  const [showStartDatePicker, setShowStartDatePicker] = useState(false);
+  const [showEndDatePicker, setShowEndDatePicker] = useState(false);
 
   const calculateDuration = (): number => {
     if (!data.startDate || !data.endDate) return 0;
@@ -62,6 +58,20 @@ export const DemandeForm: React.FC<DemandeFormProps> = ({
       month: "2-digit",
       year: "numeric",
     });
+  };
+
+  const handleStartDateChange = (event: any, selectedDate?: Date) => {
+    setShowStartDatePicker(false);
+    if (selectedDate) {
+      onDataChange({ startDate: selectedDate.toISOString() });
+    }
+  };
+
+  const handleEndDateChange = (event: any, selectedDate?: Date) => {
+    setShowEndDatePicker(false);
+    if (selectedDate) {
+      onDataChange({ endDate: selectedDate.toISOString() });
+    }
   };
 
   const styles = StyleSheet.create({
@@ -120,40 +130,6 @@ export const DemandeForm: React.FC<DemandeFormProps> = ({
       color: colors.primary,
       marginLeft: 6,
     },
-    urgentToggle: {
-      flexDirection: "row",
-      alignItems: "center",
-      paddingVertical: 12,
-      paddingHorizontal: 16,
-      borderRadius: 8,
-      borderWidth: 1,
-      borderColor: colors.border,
-      backgroundColor: colors.card,
-    },
-    urgentToggleActive: {
-      borderColor: colors.error,
-      backgroundColor: colors.error + "10",
-    },
-    urgentIcon: {
-      marginRight: 12,
-    },
-    urgentText: {
-      fontSize: 16,
-      fontWeight: "500",
-      color: colors.text,
-      flex: 1,
-    },
-    urgentTextActive: {
-      color: colors.error,
-    },
-    urgentSubtext: {
-      fontSize: 12,
-      color: colors.textSecondary,
-      marginTop: 2,
-    },
-    checkIcon: {
-      marginLeft: 12,
-    },
     requiredIndicator: {
       color: colors.error,
     },
@@ -199,7 +175,7 @@ export const DemandeForm: React.FC<DemandeFormProps> = ({
             <Text style={styles.labelText}>Date de début</Text>
             <TouchableOpacity
               style={styles.dateButton}
-              onPress={() => handleDatePress("start")}
+              onPress={() => setShowStartDatePicker(true)}
             >
               <Text
                 style={[
@@ -221,7 +197,7 @@ export const DemandeForm: React.FC<DemandeFormProps> = ({
             <Text style={styles.labelText}>Date de fin</Text>
             <TouchableOpacity
               style={styles.dateButton}
-              onPress={() => handleDatePress("end")}
+              onPress={() => setShowEndDatePicker(true)}
             >
               <Text
                 style={[
@@ -248,8 +224,7 @@ export const DemandeForm: React.FC<DemandeFormProps> = ({
           <View style={styles.durationIndicator}>
             <FontAwesome name="clock-o" size={14} color={colors.primary} />
             <Text style={styles.durationText}>
-              {calculateDuration()} jour{calculateDuration() > 1 ? "s" : ""}{" "}
-              demandé{calculateDuration() > 1 ? "s" : ""}
+              {calculateDuration()} jour{calculateDuration() > 1 ? "s" : ""}
             </Text>
           </View>
         </ConditionalComponent>
@@ -275,45 +250,26 @@ export const DemandeForm: React.FC<DemandeFormProps> = ({
         />
       </View>
 
-      {/* Urgent Toggle */}
-      <View style={styles.section}>
-        <TouchableOpacity
-          style={[
-            styles.urgentToggle,
-            data.isUrgent && styles.urgentToggleActive,
-          ]}
-          onPress={() => onDataChange({ isUrgent: !data.isUrgent })}
-          activeOpacity={0.7}
-        >
-          <FontAwesome
-            name="exclamation-triangle"
-            size={20}
-            color={data.isUrgent ? colors.error : colors.textTertiary}
-            style={styles.urgentIcon}
-          />
+      {/* Date Pickers */}
+      {showStartDatePicker && (
+        <DateTimePicker
+          value={data.startDate ? new Date(data.startDate) : new Date()}
+          mode="date"
+          display={Platform.OS === "ios" ? "spinner" : "default"}
+          onChange={handleStartDateChange}
+          minimumDate={new Date()}
+        />
+      )}
 
-          <View style={{ flex: 1 }}>
-            <Text
-              style={[
-                styles.urgentText,
-                data.isUrgent && styles.urgentTextActive,
-              ]}
-            >
-              Demande urgente
-            </Text>
-            <Text style={styles.urgentSubtext}>Traitement prioritaire</Text>
-          </View>
-
-          <ConditionalComponent isValid={data.isUrgent}>
-            <FontAwesome
-              name="check-circle"
-              size={20}
-              color={colors.error}
-              style={styles.checkIcon}
-            />
-          </ConditionalComponent>
-        </TouchableOpacity>
-      </View>
+      {showEndDatePicker && (
+        <DateTimePicker
+          value={data.endDate ? new Date(data.endDate) : new Date()}
+          mode="date"
+          display={Platform.OS === "ios" ? "spinner" : "default"}
+          onChange={handleEndDateChange}
+          minimumDate={data.startDate ? new Date(data.startDate) : new Date()}
+        />
+      )}
     </View>
   );
 };
