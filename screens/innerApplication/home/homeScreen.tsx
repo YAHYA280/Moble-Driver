@@ -1,4 +1,4 @@
-// screens/innerApplication/home/homeScreen.tsx - UPDATED with correct navigation
+// screens/innerApplication/home/homeScreen.tsx - UPDATED with Mes Demandes
 
 import { router } from "expo-router";
 import React, { useEffect, useRef } from "react";
@@ -13,6 +13,7 @@ export const HomeScreen: React.FC = () => {
   const fadeAnim = useRef(new Animated.Value(0)).current;
   const slideAnim = useRef(new Animated.Value(50)).current;
 
+  // Updated to include 7 cards (added Mes demandes)
   const cardAnimations = useRef([
     new Animated.Value(0),
     new Animated.Value(0),
@@ -20,6 +21,7 @@ export const HomeScreen: React.FC = () => {
     new Animated.Value(0),
     new Animated.Value(0),
     new Animated.Value(0),
+    new Animated.Value(0), // Added for Mes demandes
   ]).current;
 
   useEffect(() => {
@@ -68,16 +70,21 @@ export const HomeScreen: React.FC = () => {
   };
 
   const handleRoutesPress = () => {
-    // FIXED: Navigate to the correct route sheets screen
+    // Navigate to the correct route sheets screen
     router.push("/(tabs)/routes");
   };
 
   const handleGeolocationPress = () => {
-    router.push("/geolocation"); // Direct to tab route
+    router.push("/geolocation");
   };
 
   const handlePlanningPress = () => {
     router.push("/(tabs)/planning");
+  };
+
+  // NEW: Handler for Mes demandes
+  const handleDemandesPress = () => {
+    router.push("/(tabs)/demandes");
   };
 
   const styles = StyleSheet.create({
@@ -165,7 +172,7 @@ export const HomeScreen: React.FC = () => {
             />
           </Animated.View>
 
-          {/* Mon parc */}
+          {/* NEW: Mes demandes - Added as second card */}
           <Animated.View
             style={[
               styles.cardWrapper,
@@ -174,6 +181,33 @@ export const HomeScreen: React.FC = () => {
                 transform: [
                   {
                     translateY: cardAnimations[1].interpolate({
+                      inputRange: [0, 1],
+                      outputRange: [30, 0],
+                    }),
+                  },
+                ],
+              },
+            ]}
+          >
+            <HomeCard
+              title="Mes demandes"
+              description="Gérez vos demandes de congé, arrêts maladie et absences."
+              icon="clipboard"
+              iconBackgroundColor="#8b5cf6"
+              backgroundColor={colors.card}
+              onPress={handleDemandesPress}
+            />
+          </Animated.View>
+
+          {/* Mon parc - Updated animation index */}
+          <Animated.View
+            style={[
+              styles.cardWrapper,
+              {
+                opacity: cardAnimations[2],
+                transform: [
+                  {
+                    translateY: cardAnimations[2].interpolate({
                       inputRange: [0, 1],
                       outputRange: [30, 0],
                     }),
@@ -192,15 +226,15 @@ export const HomeScreen: React.FC = () => {
             />
           </Animated.View>
 
-          {/* Mes documents */}
+          {/* Mes documents - Updated animation index */}
           <Animated.View
             style={[
               styles.cardWrapper,
               {
-                opacity: cardAnimations[2],
+                opacity: cardAnimations[3],
                 transform: [
                   {
-                    translateY: cardAnimations[2].interpolate({
+                    translateY: cardAnimations[3].interpolate({
                       inputRange: [0, 1],
                       outputRange: [30, 0],
                     }),
@@ -219,15 +253,15 @@ export const HomeScreen: React.FC = () => {
             />
           </Animated.View>
 
-          {/* Feuille de route */}
+          {/* Feuille de route - Updated animation index */}
           <Animated.View
             style={[
               styles.cardWrapper,
               {
-                opacity: cardAnimations[3],
+                opacity: cardAnimations[4],
                 transform: [
                   {
-                    translateY: cardAnimations[3].interpolate({
+                    translateY: cardAnimations[4].interpolate({
                       inputRange: [0, 1],
                       outputRange: [30, 0],
                     }),
@@ -246,15 +280,15 @@ export const HomeScreen: React.FC = () => {
             />
           </Animated.View>
 
-          {/* Géolocalisation */}
+          {/* Géolocalisation - Updated animation index */}
           <Animated.View
             style={[
               styles.cardWrapper,
               {
-                opacity: cardAnimations[4],
+                opacity: cardAnimations[5],
                 transform: [
                   {
-                    translateY: cardAnimations[4].interpolate({
+                    translateY: cardAnimations[5].interpolate({
                       inputRange: [0, 1],
                       outputRange: [30, 0],
                     }),
@@ -273,15 +307,15 @@ export const HomeScreen: React.FC = () => {
             />
           </Animated.View>
 
-          {/* Planning */}
+          {/* Planning - Updated animation index */}
           <Animated.View
             style={[
               styles.cardWrapper,
               {
-                opacity: cardAnimations[5],
+                opacity: cardAnimations[6],
                 transform: [
                   {
-                    translateY: cardAnimations[5].interpolate({
+                    translateY: cardAnimations[6].interpolate({
                       inputRange: [0, 1],
                       outputRange: [30, 0],
                     }),

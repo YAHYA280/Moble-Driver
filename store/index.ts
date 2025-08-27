@@ -1,7 +1,6 @@
-// store/index.ts
-
 export { useAuthStore } from "./authStore";
 export { useCalendarStore } from "./calendarStore";
+export { useDemandeStore } from "./demandeStore";
 export { useDocumentStore } from "./documentStore";
 export { useNotificationStore } from "./notificationStore";
 export { usePayslipStore } from "./payslipStore";
