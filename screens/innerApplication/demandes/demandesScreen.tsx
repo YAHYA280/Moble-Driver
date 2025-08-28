@@ -205,41 +205,12 @@ export const DemandesScreen: React.FC = () => {
       paddingVertical: 12,
     },
     sectionHeader: {
-      flexDirection: "row",
-      justifyContent: "space-between",
-      alignItems: "center",
       marginBottom: 16,
     },
     sectionTitle: {
       fontSize: 18,
       fontWeight: "600",
       color: colors.text,
-    },
-    sortButton: {
-      flexDirection: "row",
-      alignItems: "center",
-      paddingHorizontal: 12,
-      paddingVertical: 6,
-      borderRadius: 16,
-      backgroundColor: colors.card,
-      borderWidth: 1,
-      borderColor: colors.border,
-    },
-    sortText: {
-      fontSize: 14,
-      color: colors.textSecondary,
-      marginRight: 6,
-    },
-    filterButton: {
-      width: 40,
-      height: 40,
-      borderRadius: 20,
-      alignItems: "center",
-      justifyContent: "center",
-      backgroundColor: colors.card,
-      borderWidth: 1,
-      borderColor: colors.border,
-      marginLeft: 8,
     },
     demandesContainer: {
       gap: 12,
@@ -328,15 +299,18 @@ export const DemandesScreen: React.FC = () => {
             {
               icon: "filter",
               onPress: () => setShowFilterModal(true),
+              size: 16, // Reduced from default size (20) to 16 (80% of original)
             },
             {
               icon: "search",
               onPress: () => setShowSearchModal(true),
+              size: 16, // Reduced from default size (20) to 16 (80% of original)
             },
             {
               icon: "bell",
               onPress: handleNotificationPress,
               badge: 2,
+              size: 16, // Reduced from default size (20) to 16 (80% of original)
             },
           ]}
         />
@@ -402,28 +376,9 @@ export const DemandesScreen: React.FC = () => {
 
           {/* Demandes List */}
           <View style={styles.sectionContainer}>
+            {/* Simplified Section Header - Removed filter buttons */}
             <View style={styles.sectionHeader}>
               <Text style={styles.sectionTitle}>Historique des demandes</Text>
-              <View style={{ flexDirection: "row", alignItems: "center" }}>
-                <TouchableOpacity style={styles.sortButton}>
-                  <Text style={styles.sortText}>Plus récent</Text>
-                  <FontAwesome
-                    name="chevron-down"
-                    size={12}
-                    color={colors.textSecondary}
-                  />
-                </TouchableOpacity>
-                <TouchableOpacity
-                  style={styles.filterButton}
-                  onPress={() => setShowFilterModal(true)}
-                >
-                  <FontAwesome
-                    name="filter"
-                    size={16}
-                    color={colors.textSecondary}
-                  />
-                </TouchableOpacity>
-              </View>
             </View>
 
             <ConditionalComponent
