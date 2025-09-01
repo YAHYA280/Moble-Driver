@@ -2,6 +2,7 @@ export { useAuthStore } from "./authStore";
 export { useCalendarStore } from "./calendarStore";
 export { useDemandeStore } from "./demandeStore";
 export { useDocumentStore } from "./documentStore";
+export { useGeolocationStore } from "./geolocationStore";
 export { useNotificationStore } from "./notificationStore";
 export { usePayslipStore } from "./payslipStore";
 export { usePlanningStore } from "./planningStore";

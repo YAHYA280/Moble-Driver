@@ -2,6 +2,7 @@ export * from "./auth";
 export * from "./calendar";
 export * from "./demande";
 export * from "./document";
+export * from "./geolocation";
 export * from "./incident";
 export * from "./notification";
 export * from "./payslip";

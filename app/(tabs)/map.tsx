@@ -1,32 +1,6 @@
 import React from "react";
-import { StyleSheet, Text } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
+import { GeolocationScreen } from "../../screens/innerApplication/geolocation/geolocationScreen";
 
-export default function MapScreen() {
-  return (
-    <SafeAreaView style={styles.container}>
-      <Text style={styles.title}>Map Screen</Text>
-      <Text style={styles.subtitle}>Navigation & Routes</Text>
-    </SafeAreaView>
-  );
+export default function GeolocationPage() {
+  return <GeolocationScreen />;
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: "#fefeff",
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  title: {
-    fontSize: 24,
-    fontWeight: "700",
-    color: "#212b36",
-  },
-  subtitle: {
-    fontSize: 16,
-    fontWeight: "500",
-    color: "#666",
-    marginTop: 10,
-  },
-});
