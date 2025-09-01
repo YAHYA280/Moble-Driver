@@ -70,7 +70,6 @@ export const AddDemandeScreen: React.FC = () => {
   const handleTypeSelect = (type: DemandeType) => {
     setSelectedType(type);
 
-    // Auto-fill title based on type
     const typeConfig = DEMANDE_TYPES[type];
     setFormData((prev) => ({
       ...prev,
@@ -82,12 +81,10 @@ export const AddDemandeScreen: React.FC = () => {
     setFormData((prev) => {
       const newData = { ...prev, ...data };
 
-      // Date validation: ensure start date is before end date
       if (data.startDate && prev.endDate) {
         const startDate = new Date(data.startDate);
         const endDate = new Date(prev.endDate);
         if (startDate >= endDate) {
-          // If start date is after or equal to end date, clear end date
           newData.endDate = "";
         }
       }
@@ -96,12 +93,11 @@ export const AddDemandeScreen: React.FC = () => {
         const startDate = new Date(prev.startDate);
         const endDate = new Date(data.endDate);
         if (endDate <= startDate) {
-          // If end date is before or equal to start date, show error
           Alert.alert(
             "Erreur de date",
             "La date de fin doit être postérieure à la date de début"
           );
-          return prev; // Don't update if invalid
+          return prev;
         }
       }
 

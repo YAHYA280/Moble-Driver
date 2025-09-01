@@ -9,7 +9,6 @@ import {
 
 type DemandeStore = DemandeState & DemandeActions;
 
-// UPDATED: Apply filters function with urgent support
 const applyFilters = (
   demandes: Demande[],
   filters: DemandeFilters
@@ -40,7 +39,6 @@ const applyFilters = (
     );
   }
 
-  // NEW: Filter by urgent status
   if (filters.isUrgent) {
     filtered = filtered.filter((demande) => demande.isUrgent === true);
   }

@@ -17,6 +17,7 @@ import { useTheme } from "../../../contexts/ThemeContext";
 import { Header } from "../../../shared/components/ui/Header";
 import { DEMANDE_STATUS, DEMANDE_TYPES } from "../../../shared/types/demande";
 import { useDemandeStore } from "../../../store/demandeStore";
+import { formatFileSize, getFileIcon } from "./utils/fileUtils";
 
 export const DemandeDetailScreen: React.FC = () => {
   const { colors } = useTheme();
@@ -113,21 +114,6 @@ export const DemandeDetailScreen: React.FC = () => {
     const endDate = new Date(selectedDemande.endDate);
     const diffTime = Math.abs(endDate.getTime() - startDate.getTime());
     return Math.ceil(diffTime / (1000 * 60 * 60 * 24)) + 1;
-  };
-
-  const formatFileSize = (bytes: number): string => {
-    if (bytes === 0) return "0 B";
-    const k = 1024;
-    const sizes = ["B", "KB", "MB", "GB"];
-    const i = Math.floor(Math.log(bytes) / Math.log(k));
-    return parseFloat((bytes / Math.pow(k, i)).toFixed(1)) + " " + sizes[i];
-  };
-
-  const getFileIcon = (mimeType: string): string => {
-    if (mimeType.startsWith("image/")) return "file-image-o";
-    if (mimeType === "application/pdf") return "file-pdf-o";
-    if (mimeType.includes("document")) return "file-text";
-    return "file-o";
   };
 
   const styles = StyleSheet.create({

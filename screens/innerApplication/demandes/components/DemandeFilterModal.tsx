@@ -42,10 +42,8 @@ export const DemandeFilterModal: React.FC<DemandeFilterModalProps> = ({
   const slideAnim = useRef(new Animated.Value(screenHeight)).current;
   const overlayAnim = useRef(new Animated.Value(0)).current;
 
-  // Simplified filter state - only status
   const [selectedStatuses, setSelectedStatuses] = useState<DemandeStatus[]>([]);
 
-  // Initialize state from current filters
   useEffect(() => {
     setSelectedStatuses(currentFilters.status || []);
   }, [currentFilters, visible]);

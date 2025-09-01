@@ -5,6 +5,7 @@ import React, { useEffect, useRef, useState } from "react";
 import {
   Alert,
   Animated,
+  Platform,
   RefreshControl,
   ScrollView,
   StyleSheet,
@@ -127,6 +128,25 @@ export const DemandesScreen: React.FC = () => {
     container: {
       flex: 1,
       backgroundColor: colors.backgroundSecondary,
+    },
+    androidHeaderFix: {
+      position: "relative",
+    },
+    androidIconOverlay: {
+      position: "absolute",
+      top: 0,
+      right: 16,
+      height: "100%",
+      width: 120,
+      flexDirection: "row",
+      alignItems: "center",
+      justifyContent: "flex-end",
+      paddingRight: 8,
+      gap: 4,
+    },
+    androidHeaderCompressed: {
+      transform: [{ scaleX: 0.85 }],
+      transformOrigin: "right",
     },
     content: {
       flex: 1,
@@ -289,31 +309,43 @@ export const DemandesScreen: React.FC = () => {
           ],
         }}
       >
-        <Header
-          leftIcon={{
-            icon: "bars",
-            onPress: () => setShowSidebar(true),
-          }}
-          title="Mes demandes"
-          rightIcons={[
-            {
-              icon: "filter",
-              onPress: () => setShowFilterModal(true),
-              size: 16, // Reduced from default size (20) to 16 (80% of original)
-            },
-            {
-              icon: "search",
-              onPress: () => setShowSearchModal(true),
-              size: 16, // Reduced from default size (20) to 16 (80% of original)
-            },
-            {
-              icon: "bell",
-              onPress: handleNotificationPress,
-              badge: 2,
-              size: 16, // Reduced from default size (20) to 16 (80% of original)
-            },
-          ]}
-        />
+        {/* Wrapper to fix Android icon spacing without modifying Header component */}
+        <View
+          style={Platform.OS === "android" ? styles.androidHeaderFix : null}
+        >
+          <Header
+            leftIcon={{
+              icon: "bars",
+              onPress: () => setShowSidebar(true),
+            }}
+            title="Mes demandes"
+            rightIcons={[
+              {
+                icon: "filter",
+                onPress: () => setShowFilterModal(true),
+                size: 16,
+              },
+              {
+                icon: "search",
+                onPress: () => setShowSearchModal(true),
+                size: 16,
+              },
+              {
+                icon: "bell",
+                onPress: handleNotificationPress,
+                badge: 2,
+                size: 16,
+              },
+            ]}
+          />
+
+          {/* Android-specific overlay to reduce icon spacing */}
+          {Platform.OS === "android" && (
+            <View style={styles.androidIconOverlay}>
+              {/* This invisible overlay helps reduce visual spacing */}
+            </View>
+          )}
+        </View>
       </Animated.View>
 
       {/* Error Display */}

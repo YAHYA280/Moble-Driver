@@ -38,7 +38,6 @@ export const DemandeForm: React.FC<DemandeFormProps> = ({
   const colors = useThemeColors();
   const typeConfig = DEMANDE_TYPES[selectedType];
 
-  // Date picker state
   const [showStartDatePicker, setShowStartDatePicker] = useState(false);
   const [showEndDatePicker, setShowEndDatePicker] = useState(false);
 
@@ -251,7 +250,8 @@ export const DemandeForm: React.FC<DemandeFormProps> = ({
       </View>
 
       {/* Date Pickers */}
-      {showStartDatePicker && (
+
+      <ConditionalComponent isValid={Boolean(showEndDatePicker)}>
         <DateTimePicker
           value={data.startDate ? new Date(data.startDate) : new Date()}
           mode="date"
@@ -259,9 +259,9 @@ export const DemandeForm: React.FC<DemandeFormProps> = ({
           onChange={handleStartDateChange}
           minimumDate={new Date()}
         />
-      )}
+      </ConditionalComponent>
 
-      {showEndDatePicker && (
+      <ConditionalComponent isValid={Boolean(showEndDatePicker)}>
         <DateTimePicker
           value={data.endDate ? new Date(data.endDate) : new Date()}
           mode="date"
@@ -269,7 +269,7 @@ export const DemandeForm: React.FC<DemandeFormProps> = ({
           onChange={handleEndDateChange}
           minimumDate={data.startDate ? new Date(data.startDate) : new Date()}
         />
-      )}
+      </ConditionalComponent>
     </View>
   );
 };
