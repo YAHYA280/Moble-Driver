@@ -277,8 +277,8 @@ export const GeolocationHistoryScreen: React.FC = () => {
   });
 
   const handleTripPress = (trip: Trip) => {
-    // Navigate to trip details or show trip on map
-    router.push(`/(tabs)/planning/trip/${trip.id}`);
+    // Fix: Navigate to the correct geolocation trip details route
+    router.push(`/(tabs)/geolocation/trip/${trip.id}`);
   };
 
   const handleSearch = (query: string) => {

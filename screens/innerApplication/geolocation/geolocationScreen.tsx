@@ -16,10 +16,10 @@ import {
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useTheme } from "../../../contexts/ThemeContext";
 import { GoogleMapsView } from "../../../shared/components/maps/GoogleMapsView";
+import { InAppNavigation } from "../../../shared/components/navigation/InAppNavigation";
 import { Header } from "../../../shared/components/ui/Header";
 import { Sidebar } from "../../../shared/components/ui/Sidebar";
 import { useGeolocationStore } from "../../../store/geolocationStore";
-import { LocationStatusBar } from "./components/LocationStatusBar";
 import { MapControlsPanel } from "./components/MapControlsPanel";
 import { TripInfoCard } from "./components/TripInfoCard";
 
@@ -28,6 +28,11 @@ export const GeolocationScreen: React.FC = () => {
   const [showSidebar, setShowSidebar] = useState(false);
   const [centerOnLocation, setCenterOnLocation] = useState(false);
   const [isCardMinimized, setIsCardMinimized] = useState(false);
+  const [showInAppNavigation, setShowInAppNavigation] = useState(false);
+  const [navigationDestination, setNavigationDestination] = useState<{
+    coordinates: { latitude: number; longitude: number };
+    address: string;
+  } | null>(null);
   const headerAnim = useRef(new Animated.Value(0)).current;
   const controlsAnim = useRef(new Animated.Value(0)).current;
   const [showMapControls, setShowMapControls] = useState(false);
@@ -191,7 +196,26 @@ export const GeolocationScreen: React.FC = () => {
         [
           { text: "Fermer", style: "cancel" },
           {
-            text: "Navigation",
+            text: "Navigation interne",
+            onPress: () => {
+              setNavigationDestination({
+                coordinates: point.coordinates,
+                address: point.address,
+              });
+              setShowInAppNavigation(true);
+
+              addAlert({
+                type: "approach_pickup",
+                title: "Navigation démarrée",
+                message: `Navigation interne vers ${point.address}`,
+                isRead: false,
+                tripId: trip.id,
+                coordinates: point.coordinates,
+              });
+            },
+          },
+          {
+            text: "Navigation externe",
             onPress: () => {
               openInMaps(
                 point.coordinates.latitude,
@@ -201,7 +225,7 @@ export const GeolocationScreen: React.FC = () => {
 
               addAlert({
                 type: "approach_pickup",
-                title: "Navigation démarrée",
+                title: "Navigation externe démarrée",
                 message: `Navigation vers ${point.address}`,
                 isRead: false,
                 tripId: trip.id,
@@ -263,11 +287,29 @@ export const GeolocationScreen: React.FC = () => {
     if (nextPoint) {
       Alert.alert(
         "Navigation",
-        `Démarrer la navigation vers ${nextPoint.address} ?`,
+        `Choisissez votre mode de navigation vers ${nextPoint.address}`,
         [
           { text: "Annuler", style: "cancel" },
           {
-            text: "Démarrer",
+            text: "Navigation interne",
+            onPress: () => {
+              setNavigationDestination({
+                coordinates: nextPoint.coordinates,
+                address: nextPoint.address,
+              });
+              setShowInAppNavigation(true);
+
+              addAlert({
+                type: "mission_update",
+                title: "Navigation interne démarrée",
+                message: `Navigation vers ${nextPoint.address}`,
+                isRead: false,
+                tripId: trip.id,
+              });
+            },
+          },
+          {
+            text: "Navigation externe",
             onPress: () => {
               openInMaps(
                 nextPoint.coordinates.latitude,
@@ -277,7 +319,7 @@ export const GeolocationScreen: React.FC = () => {
 
               addAlert({
                 type: "mission_update",
-                title: "Navigation démarrée",
+                title: "Navigation externe démarrée",
                 message: `Navigation vers ${nextPoint.address}`,
                 isRead: false,
                 tripId: trip.id,
@@ -296,6 +338,22 @@ export const GeolocationScreen: React.FC = () => {
 
   const handleMinimizeToggle = () => {
     setIsCardMinimized(!isCardMinimized);
+  };
+
+  const handleCloseNavigation = () => {
+    setShowInAppNavigation(false);
+    setNavigationDestination(null);
+  };
+
+  const handleExternalNavigation = () => {
+    if (navigationDestination) {
+      openInMaps(
+        navigationDestination.coordinates.latitude,
+        navigationDestination.coordinates.longitude,
+        navigationDestination.address
+      );
+    }
+    handleCloseNavigation();
   };
 
   const sidebarItems = [
@@ -356,7 +414,7 @@ export const GeolocationScreen: React.FC = () => {
     },
     bottomOverlay: {
       position: "absolute",
-      bottom: 0,
+      bottom: 40, // Changed from 0 to 5 to move trip info card 5px up
       left: 0,
       right: 0,
       paddingHorizontal: 16,
@@ -476,13 +534,6 @@ export const GeolocationScreen: React.FC = () => {
         {/* Overlays */}
         <View style={styles.overlayContainer}>
           {/* Top Overlay - Location Status */}
-          <View style={styles.topOverlay}>
-            <LocationStatusBar
-              isActive={isTrackingActive}
-              currentLocation={currentLocation}
-              onToggle={handleTrackingToggle}
-            />
-          </View>
 
           {/* Bottom Overlay - Trip Info */}
           <View style={styles.bottomOverlay}>
@@ -558,6 +609,18 @@ export const GeolocationScreen: React.FC = () => {
             onClose={() => setShowMapControls(false)}
           />
         </Animated.View>
+
+        {/* In-App Navigation */}
+        <ConditionalComponent
+          isValid={showInAppNavigation && !!navigationDestination}
+        >
+          <InAppNavigation
+            currentLocation={currentLocation}
+            destination={navigationDestination!}
+            onClose={handleCloseNavigation}
+            onExternalNavigation={handleExternalNavigation}
+          />
+        </ConditionalComponent>
       </View>
 
       {/* Sidebar */}
