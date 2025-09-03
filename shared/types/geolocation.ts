@@ -1,4 +1,3 @@
-// shared/types/geolocation.ts
 export interface Coordinates {
   latitude: number;
   longitude: number;
@@ -48,8 +47,11 @@ export interface Trip {
   notes?: string;
 }
 
+// Types de cartes compatibles avec react-native-maps
+export type MapType = "roadmap" | "satellite" | "hybrid" | "terrain";
+
 export interface MapSettings {
-  mapType: "roadmap" | "satellite" | "hybrid" | "terrain";
+  mapType: MapType;
   nightMode: boolean;
   showTraffic: boolean;
   showPOI: boolean;
@@ -83,6 +85,21 @@ export interface GeolocationAlert {
   isRead: boolean;
   tripId?: string;
   coordinates?: Coordinates;
+}
+
+// Interface pour les régions de la carte (react-native-maps)
+export interface MapRegion {
+  latitude: number;
+  longitude: number;
+  latitudeDelta: number;
+  longitudeDelta: number;
+}
+
+// Interface pour les résultats de directions
+export interface DirectionsResult {
+  distance: number;
+  duration: number;
+  coordinates: Coordinates[];
 }
 
 export interface GeolocationState {

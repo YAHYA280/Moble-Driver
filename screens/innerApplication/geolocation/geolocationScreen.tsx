@@ -109,7 +109,6 @@ export const GeolocationScreen: React.FC = () => {
         style: "destructive",
         onPress: () => {
           setShowSidebar(false);
-          // Add logout logic here
           router.replace("/auth/login");
         },
       },
@@ -129,7 +128,6 @@ export const GeolocationScreen: React.FC = () => {
           {
             text: "Navigation",
             onPress: () => {
-              // Add navigation logic here
               addAlert({
                 type: "approach_pickup",
                 title: "Navigation démarrée",
@@ -168,6 +166,11 @@ export const GeolocationScreen: React.FC = () => {
     }
   };
 
+  const handleLocationUpdate = (location: any) => {
+    // Handle location updates if needed
+    console.log("Location updated:", location);
+  };
+
   const sidebarItems = [
     {
       id: "map",
@@ -179,7 +182,7 @@ export const GeolocationScreen: React.FC = () => {
     {
       id: "history",
       label: "Historique des trajets",
-      icon: "archive" as const, // Fixed: changed from "time" to "archive"
+      icon: "archive" as const,
       onPress: () => {
         setShowSidebar(false);
         handleHistoryPress();
@@ -189,7 +192,7 @@ export const GeolocationScreen: React.FC = () => {
     {
       id: "settings",
       label: "Paramètres",
-      icon: "cog" as const, // Fixed: changed from "settings" to "cog"
+      icon: "cog" as const,
       onPress: () => {
         setShowSidebar(false);
         handleSettingsPress();
@@ -305,7 +308,7 @@ export const GeolocationScreen: React.FC = () => {
           title="Géolocalisation"
           rightIcons={[
             {
-              icon: "cog", // Fixed: changed from "settings" to "cog"
+              icon: "cog",
               onPress: () => setShowMapControls(!showMapControls),
             },
             {
@@ -337,6 +340,7 @@ export const GeolocationScreen: React.FC = () => {
             showTraffic={settings.map.showTraffic}
             showPOI={settings.map.showPOI}
             nightMode={settings.map.nightMode}
+            onLocationUpdate={handleLocationUpdate}
             onTripPointClick={handleTripPointClick}
             style={{ flex: 1 }}
           />
@@ -357,7 +361,7 @@ export const GeolocationScreen: React.FC = () => {
           <View style={styles.bottomOverlay}>
             <ConditionalComponent isValid={!!currentTrip}>
               <TripInfoCard
-                trip={currentTrip!} // Fixed: corrected typo from currentTriip to currentTrip
+                trip={currentTrip!}
                 onDetailsPress={() => {
                   if (currentTrip) {
                     router.push(`/(tabs)/planning/trip/${currentTrip.id}`);
@@ -392,7 +396,6 @@ export const GeolocationScreen: React.FC = () => {
               style={[styles.floatingButton, styles.floatingButtonSecondary]}
               onPress={() => {
                 if (currentLocation) {
-                  // Center map on current location
                   addAlert({
                     type: "mission_update",
                     title: "Position actualisée",
@@ -431,7 +434,6 @@ export const GeolocationScreen: React.FC = () => {
           <MapControlsPanel
             settings={settings.map}
             onSettingsChange={(newSettings) => {
-              // Fixed: properly handle partial settings update
               updateSettings({
                 map: {
                   ...settings.map,
