@@ -6,6 +6,7 @@ import React, { useEffect, useRef, useState } from "react";
 import {
   Alert,
   Animated,
+  Linking,
   Platform,
   StyleSheet,
   Text,
@@ -25,6 +26,8 @@ import { TripInfoCard } from "./components/TripInfoCard";
 export const GeolocationScreen: React.FC = () => {
   const { colors } = useTheme();
   const [showSidebar, setShowSidebar] = useState(false);
+  const [centerOnLocation, setCenterOnLocation] = useState(false);
+  const [isCardMinimized, setIsCardMinimized] = useState(false);
   const headerAnim = useRef(new Animated.Value(0)).current;
   const controlsAnim = useRef(new Animated.Value(0)).current;
   const [showMapControls, setShowMapControls] = useState(false);
@@ -93,6 +96,61 @@ export const GeolocationScreen: React.FC = () => {
     }).start();
   }, [showMapControls]);
 
+  // Navigation helpers
+  const openInMaps = (latitude: number, longitude: number, label?: string) => {
+    const destination = `${latitude},${longitude}`;
+    const encodedLabel = encodeURIComponent(label || "Destination");
+
+    if (Platform.OS === "ios") {
+      // Try Apple Maps first, fallback to Google Maps
+      const appleMapsUrl = `http://maps.apple.com/?daddr=${destination}&dirflg=d`;
+      const googleMapsUrl = `https://maps.google.com/?daddr=${destination}&directionsmode=driving`;
+
+      Linking.canOpenURL(appleMapsUrl)
+        .then((supported) => {
+          if (supported) {
+            return Linking.openURL(appleMapsUrl);
+          } else {
+            return Linking.openURL(googleMapsUrl);
+          }
+        })
+        .catch(() => {
+          Alert.alert(
+            "Erreur",
+            "Impossible d'ouvrir l'application de navigation"
+          );
+        });
+    } else {
+      // Android - use Google Maps
+      const googleMapsUrl = `https://maps.google.com/?daddr=${destination}&directionsmode=driving`;
+
+      Linking.openURL(googleMapsUrl).catch(() => {
+        Alert.alert("Erreur", "Impossible d'ouvrir Google Maps");
+      });
+    }
+  };
+
+  const getNextDestination = (trip: any) => {
+    if (!trip) return null;
+
+    // If trip is in progress, find the next waypoint or destination
+    if (trip.status === "En cours") {
+      // For simplicity, get the next pickup point or destination
+      const nextPoint = trip.points.find(
+        (point: any) =>
+          point.type === "waypoint" || point.type === "destination"
+      );
+      return nextPoint;
+    }
+
+    // If trip is upcoming, go to pickup point
+    if (trip.status === "A venir") {
+      return trip.points.find((point: any) => point.type === "pickup");
+    }
+
+    return null;
+  };
+
   const handleNotificationPress = () => {
     router.push("/notifications?returnTo=/geolocation");
   };
@@ -109,6 +167,7 @@ export const GeolocationScreen: React.FC = () => {
         style: "destructive",
         onPress: () => {
           setShowSidebar(false);
+          // Add logout logic here
           router.replace("/auth/login");
         },
       },
@@ -121,13 +180,25 @@ export const GeolocationScreen: React.FC = () => {
 
     if (trip && point) {
       Alert.alert(
-        point.type === "pickup" ? "Point de ramassage" : "Destination",
-        `${trip.title}\n${point.address}`,
+        point.type === "pickup"
+          ? "Point de ramassage"
+          : point.type === "destination"
+          ? "Destination"
+          : "Point d'arrêt",
+        `${trip.title}\n${point.address}${
+          point.notes ? `\n${point.notes}` : ""
+        }`,
         [
           { text: "Fermer", style: "cancel" },
           {
             text: "Navigation",
             onPress: () => {
+              openInMaps(
+                point.coordinates.latitude,
+                point.coordinates.longitude,
+                point.address
+              );
+
               addAlert({
                 type: "approach_pickup",
                 title: "Navigation démarrée",
@@ -166,9 +237,65 @@ export const GeolocationScreen: React.FC = () => {
     }
   };
 
-  const handleLocationUpdate = (location: any) => {
-    // Handle location updates if needed
-    console.log("Location updated:", location);
+  const handleCenterOnLocation = () => {
+    if (currentLocation) {
+      setCenterOnLocation(true);
+      setTimeout(() => setCenterOnLocation(false), 100);
+
+      addAlert({
+        type: "mission_update",
+        title: "Position actualisée",
+        message: "Carte centrée sur votre position",
+        isRead: false,
+      });
+    } else {
+      Alert.alert(
+        "Position non disponible",
+        "Impossible de localiser votre position actuelle. Vérifiez que la géolocalisation est activée."
+      );
+    }
+  };
+
+  const handleNavigateToTrip = (trip: any) => {
+    if (!trip) return;
+
+    const nextPoint = getNextDestination(trip);
+    if (nextPoint) {
+      Alert.alert(
+        "Navigation",
+        `Démarrer la navigation vers ${nextPoint.address} ?`,
+        [
+          { text: "Annuler", style: "cancel" },
+          {
+            text: "Démarrer",
+            onPress: () => {
+              openInMaps(
+                nextPoint.coordinates.latitude,
+                nextPoint.coordinates.longitude,
+                nextPoint.address
+              );
+
+              addAlert({
+                type: "mission_update",
+                title: "Navigation démarrée",
+                message: `Navigation vers ${nextPoint.address}`,
+                isRead: false,
+                tripId: trip.id,
+              });
+            },
+          },
+        ]
+      );
+    } else {
+      Alert.alert(
+        "Information",
+        "Aucune destination disponible pour ce trajet"
+      );
+    }
+  };
+
+  const handleMinimizeToggle = () => {
+    setIsCardMinimized(!isCardMinimized);
   };
 
   const sidebarItems = [
@@ -340,8 +467,8 @@ export const GeolocationScreen: React.FC = () => {
             showTraffic={settings.map.showTraffic}
             showPOI={settings.map.showPOI}
             nightMode={settings.map.nightMode}
-            onLocationUpdate={handleLocationUpdate}
             onTripPointClick={handleTripPointClick}
+            centerOnLocation={centerOnLocation}
             style={{ flex: 1 }}
           />
         </View>
@@ -362,22 +489,18 @@ export const GeolocationScreen: React.FC = () => {
             <ConditionalComponent isValid={!!currentTrip}>
               <TripInfoCard
                 trip={currentTrip!}
+                isMinimized={isCardMinimized}
                 onDetailsPress={() => {
                   if (currentTrip) {
-                    router.push(`/(tabs)/planning/trip/${currentTrip.id}`);
+                    router.push(`/(tabs)/geolocation/trip/${currentTrip.id}`);
                   }
                 }}
                 onNavigatePress={() => {
                   if (currentTrip) {
-                    addAlert({
-                      type: "mission_update",
-                      title: "Navigation démarrée",
-                      message: `Navigation vers ${currentTrip.title}`,
-                      isRead: false,
-                      tripId: currentTrip.id,
-                    });
+                    handleNavigateToTrip(currentTrip);
                   }
                 }}
+                onMinimizeToggle={handleMinimizeToggle}
               />
             </ConditionalComponent>
           </View>
@@ -394,16 +517,7 @@ export const GeolocationScreen: React.FC = () => {
 
             <TouchableOpacity
               style={[styles.floatingButton, styles.floatingButtonSecondary]}
-              onPress={() => {
-                if (currentLocation) {
-                  addAlert({
-                    type: "mission_update",
-                    title: "Position actualisée",
-                    message: "Carte centrée sur votre position",
-                    isRead: false,
-                  });
-                }
-              }}
+              onPress={handleCenterOnLocation}
               activeOpacity={0.7}
             >
               <Ionicons name="locate" size={24} color={colors.primary} />

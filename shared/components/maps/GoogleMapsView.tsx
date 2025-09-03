@@ -22,6 +22,7 @@ interface GoogleMapsViewProps {
   showTraffic?: boolean;
   showPOI?: boolean;
   nightMode?: boolean;
+  centerOnLocation?: boolean; // Added this prop
   onLocationUpdate?: (location: Location) => void;
   onTripPointClick?: (tripId: string, pointId: string) => void;
   style?: any;
@@ -36,6 +37,7 @@ const GoogleMapsView: React.FC<GoogleMapsViewProps> = ({
   showTraffic = true,
   showPOI = true,
   nightMode = false,
+  centerOnLocation = false, // Added default value
   onLocationUpdate,
   onTripPointClick,
   style,
@@ -51,7 +53,8 @@ const GoogleMapsView: React.FC<GoogleMapsViewProps> = ({
   });
 
   // Google Maps API Key from environment
-  const GOOGLE_MAPS_API_KEY = process.env.EXPO_PUBLIC_GOOGLE_API_KEY;
+  const GOOGLE_MAPS_API_KEY =
+    process.env.EXPO_PUBLIC_GOOGLE_API_KEY || "YOUR_GOOGLE_MAPS_API_KEY";
 
   // Convert our map types to react-native-maps types
   const getMapType = (): RNMapType => {
@@ -176,6 +179,19 @@ const GoogleMapsView: React.FC<GoogleMapsViewProps> = ({
     }
   }, [currentLocation, isMapReady]);
 
+  // Handle centerOnLocation prop change
+  useEffect(() => {
+    if (centerOnLocation && currentLocation && isMapReady) {
+      const newRegion = {
+        latitude: currentLocation.latitude,
+        longitude: currentLocation.longitude,
+        latitudeDelta: 0.0922,
+        longitudeDelta: 0.0421,
+      };
+      mapRef.current?.animateToRegion(newRegion, 1000);
+    }
+  }, [centerOnLocation, currentLocation, isMapReady]);
+
   // Handle map ready
   const handleMapReady = () => {
     setIsMapReady(true);
@@ -193,6 +209,8 @@ const GoogleMapsView: React.FC<GoogleMapsViewProps> = ({
         return "#3b82f6"; // Blue
       case "destination":
         return "#ef4444"; // Red
+      case "waypoint":
+        return "#f59e0b"; // Amber
       default:
         return "#746cd4"; // Purple
     }
@@ -341,8 +359,11 @@ const GoogleMapsView: React.FC<GoogleMapsViewProps> = ({
     },
   });
 
-  // Show error state if no API key
-  if (!GOOGLE_MAPS_API_KEY) {
+  // Show fallback if no API key (but still functional)
+  if (
+    !GOOGLE_MAPS_API_KEY ||
+    GOOGLE_MAPS_API_KEY === "YOUR_GOOGLE_MAPS_API_KEY"
+  ) {
     return (
       <View style={[styles.container, style]}>
         <View style={styles.errorContainer}>
@@ -352,17 +373,18 @@ const GoogleMapsView: React.FC<GoogleMapsViewProps> = ({
             color={colors.warning}
             style={styles.errorIcon}
           />
-          <Text style={styles.errorTitle}>Clé API Google Maps requise</Text>
+          <Text style={styles.errorTitle}>Clé API Google Maps manquante</Text>
           <Text style={styles.errorText}>
-            Veuillez configurer votre clé API Google Maps dans le fichier .env
-            {"\n"}EXPO_PUBLIC_GOOGLE_API_KEY=YOUR_API_KEY
+            La carte fonctionne en mode basique.{"\n"}
+            Pour les directions et fonctionnalités avancées,{"\n"}
+            configurez votre clé API Google Maps.
           </Text>
           <TouchableOpacity
             style={styles.retryButton}
             onPress={() =>
               Alert.alert(
                 "Configuration requise",
-                "Ajoutez votre clé API Google Maps dans le fichier .env"
+                "Ajoutez votre clé API Google Maps dans les variables d'environnement:\nEXPO_PUBLIC_GOOGLE_API_KEY=YOUR_API_KEY"
               )
             }
           >
@@ -421,7 +443,11 @@ const GoogleMapsView: React.FC<GoogleMapsViewProps> = ({
               key={`${trip.id}-${point.id}`}
               coordinate={point.coordinates}
               title={
-                point.type === "pickup" ? "Point de ramassage" : "Destination"
+                point.type === "pickup"
+                  ? "Point de ramassage"
+                  : point.type === "destination"
+                  ? "Destination"
+                  : "Point d'arrêt"
               }
               description={point.address}
               pinColor={getMarkerColor(point.type)}
@@ -429,13 +455,20 @@ const GoogleMapsView: React.FC<GoogleMapsViewProps> = ({
             >
               <View style={styles.markerCallout}>
                 <Text style={styles.calloutTitle}>
-                  {point.type === "pickup" ? "Ramassage" : "Destination"}
+                  {point.type === "pickup"
+                    ? "Ramassage"
+                    : point.type === "destination"
+                    ? "Destination"
+                    : "Arrêt"}
                 </Text>
                 <Text style={styles.calloutDescription}>{point.address}</Text>
                 {point.estimatedTime && (
                   <Text style={styles.calloutDescription}>
                     Heure prévue: {point.estimatedTime}
                   </Text>
+                )}
+                {point.notes && (
+                  <Text style={styles.calloutDescription}>{point.notes}</Text>
                 )}
               </View>
             </Marker>
