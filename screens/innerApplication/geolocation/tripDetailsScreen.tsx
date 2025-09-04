@@ -1,9 +1,11 @@
 // screens/innerApplication/geolocation/tripDetailsScreen.tsx
 import { Ionicons } from "@expo/vector-icons";
 import { router, useLocalSearchParams } from "expo-router";
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useRef } from "react";
 import {
+  Alert,
   Animated,
+  Linking,
   Platform,
   ScrollView,
   StyleSheet,
@@ -20,7 +22,6 @@ export const TripDetailsScreen: React.FC = () => {
   const { colors } = useTheme();
   const { id } = useLocalSearchParams<{ id: string }>();
   const fadeAnim = useRef(new Animated.Value(0)).current;
-  const [selectedDay, setSelectedDay] = useState(24);
 
   const { trips } = useGeolocationStore();
   const trip = trips.find((t) => t.id === id);
@@ -33,208 +34,236 @@ export const TripDetailsScreen: React.FC = () => {
     }).start();
   }, []);
 
-  // Create styles object first
-  const styles = StyleSheet.create({
-    container: {
-      flex: 1,
-      backgroundColor: colors.backgroundSecondary,
-    },
-    content: {
-      flex: 1,
-    },
-    scrollContent: {
-      paddingBottom: 100,
-    },
-    calendarContainer: {
-      backgroundColor: colors.surface,
-      paddingVertical: 20,
-      marginBottom: 20,
-    },
-    calendarRow: {
-      flexDirection: "row",
-      justifyContent: "center",
-      alignItems: "center",
-      paddingHorizontal: 16,
-    },
-    dayButton: {
-      flex: 1,
-      alignItems: "center",
-      paddingVertical: 8,
-      marginHorizontal: 4,
-    },
-    selectedDayButton: {
-      backgroundColor: colors.text,
-      borderRadius: 20,
-    },
-    dayText: {
-      fontSize: 12,
-      color: colors.textSecondary,
-      marginBottom: 4,
-      fontWeight: "500",
-    },
-    selectedDayText: {
-      color: colors.surface,
-    },
-    dateText: {
-      fontSize: 16,
-      fontWeight: "700",
-      color: colors.text,
-    },
-    selectedDateText: {
-      color: colors.surface,
-    },
-    detailsCard: {
-      backgroundColor: colors.surface,
-      borderRadius: 12,
-      margin: 16,
-      padding: 20,
-      ...Platform.select({
-        ios: {
-          shadowColor: colors.shadow,
-          shadowOffset: { width: 0, height: 2 },
-          shadowOpacity: colors.isDark ? 0.3 : 0.08,
-          shadowRadius: 8,
-        },
-        android: {
-          elevation: 4,
-        },
-      }),
-    },
-    detailRow: {
-      flexDirection: "row",
-      justifyContent: "space-between",
-      alignItems: "center",
-      paddingVertical: 16,
-      borderBottomWidth: 1,
-      borderBottomColor: colors.border,
-    },
-    lastDetailRow: {
-      borderBottomWidth: 0,
-    },
-    detailLabel: {
-      fontSize: 16,
-      color: colors.textSecondary,
-    },
-    detailValue: {
-      fontSize: 16,
-      fontWeight: "600",
-      color: colors.text,
-      textAlign: "right",
-      flex: 1,
-      marginLeft: 16,
-    },
-    passengersValue: {
-      textAlign: "right",
-    },
-    statusValueRealized: {
-      color: colors.success,
-      fontWeight: "700",
-    },
-    statusValueInProgress: {
-      color: colors.success,
-      fontWeight: "700",
-    },
-    statusValueUpcoming: {
-      color: colors.info,
-      fontWeight: "700",
-    },
-    statusValueCancelled: {
-      color: colors.error,
-      fontWeight: "700",
-    },
-    statusValueCompleted: {
-      color: colors.textSecondary,
-      fontWeight: "700",
-    },
-    driverSection: {
-      backgroundColor: colors.surface,
-      borderRadius: 12,
-      margin: 16,
-      padding: 20,
-      flexDirection: "row",
-      alignItems: "center",
-      ...Platform.select({
-        ios: {
-          shadowColor: colors.shadow,
-          shadowOffset: { width: 0, height: 2 },
-          shadowOpacity: colors.isDark ? 0.3 : 0.08,
-          shadowRadius: 8,
-        },
-        android: {
-          elevation: 4,
-        },
-      }),
-    },
-    driverAvatar: {
-      width: 60,
-      height: 60,
-      borderRadius: 30,
-      backgroundColor: colors.primary,
-      justifyContent: "center",
-      alignItems: "center",
-      marginRight: 16,
-    },
-    avatarText: {
-      fontSize: 20,
-      fontWeight: "700",
-      color: "white",
-    },
-    driverInfo: {
-      flex: 1,
-    },
-    driverName: {
-      fontSize: 18,
-      fontWeight: "700",
-      color: colors.text,
-      marginBottom: 4,
-    },
-    vehicleInfo: {
-      flexDirection: "row",
-      alignItems: "center",
-      marginBottom: 2,
-    },
-    vehicleText: {
-      fontSize: 14,
-      color: colors.textSecondary,
-      marginLeft: 6,
-    },
-    plateContainer: {
-      backgroundColor: colors.backgroundSecondary,
-      paddingHorizontal: 8,
-      paddingVertical: 4,
-      borderRadius: 6,
-      marginLeft: 12,
-    },
-    plateText: {
-      fontSize: 12,
-      fontWeight: "600",
-      color: colors.text,
-      letterSpacing: 1,
-    },
-    qrButton: {
-      width: 50,
-      height: 50,
-      borderRadius: 25,
-      backgroundColor: colors.primary,
-      justifyContent: "center",
-      alignItems: "center",
-    },
-    errorContainer: {
-      flex: 1,
-      justifyContent: "center",
-      alignItems: "center",
-      padding: 20,
-    },
-    errorText: {
-      fontSize: 16,
-      color: colors.textSecondary,
-      textAlign: "center",
-    },
-  });
+  // Create styles at the top level to avoid hoisting issues
+  const createStyles = (colors: any, trip: any) => {
+    const getStatusColor = (status: string) => {
+      switch (status) {
+        case "En cours":
+          return colors.success;
+        case "A venir":
+          return colors.info;
+        case "Termine":
+          return colors.textSecondary;
+        case "Annule":
+          return colors.error;
+        default:
+          return colors.textSecondary;
+      }
+    };
 
-  // Helper functions defined after styles
-  const getStatusColor = () => {
-    switch (trip?.status) {
+    const statusColor = trip
+      ? getStatusColor(trip.status)
+      : colors.textSecondary;
+
+    return StyleSheet.create({
+      container: {
+        flex: 1,
+        backgroundColor: colors.backgroundSecondary,
+      },
+      content: {
+        flex: 1,
+      },
+      scrollContent: {
+        paddingBottom: 100,
+      },
+      errorContainer: {
+        flex: 1,
+        justifyContent: "center",
+        alignItems: "center",
+        padding: 20,
+      },
+      errorText: {
+        fontSize: 16,
+        color: colors.textSecondary,
+        textAlign: "center",
+      },
+      tripInfoCard: {
+        backgroundColor: colors.surface,
+        borderRadius: 12,
+        margin: 16,
+        padding: 20,
+        ...Platform.select({
+          ios: {
+            shadowColor: colors.shadow,
+            shadowOffset: { width: 0, height: 2 },
+            shadowOpacity: colors.isDark ? 0.3 : 0.08,
+            shadowRadius: 8,
+          },
+          android: {
+            elevation: 4,
+          },
+        }),
+      },
+      tripTitle: {
+        fontSize: 20,
+        fontWeight: "700",
+        color: colors.text,
+        marginBottom: 8,
+        textAlign: "center",
+      },
+      statusContainer: {
+        flexDirection: "row",
+        alignItems: "center",
+        justifyContent: "center",
+        backgroundColor: statusColor + "15",
+        paddingHorizontal: 16,
+        paddingVertical: 8,
+        borderRadius: 20,
+        marginBottom: 16,
+        alignSelf: "center",
+      },
+      statusText: {
+        fontSize: 14,
+        fontWeight: "600",
+        color: statusColor,
+        marginLeft: 6,
+      },
+      tripInfoRow: {
+        flexDirection: "row",
+        alignItems: "center",
+        marginBottom: 12,
+      },
+      tripInfoIcon: {
+        marginRight: 12,
+        width: 20,
+      },
+      tripInfoText: {
+        fontSize: 16,
+        color: colors.text,
+        flex: 1,
+      },
+      sectionTitle: {
+        fontSize: 18,
+        fontWeight: "600",
+        color: colors.text,
+        marginHorizontal: 16,
+        marginTop: 8,
+        marginBottom: 12,
+      },
+      pickupCard: {
+        backgroundColor: colors.surface,
+        borderRadius: 12,
+        marginHorizontal: 16,
+        marginBottom: 12,
+        padding: 16,
+        ...Platform.select({
+          ios: {
+            shadowColor: colors.shadow,
+            shadowOffset: { width: 0, height: 2 },
+            shadowOpacity: colors.isDark ? 0.3 : 0.08,
+            shadowRadius: 4,
+          },
+          android: {
+            elevation: 2,
+          },
+        }),
+      },
+      pickupHeader: {
+        flexDirection: "row",
+        alignItems: "flex-start",
+        marginBottom: 12,
+      },
+      pickupNumber: {
+        width: 32,
+        height: 32,
+        borderRadius: 16,
+        backgroundColor: colors.primary,
+        justifyContent: "center",
+        alignItems: "center",
+        marginRight: 12,
+      },
+      pickupNumberText: {
+        color: "white",
+        fontSize: 14,
+        fontWeight: "600",
+      },
+      pickupInfo: {
+        flex: 1,
+      },
+      passengerName: {
+        fontSize: 16,
+        fontWeight: "600",
+        color: colors.text,
+        marginBottom: 4,
+      },
+      pickupAddress: {
+        fontSize: 14,
+        color: colors.textSecondary,
+        marginBottom: 6,
+        lineHeight: 18,
+      },
+      pickupTime: {
+        fontSize: 12,
+        color: colors.info,
+        fontWeight: "500",
+      },
+      pickupActions: {
+        borderTopWidth: 1,
+        borderTopColor: colors.border,
+        paddingTop: 12,
+      },
+      phoneButton: {
+        flexDirection: "row",
+        alignItems: "center",
+        backgroundColor: colors.success + "15",
+        paddingHorizontal: 12,
+        paddingVertical: 10,
+        borderRadius: 8,
+        alignSelf: "flex-start",
+      },
+      phoneText: {
+        fontSize: 14,
+        color: colors.success,
+        fontWeight: "500",
+        marginLeft: 6,
+      },
+      routeCard: {
+        backgroundColor: colors.surface,
+        borderRadius: 12,
+        margin: 16,
+        padding: 20,
+        ...Platform.select({
+          ios: {
+            shadowColor: colors.shadow,
+            shadowOffset: { width: 0, height: 2 },
+            shadowOpacity: colors.isDark ? 0.3 : 0.08,
+            shadowRadius: 8,
+          },
+          android: {
+            elevation: 4,
+          },
+        }),
+      },
+      routePoint: {
+        flexDirection: "row",
+        alignItems: "center",
+        marginBottom: 12,
+      },
+      routeIcon: {
+        marginRight: 12,
+        width: 20,
+      },
+      routeText: {
+        fontSize: 14,
+        color: colors.textSecondary,
+        flex: 1,
+      },
+      departureText: {
+        color: colors.info,
+        fontWeight: "500",
+      },
+      destinationText: {
+        color: colors.error,
+        fontWeight: "500",
+      },
+    });
+  };
+
+  const styles = createStyles(colors, trip);
+
+  // Helper functions
+  const getStatusColor = (status: string) => {
+    switch (status) {
       case "En cours":
         return colors.success;
       case "A venir":
@@ -248,28 +277,75 @@ export const TripDetailsScreen: React.FC = () => {
     }
   };
 
-  const getStatusText = () => {
-    switch (trip?.status) {
+  const getStatusIcon = (status: string) => {
+    switch (status) {
+      case "En cours":
+        return "play-circle";
+      case "A venir":
+        return "time";
       case "Termine":
-        return "Réalisé";
+        return "checkmark-circle";
+      case "Annule":
+        return "close-circle";
       default:
-        return trip?.status || "Inconnu";
+        return "help-circle";
     }
   };
 
-  const getStatusStyle = () => {
-    switch (trip?.status) {
-      case "En cours":
-        return styles.statusValueInProgress;
-      case "A venir":
-        return styles.statusValueUpcoming;
-      case "Termine":
-        return styles.statusValueCompleted;
-      case "Annule":
-        return styles.statusValueCancelled;
-      default:
-        return styles.statusValueCompleted;
-    }
+  const handlePhoneCall = (phoneNumber: string, passengerName: string) => {
+    Alert.alert(
+      "Appeler le passager",
+      `Voulez-vous appeler ${passengerName} ?\n${phoneNumber}`,
+      [
+        { text: "Annuler", style: "cancel" },
+        {
+          text: "Appeler",
+          onPress: () => {
+            const phoneUrl = `tel:${phoneNumber.replace(/\s/g, "")}`;
+            Linking.canOpenURL(phoneUrl)
+              .then((supported) => {
+                if (supported) {
+                  return Linking.openURL(phoneUrl);
+                } else {
+                  Alert.alert("Erreur", "Impossible de passer l'appel");
+                }
+              })
+              .catch((error) => {
+                Alert.alert("Erreur", "Impossible de passer l'appel");
+                console.error("Phone call error:", error);
+              });
+          },
+        },
+      ]
+    );
+  };
+
+  const getPickupPoints = () => {
+    if (!trip) return [];
+
+    return trip.points
+      .filter((point) => point.type === "waypoint")
+      .map((point, index) => {
+        const passengerName =
+          point.notes?.replace("Client: ", "") || `Passager ${index + 1}`;
+
+        const mockPhones: { [key: string]: string } = {
+          "Ahmed El Mansouri": "+212 6 12 34 56 78",
+          "Fatima Benali": "+212 6 87 65 43 21",
+          "Omar Khalil": "+212 6 55 44 33 22",
+          "Youssef Tazi": "+212 6 99 88 77 66",
+          "Aicha Benkirane": "+212 6 11 22 33 44",
+          "Hassan Alaoui": "+212 6 66 55 44 33",
+          "Samira Berrada": "+212 6 77 88 99 00",
+          "Mohamed Fassi": "+212 6 33 44 55 66",
+        };
+
+        return {
+          ...point,
+          passengerName,
+          phone: mockPhones[passengerName] || "+212 6 XX XX XX XX",
+        };
+      });
   };
 
   if (!trip) {
@@ -289,42 +365,11 @@ export const TripDetailsScreen: React.FC = () => {
     );
   }
 
-  // Mock calendar data
-  const days = [
-    { day: "Lun", date: 21 },
-    { day: "Mar", date: 22 },
-    { day: "Mer", date: 23 },
-    { day: "Jeu", date: 24 },
-    { day: "Ven", date: 25 },
-    { day: "Sam", date: 26 },
-    { day: "Dim", date: 27 },
-  ];
-
-  // Extract passenger names from waypoints
-  const getPassengers = () => {
-    return trip.points
-      .filter((point) => point.type === "waypoint" && point.notes)
-      .map((point) => {
-        const match = point.notes?.match(/Client: (.+)/);
-        return match ? match[1] : "Passager";
-      });
-  };
-
-  const passengers = getPassengers();
-
-  const DetailRow: React.FC<{
-    label: string;
-    value: string;
-    isLast?: boolean;
-    isStatus?: boolean;
-  }> = ({ label, value, isLast = false, isStatus = false }) => (
-    <View style={[styles.detailRow, isLast && styles.lastDetailRow]}>
-      <Text style={styles.detailLabel}>{label}</Text>
-      <Text style={[styles.detailValue, isStatus && getStatusStyle()]}>
-        {value}
-      </Text>
-    </View>
-  );
+  const pickupPoints = getPickupPoints();
+  const departurePoint = trip.points.find((p) => p.type === "pickup");
+  const destinationPoint = trip.points.find((p) => p.type === "destination");
+  const statusColor = getStatusColor(trip.status);
+  const statusIcon = getStatusIcon(trip.status);
 
   return (
     <SafeAreaView style={styles.container}>
@@ -333,106 +378,140 @@ export const TripDetailsScreen: React.FC = () => {
           icon: "chevron-left",
           onPress: () => router.back(),
         }}
-        title="Détails trajet les écoles"
+        title="Détails du trajet"
       />
 
       <Animated.View style={[styles.content, { opacity: fadeAnim }]}>
-        {/* Calendar */}
-        <View style={styles.calendarContainer}>
-          <View style={styles.calendarRow}>
-            {days.map((day, index) => (
-              <TouchableOpacity
-                key={index}
-                style={[
-                  styles.dayButton,
-                  selectedDay === day.date && styles.selectedDayButton,
-                ]}
-                onPress={() => setSelectedDay(day.date)}
-              >
-                <Text
-                  style={[
-                    styles.dayText,
-                    selectedDay === day.date && styles.selectedDayText,
-                  ]}
-                >
-                  {day.day}
-                </Text>
-                <Text
-                  style={[
-                    styles.dateText,
-                    selectedDay === day.date && styles.selectedDateText,
-                  ]}
-                >
-                  {day.date}
-                </Text>
-              </TouchableOpacity>
-            ))}
-          </View>
-        </View>
-
         <ScrollView
           style={styles.content}
           contentContainerStyle={styles.scrollContent}
           showsVerticalScrollIndicator={false}
         >
-          {/* Trip Details */}
-          <View style={styles.detailsCard}>
-            <DetailRow label="Heure du départ" value={trip.startTime} />
-            <DetailRow
-              label="Heure et de l'arrivée"
-              value={trip.endTime || trip.startTime}
-            />
-            <DetailRow
-              label="Lieu du départ"
-              value={trip.points[0]?.address.split(",")[0] || "Point de départ"}
-            />
-            <DetailRow
-              label="Destination"
-              value={
-                trip.points[trip.points.length - 1]?.address.split(",")[0] ||
-                "Destination"
-              }
-            />
-            <DetailRow
-              label="Durée totale"
-              value={trip.actualDuration || trip.estimatedDuration}
-            />
-            <DetailRow
-              label="Distance parcourue"
-              value={`${trip.distance} Km`}
-            />
-            <DetailRow
-              label="Usagers"
-              value={
-                passengers.length > 0 ? passengers.join("\n") : "Aucun passager"
-              }
-            />
-            <DetailRow
-              label="Status"
-              value={getStatusText()}
-              isLast={true}
-              isStatus={true}
-            />
+          {/* Trip Basic Info */}
+          <View style={styles.tripInfoCard}>
+            <Text style={styles.tripTitle}>{trip.title}</Text>
+
+            {/* Trip Status */}
+            <View style={styles.statusContainer}>
+              <Ionicons
+                name={statusIcon as any}
+                size={16}
+                color={statusColor}
+              />
+              <Text style={styles.statusText}>{trip.status}</Text>
+            </View>
+
+            <View style={styles.tripInfoRow}>
+              <Ionicons
+                name="time-outline"
+                size={20}
+                color={colors.textSecondary}
+                style={styles.tripInfoIcon}
+              />
+              <Text style={styles.tripInfoText}>
+                Heure de départ: {trip.startTime}
+              </Text>
+            </View>
+
+            <View style={styles.tripInfoRow}>
+              <Ionicons
+                name="speedometer-outline"
+                size={20}
+                color={colors.textSecondary}
+                style={styles.tripInfoIcon}
+              />
+              <Text style={styles.tripInfoText}>
+                Distance: {trip.distance} km
+              </Text>
+            </View>
+
+            <View style={styles.tripInfoRow}>
+              <Ionicons
+                name="hourglass-outline"
+                size={20}
+                color={colors.textSecondary}
+                style={styles.tripInfoIcon}
+              />
+              <Text style={styles.tripInfoText}>
+                Durée estimée: {trip.estimatedDuration}
+              </Text>
+            </View>
           </View>
 
-          {/* Driver Info */}
-          <View style={styles.driverSection}>
-            <View style={styles.driverAvatar}>
-              <Text style={styles.avatarText}>DJ</Text>
-            </View>
-            <View style={styles.driverInfo}>
-              <Text style={styles.driverName}>David Jacques</Text>
-              <View style={styles.vehicleInfo}>
-                <Ionicons name="car" size={16} color={colors.textSecondary} />
-                <Text style={styles.vehicleText}>Mercedes Benz</Text>
-                <View style={styles.plateContainer}>
-                  <Text style={styles.plateText}>{trip.vehicleId}</Text>
+          {/* Pickup Points Section */}
+          {pickupPoints.length > 0 && (
+            <>
+              <Text style={styles.sectionTitle}>
+                Points de ramassage ({pickupPoints.length})
+              </Text>
+              {pickupPoints.map((point, index) => (
+                <View key={point.id} style={styles.pickupCard}>
+                  <View style={styles.pickupHeader}>
+                    <View style={styles.pickupNumber}>
+                      <Text style={styles.pickupNumberText}>{index + 1}</Text>
+                    </View>
+                    <View style={styles.pickupInfo}>
+                      <Text style={styles.passengerName}>
+                        {point.passengerName}
+                      </Text>
+                      <Text style={styles.pickupAddress} numberOfLines={2}>
+                        {point.address}
+                      </Text>
+                      {point.estimatedTime && (
+                        <Text style={styles.pickupTime}>
+                          Heure prévue: {point.estimatedTime}
+                        </Text>
+                      )}
+                    </View>
+                  </View>
+
+                  <View style={styles.pickupActions}>
+                    <TouchableOpacity
+                      style={styles.phoneButton}
+                      activeOpacity={0.7}
+                      onPress={() =>
+                        handlePhoneCall(point.phone, point.passengerName)
+                      }
+                    >
+                      <Ionicons name="call" size={16} color={colors.success} />
+                      <Text style={styles.phoneText}>{point.phone}</Text>
+                    </TouchableOpacity>
+                  </View>
                 </View>
+              ))}
+            </>
+          )}
+
+          {/* Route Information */}
+          <Text style={styles.sectionTitle}>Itinéraire</Text>
+          <View style={styles.routeCard}>
+            {departurePoint && (
+              <View style={styles.routePoint}>
+                <Ionicons
+                  name="play-circle"
+                  size={20}
+                  color={colors.info}
+                  style={styles.routeIcon}
+                />
+                <Text style={[styles.routeText, styles.departureText]}>
+                  Départ: {departurePoint.address}
+                </Text>
               </View>
-            </View>
-            <TouchableOpacity style={styles.qrButton}>
-              <Ionicons name="qr-code" size={24} color="white" />
-            </TouchableOpacity>
+            )}
+
+            {destinationPoint && (
+              <View style={[styles.routePoint, { marginBottom: 0 }]}>
+                <Ionicons
+                  name="location"
+                  size={20}
+                  color={colors.error}
+                  style={styles.routeIcon}
+                />
+                <Text style={[styles.routeText, styles.destinationText]}>
+                  Destination: {destinationPoint.address}
+                </Text>
+              </View>
+            )}
           </View>
         </ScrollView>
       </Animated.View>

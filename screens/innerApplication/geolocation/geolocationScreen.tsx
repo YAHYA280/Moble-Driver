@@ -563,11 +563,11 @@ export const GeolocationScreen: React.FC = () => {
 
       {/* Main Content */}
       <View style={styles.content}>
-        {/* Google Maps */}
+        {/* Google Maps - FIXED: Only pass current trip to show only its points */}
         <View style={styles.mapContainer}>
           <GoogleMapsView
             currentLocation={currentLocation}
-            trips={trips}
+            trips={currentTrip ? [currentTrip] : []} // FIXED: Only show current trip points
             currentTrip={currentTrip}
             pointsOfInterest={pointsOfInterest}
             mapType={settings.map.mapType}

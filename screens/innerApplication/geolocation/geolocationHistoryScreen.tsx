@@ -57,6 +57,16 @@ const TripHistoryCard: React.FC<{
     }
   };
 
+  // Format date from trip startTime
+  const formatDate = () => {
+    const today = new Date();
+    return today.toLocaleDateString("fr-FR", {
+      day: "2-digit",
+      month: "2-digit",
+      year: "numeric",
+    });
+  };
+
   const styles = StyleSheet.create({
     container: {
       backgroundColor: colors.card,
@@ -82,7 +92,7 @@ const TripHistoryCard: React.FC<{
       justifyContent: "space-between",
       marginBottom: 12,
     },
-    titleContainer: {
+    leftContent: {
       flex: 1,
       marginRight: 12,
     },
@@ -90,11 +100,17 @@ const TripHistoryCard: React.FC<{
       fontSize: 16,
       fontWeight: "600",
       color: colors.text,
-      marginBottom: 4,
+      marginBottom: 6,
     },
-    customer: {
+    dateTime: {
       fontSize: 14,
       color: colors.textSecondary,
+      marginBottom: 4,
+    },
+    startTime: {
+      fontSize: 14,
+      color: colors.textSecondary,
+      fontWeight: "500",
     },
     statusContainer: {
       flexDirection: "row",
@@ -110,48 +126,6 @@ const TripHistoryCard: React.FC<{
       color: getStatusColor(),
       marginLeft: 4,
     },
-    infoRow: {
-      flexDirection: "row",
-      alignItems: "center",
-      marginBottom: 8,
-    },
-    infoIcon: {
-      marginRight: 8,
-      width: 16,
-      textAlign: "center",
-    },
-    infoText: {
-      flex: 1,
-      fontSize: 14,
-      color: colors.textSecondary,
-    },
-    routeInfo: {
-      backgroundColor: colors.backgroundSecondary,
-      borderRadius: 8,
-      padding: 12,
-      marginTop: 8,
-    },
-    routeRow: {
-      flexDirection: "row",
-      alignItems: "center",
-      marginVertical: 2,
-    },
-    routeIcon: {
-      marginRight: 8,
-    },
-    routeText: {
-      flex: 1,
-      fontSize: 12,
-      color: colors.textSecondary,
-    },
-    pickupText: {
-      color: colors.info,
-      fontWeight: "500",
-    },
-    destinationText: {
-      color: colors.error,
-      fontWeight: "500",
-    },
   });
 
   return (
@@ -160,17 +134,13 @@ const TripHistoryCard: React.FC<{
       onPress={onPress}
       activeOpacity={0.7}
     >
-      {/* Header */}
       <View style={styles.header}>
-        <View style={styles.titleContainer}>
+        <View style={styles.leftContent}>
           <Text style={styles.title} numberOfLines={1}>
             {trip.title}
           </Text>
-          <ConditionalComponent isValid={!!trip.customerInfo?.name}>
-            <Text style={styles.customer} numberOfLines={1}>
-              {trip.customerInfo?.name}
-            </Text>
-          </ConditionalComponent>
+          <Text style={styles.dateTime}>{formatDate()}</Text>
+          <Text style={styles.startTime}>Départ: {trip.startTime}</Text>
         </View>
 
         <View style={styles.statusContainer}>
@@ -181,55 +151,6 @@ const TripHistoryCard: React.FC<{
           />
           <Text style={styles.statusText}>{trip.status}</Text>
         </View>
-      </View>
-
-      {/* Trip Info */}
-      <View style={styles.infoRow}>
-        <Ionicons
-          name="time-outline"
-          size={16}
-          color={colors.textSecondary}
-          style={styles.infoIcon}
-        />
-        <Text style={styles.infoText}>
-          {trip.startTime} • {trip.estimatedDuration}
-          {trip.actualDuration && ` (réel: ${trip.actualDuration})`}
-        </Text>
-      </View>
-
-      <View style={styles.infoRow}>
-        <Ionicons
-          name="speedometer-outline"
-          size={16}
-          color={colors.textSecondary}
-          style={styles.infoIcon}
-        />
-        <Text style={styles.infoText}>Distance: {trip.distance} km</Text>
-      </View>
-
-      {/* Route Information */}
-      <View style={styles.routeInfo}>
-        {trip.points.map((point, index) => (
-          <View key={point.id} style={styles.routeRow}>
-            <Ionicons
-              name={point.type === "pickup" ? "arrow-up-circle" : "location"}
-              size={12}
-              color={point.type === "pickup" ? colors.info : colors.error}
-              style={styles.routeIcon}
-            />
-            <Text
-              style={[
-                styles.routeText,
-                point.type === "pickup"
-                  ? styles.pickupText
-                  : styles.destinationText,
-              ]}
-              numberOfLines={1}
-            >
-              {point.address}
-            </Text>
-          </View>
-        ))}
       </View>
     </TouchableOpacity>
   );
@@ -277,7 +198,6 @@ export const GeolocationHistoryScreen: React.FC = () => {
   });
 
   const handleTripPress = (trip: Trip) => {
-    // Fix: Navigate to the correct geolocation trip details route
     router.push(`/(tabs)/geolocation/trip/${trip.id}`);
   };
 
