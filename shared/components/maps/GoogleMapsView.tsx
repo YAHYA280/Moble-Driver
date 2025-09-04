@@ -22,7 +22,7 @@ interface GoogleMapsViewProps {
   showTraffic?: boolean;
   showPOI?: boolean;
   nightMode?: boolean;
-  centerOnLocation?: boolean; // Added this prop
+  centerOnLocation?: boolean;
   onLocationUpdate?: (location: Location) => void;
   onTripPointClick?: (tripId: string, pointId: string) => void;
   style?: any;
@@ -37,7 +37,7 @@ const GoogleMapsView: React.FC<GoogleMapsViewProps> = ({
   showTraffic = true,
   showPOI = true,
   nightMode = false,
-  centerOnLocation = false, // Added default value
+  centerOnLocation = false,
   onLocationUpdate,
   onTripPointClick,
   style,
@@ -206,13 +206,13 @@ const GoogleMapsView: React.FC<GoogleMapsViewProps> = ({
   const getMarkerColor = (type: string) => {
     switch (type) {
       case "pickup":
-        return "#3b82f6"; // Blue
+        return colors.info; // Blue
       case "destination":
-        return "#ef4444"; // Red
+        return colors.error; // Red
       case "waypoint":
-        return "#f59e0b"; // Amber
+        return colors.warning; // Amber
       default:
-        return "#746cd4"; // Purple
+        return colors.primary; // Purple
     }
   };
 
@@ -231,6 +231,40 @@ const GoogleMapsView: React.FC<GoogleMapsViewProps> = ({
         return "#8b5cf6"; // Violet
     }
   };
+
+  // Get icon for trip point type
+  const getTripPointIcon = (type: string) => {
+    switch (type) {
+      case "pickup":
+        return "arrow-up-circle";
+      case "destination":
+        return "location";
+      case "waypoint":
+        return "person";
+      default:
+        return "location";
+    }
+  };
+
+  // Create custom marker component
+  const CustomMarker: React.FC<{
+    type: string;
+    color: string;
+    size?: "small" | "large";
+  }> = ({ type, color, size = "large" }) => (
+    <View
+      style={[
+        size === "large" ? styles.customMarker : styles.passengerMarker,
+        { backgroundColor: color },
+      ]}
+    >
+      <Ionicons
+        name={getTripPointIcon(type) as any}
+        size={size === "large" ? 18 : 14}
+        color="white"
+      />
+    </View>
+  );
 
   // Render current trip directions
   const renderDirections = () => {
@@ -357,6 +391,37 @@ const GoogleMapsView: React.FC<GoogleMapsViewProps> = ({
       fontSize: 12,
       color: colors.textSecondary,
     },
+    // FIXED: Clean custom marker styles
+    customMarker: {
+      width: 36,
+      height: 36,
+      borderRadius: 18,
+      backgroundColor: colors.primary,
+      justifyContent: "center",
+      alignItems: "center",
+      borderWidth: 3,
+      borderColor: "white",
+      shadowColor: "#000",
+      shadowOffset: { width: 0, height: 2 },
+      shadowOpacity: 0.3,
+      shadowRadius: 4,
+      elevation: 5,
+    },
+    passengerMarker: {
+      width: 30,
+      height: 30,
+      borderRadius: 15,
+      backgroundColor: colors.info,
+      justifyContent: "center",
+      alignItems: "center",
+      borderWidth: 2,
+      borderColor: "white",
+      shadowColor: "#000",
+      shadowOffset: { width: 0, height: 2 },
+      shadowOpacity: 0.3,
+      shadowRadius: 4,
+      elevation: 4,
+    },
   });
 
   // Show fallback if no API key (but still functional)
@@ -432,11 +497,16 @@ const GoogleMapsView: React.FC<GoogleMapsViewProps> = ({
             }}
             title="Ma position"
             description={currentLocation.address}
-            pinColor={colors.success}
-          />
+          >
+            <View
+              style={[styles.customMarker, { backgroundColor: colors.success }]}
+            >
+              <Ionicons name="person" size={18} color="white" />
+            </View>
+          </Marker>
         )}
 
-        {/* Trip Points Markers */}
+        {/* Trip Points Markers with Custom Icons */}
         {trips.map((trip) =>
           trip.points.map((point) => (
             <Marker
@@ -450,27 +520,13 @@ const GoogleMapsView: React.FC<GoogleMapsViewProps> = ({
                   : "Point d'arrêt"
               }
               description={point.address}
-              pinColor={getMarkerColor(point.type)}
               onPress={() => handleTripPointPress(trip.id, point.id)}
             >
-              <View style={styles.markerCallout}>
-                <Text style={styles.calloutTitle}>
-                  {point.type === "pickup"
-                    ? "Ramassage"
-                    : point.type === "destination"
-                    ? "Destination"
-                    : "Arrêt"}
-                </Text>
-                <Text style={styles.calloutDescription}>{point.address}</Text>
-                {point.estimatedTime && (
-                  <Text style={styles.calloutDescription}>
-                    Heure prévue: {point.estimatedTime}
-                  </Text>
-                )}
-                {point.notes && (
-                  <Text style={styles.calloutDescription}>{point.notes}</Text>
-                )}
-              </View>
+              <CustomMarker
+                type={point.type}
+                color={getMarkerColor(point.type)}
+                size={point.type === "waypoint" ? "small" : "large"}
+              />
             </Marker>
           ))
         )}

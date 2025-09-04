@@ -78,7 +78,7 @@ export const InAppNavigation: React.FC<InAppNavigationProps> = ({
     },
     header: {
       position: "absolute",
-      top: Platform.select({ ios: 50, android: 20 }),
+      top: Platform.select({ ios: 5, android: 5 }),
       left: 16,
       right: 16,
       backgroundColor: colors.card,
@@ -107,7 +107,7 @@ export const InAppNavigation: React.FC<InAppNavigationProps> = ({
       fontSize: 14,
       fontWeight: "600",
       color: colors.text,
-      marginBottom: 4,
+      marginBottom: 1,
     },
     addressText: {
       fontSize: 12,
@@ -130,14 +130,14 @@ export const InAppNavigation: React.FC<InAppNavigationProps> = ({
     },
     bottomPanel: {
       position: "absolute",
-      bottom: 0,
+      bottom: 30, // Same as your desired positioning
       left: 0,
       right: 0,
       backgroundColor: colors.card,
       borderTopLeftRadius: 16,
       borderTopRightRadius: 16,
       padding: 20,
-      paddingBottom: Platform.select({ ios: 34, android: 20 }),
+      paddingBottom: Platform.select({ ios: 54, android: 40 }), // Extra padding for safe area
       zIndex: 10,
       ...Platform.select({
         ios: {
@@ -303,7 +303,7 @@ export const InAppNavigation: React.FC<InAppNavigationProps> = ({
 
                 // Fit map to route
                 mapRef.current?.fitToCoordinates(result.coordinates, {
-                  edgePadding: { top: 200, right: 50, bottom: 200, left: 50 },
+                  edgePadding: { top: 200, right: 50, bottom: 280, left: 50 }, // Increased bottom padding for new panel position
                   animated: true,
                 });
               }}
@@ -362,7 +362,7 @@ export const InAppNavigation: React.FC<InAppNavigationProps> = ({
         </View>
       )}
 
-      {/* Bottom Panel */}
+      {/* FIXED: Bottom Panel with new positioning */}
       <View style={styles.bottomPanel}>
         {/* Route Information */}
         {routeInfo && (

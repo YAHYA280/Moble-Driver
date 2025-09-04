@@ -135,25 +135,124 @@ export const GeolocationScreen: React.FC = () => {
     }
   };
 
+  // FIXED: Better logic to get all stops in sequence
+  const getAllTripStops = (trip: any) => {
+    if (!trip) return [];
+
+    // Get all points in order: pickup -> waypoints -> destination
+    const allStops = trip.points.sort((a: any, b: any) => {
+      // Sort by type priority: pickup first, then waypoints, then destination
+      const typeOrder: { [key: string]: number } = {
+        pickup: 0,
+        waypoint: 1,
+        destination: 2,
+      };
+      return (typeOrder[a.type] || 999) - (typeOrder[b.type] || 999);
+    });
+
+    return allStops;
+  };
+
+  // FIXED: Get next destination based on trip progress
   const getNextDestination = (trip: any) => {
     if (!trip) return null;
 
-    // If trip is in progress, find the next waypoint or destination
+    const allStops = getAllTripStops(trip);
+
+    // If trip is in progress, find the next unvisited stop
     if (trip.status === "En cours") {
-      // For simplicity, get the next pickup point or destination
-      const nextPoint = trip.points.find(
+      // For simplicity, we'll assume the next stop is the first waypoint or destination
+      // In a real app, you'd track which stops have been completed
+      const nextStop = allStops.find(
         (point: any) =>
           point.type === "waypoint" || point.type === "destination"
       );
-      return nextPoint;
+      return nextStop;
     }
 
     // If trip is upcoming, go to pickup point
     if (trip.status === "A venir") {
-      return trip.points.find((point: any) => point.type === "pickup");
+      return allStops.find((point: any) => point.type === "pickup");
     }
 
     return null;
+  };
+
+  // FIXED: Show all stops in navigation selection
+  const showNavigationOptions = (trip: any) => {
+    if (!trip) return;
+
+    const allStops = getAllTripStops(trip);
+
+    // Create alert buttons for each stop
+    const stopButtons = allStops.map((stop: any, index: number) => ({
+      text: `${getStopLabel(stop.type)} ${index > 0 ? index : ""}`,
+      onPress: () => navigateToStop(stop),
+    }));
+
+    // Add cancel button
+    stopButtons.push({ text: "Annuler", style: "cancel" as const });
+
+    Alert.alert(
+      "Choisir la destination",
+      "Sélectionnez le point vers lequel naviguer:",
+      stopButtons
+    );
+  };
+
+  const getStopLabel = (type: string) => {
+    switch (type) {
+      case "pickup":
+        return "🚌 Départ";
+      case "waypoint":
+        return "🏃 Arrêt";
+      case "destination":
+        return "🏁 Arrivée";
+      default:
+        return "📍 Point";
+    }
+  };
+
+  const navigateToStop = (stop: any) => {
+    Alert.alert("Mode de navigation", `Navigation vers: ${stop.address}`, [
+      { text: "Annuler", style: "cancel" },
+      {
+        text: "Navigation interne",
+        onPress: () => {
+          setNavigationDestination({
+            coordinates: stop.coordinates,
+            address: stop.address,
+          });
+          setShowInAppNavigation(true);
+
+          addAlert({
+            type: "mission_update",
+            title: "Navigation interne démarrée",
+            message: `Navigation vers ${stop.address}`,
+            isRead: false,
+            tripId: currentTrip?.id,
+          });
+        },
+      },
+      {
+        text: "Navigation externe",
+        onPress: () => {
+          openInMaps(
+            stop.coordinates.latitude,
+            stop.coordinates.longitude,
+            stop.address
+          );
+
+          addAlert({
+            type: "mission_update",
+            title: "Navigation externe démarrée",
+            message: `Navigation vers ${stop.address}`,
+            isRead: false,
+            tripId: currentTrip?.id,
+          });
+        },
+      },
+    ]);
   };
 
   const handleNotificationPress = () => {
@@ -280,60 +379,10 @@ export const GeolocationScreen: React.FC = () => {
     }
   };
 
+  // FIXED: Use the new navigation logic
   const handleNavigateToTrip = (trip: any) => {
     if (!trip) return;
-
-    const nextPoint = getNextDestination(trip);
-    if (nextPoint) {
-      Alert.alert(
-        "Navigation",
-        `Choisissez votre mode de navigation vers ${nextPoint.address}`,
-        [
-          { text: "Annuler", style: "cancel" },
-          {
-            text: "Navigation interne",
-            onPress: () => {
-              setNavigationDestination({
-                coordinates: nextPoint.coordinates,
-                address: nextPoint.address,
-              });
-              setShowInAppNavigation(true);
-
-              addAlert({
-                type: "mission_update",
-                title: "Navigation interne démarrée",
-                message: `Navigation vers ${nextPoint.address}`,
-                isRead: false,
-                tripId: trip.id,
-              });
-            },
-          },
-          {
-            text: "Navigation externe",
-            onPress: () => {
-              openInMaps(
-                nextPoint.coordinates.latitude,
-                nextPoint.coordinates.longitude,
-                nextPoint.address
-              );
-
-              addAlert({
-                type: "mission_update",
-                title: "Navigation externe démarrée",
-                message: `Navigation vers ${nextPoint.address}`,
-                isRead: false,
-                tripId: trip.id,
-              });
-            },
-          },
-        ]
-      );
-    } else {
-      Alert.alert(
-        "Information",
-        "Aucune destination disponible pour ce trajet"
-      );
-    }
+    showNavigationOptions(trip);
   };
 
   const handleMinimizeToggle = () => {
