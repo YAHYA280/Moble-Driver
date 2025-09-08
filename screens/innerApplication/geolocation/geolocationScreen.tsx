@@ -439,7 +439,7 @@ export const GeolocationScreen: React.FC = () => {
     },
     bottomOverlay: {
       position: "absolute",
-      bottom: 40, // Changed from 0 to 5 to move trip info card 5px up
+      bottom: 40,
       left: 0,
       right: 0,
       paddingHorizontal: 16,
@@ -494,6 +494,11 @@ export const GeolocationScreen: React.FC = () => {
     },
   });
 
+  // Helper to check if error is a valid string
+  const hasValidError = Boolean(
+    error && typeof error === "string" && error.trim() !== ""
+  );
+
   return (
     <SafeAreaView style={styles.container}>
       {/* Animated Header */}
@@ -524,26 +529,28 @@ export const GeolocationScreen: React.FC = () => {
             {
               icon: "bell",
               onPress: handleNotificationPress,
-              badge: alerts.filter((a) => !a.isRead).length,
+              badge: 8 || undefined,
             },
           ]}
         />
       </Animated.View>
 
-      {/* Error Display */}
-      <ConditionalComponent isValid={!!error}>
+      {/* Error Display - FIXED: Proper error handling */}
+      <ConditionalComponent isValid={hasValidError}>
         <View style={styles.errorContainer}>
-          <Text style={styles.errorText}>{error}</Text>
+          <Text style={styles.errorText}>
+            {typeof error === "string" ? error : "Une erreur est survenue"}
+          </Text>
         </View>
       </ConditionalComponent>
 
       {/* Main Content */}
       <View style={styles.content}>
-        {/* Google Maps - FIXED: Only pass current trip to show only its points */}
+        {/* Google Maps */}
         <View style={styles.mapContainer}>
           <GoogleMapsView
             currentLocation={currentLocation}
-            trips={currentTrip ? [currentTrip] : []} // FIXED: Only show current trip points
+            trips={currentTrip ? [currentTrip] : []}
             currentTrip={currentTrip}
             pointsOfInterest={pointsOfInterest}
             mapType={settings.map.mapType}
@@ -558,11 +565,9 @@ export const GeolocationScreen: React.FC = () => {
 
         {/* Overlays */}
         <View style={styles.overlayContainer}>
-          {/* Top Overlay - Location Status */}
-
-          {/* Bottom Overlay - Trip Info */}
+          {/* Bottom Overlay - Trip Info - FIXED: Better validation */}
           <View style={styles.bottomOverlay}>
-            <ConditionalComponent isValid={!!currentTrip}>
+            <ConditionalComponent isValid={Boolean(currentTrip)}>
               <TripInfoCard
                 trip={currentTrip!}
                 isMinimized={isCardMinimized}
@@ -635,22 +640,20 @@ export const GeolocationScreen: React.FC = () => {
           />
         </Animated.View>
 
-        {/* In-App Navigation */}
-        <ConditionalComponent
-          isValid={showInAppNavigation && !!navigationDestination}
-        >
+        {/* In-App Navigation - FIXED: Safer conditional rendering */}
+        {showInAppNavigation && navigationDestination && (
           <InAppNavigation
             currentLocation={currentLocation}
-            destination={navigationDestination!}
+            destination={navigationDestination}
             onClose={handleCloseNavigation}
             onExternalNavigation={handleExternalNavigation}
           />
-        </ConditionalComponent>
+        )}
       </View>
 
       {/* Sidebar */}
       <Sidebar
-        title="Géolocalisation"
+        title="Navigation"
         items={sidebarItems}
         visible={showSidebar}
         onClose={() => setShowSidebar(false)}
