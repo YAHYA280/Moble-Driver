@@ -539,7 +539,7 @@ export const GeolocationScreen: React.FC = () => {
             icon: "bars",
             onPress: handleMenuPress,
           }}
-          title="Géolocalisation"
+          title="Navigation"
           rightIcons={[
             {
               icon: "cog",
