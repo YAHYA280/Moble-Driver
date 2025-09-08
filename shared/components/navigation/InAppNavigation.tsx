@@ -339,28 +339,7 @@ export const InAppNavigation: React.FC<InAppNavigationProps> = ({
         </View>
       </View>
 
-      {/* Warning Banner */}
-      <View style={styles.warningBanner}>
-        <Text style={styles.warningText}>
-          ⚠️ Navigation basique - Utilisez une app GPS dédiée pour de meilleurs
-          résultats
-        </Text>
-      </View>
-
       {/* Navigation Instruction Banner */}
-      {isNavigating && (
-        <View style={styles.instructionBanner}>
-          <Ionicons
-            name="navigate"
-            size={24}
-            color="white"
-            style={styles.instructionIcon}
-          />
-          <Text style={styles.instructionText}>
-            Suivez la route bleue vers la destination
-          </Text>
-        </View>
-      )}
 
       {/* FIXED: Bottom Panel with new positioning */}
       <View style={styles.bottomPanel}>

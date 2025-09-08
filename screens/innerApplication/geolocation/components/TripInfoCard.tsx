@@ -3,7 +3,9 @@ import ConditionalComponent from "@/shared/components/conditionalComponent/condi
 import { Ionicons } from "@expo/vector-icons";
 import React, { useEffect, useRef } from "react";
 import {
+  Alert,
   Animated,
+  Linking,
   Platform,
   StyleSheet,
   Text,
@@ -70,15 +72,127 @@ export const TripInfoCard: React.FC<TripInfoCardProps> = ({
     }
   };
 
-  const nextPoint = trip.points.find(
-    (p) => p.type === (trip.status === "En cours" ? "destination" : "pickup")
-  );
+  // Get next destination based on trip progress
+  const getNextDestination = () => {
+    if (!trip) return null;
+
+    const allStops = trip.points.sort((a, b) => {
+      const typeOrder: { [key: string]: number } = {
+        pickup: 0,
+        waypoint: 1,
+        destination: 2,
+      };
+      return (typeOrder[a.type] || 999) - (typeOrder[b.type] || 999);
+    });
+
+    if (trip.status === "En cours") {
+      const nextStop = allStops.find(
+        (point) => point.type === "waypoint" || point.type === "destination"
+      );
+      return nextStop;
+    }
+
+    if (trip.status === "A venir") {
+      return allStops.find((point) => point.type === "pickup");
+    }
+
+    return null;
+  };
+
+  // Get phone number for the next destination
+  const getNextDestinationPhone = () => {
+    const nextPoint = getNextDestination();
+    if (!nextPoint) return null;
+
+    const passengerName = nextPoint.notes?.replace("Client: ", "") || "";
+
+    const mockPhones: { [key: string]: string } = {
+      "Ahmed El Mansouri": "+212 6 12 34 56 78",
+      "Fatima Benali": "+212 6 87 65 43 21",
+      "Omar Khalil": "+212 6 55 44 33 22",
+      "Youssef Tazi": "+212 6 99 88 77 66",
+      "Aicha Benkirane": "+212 6 11 22 33 44",
+      "Hassan Alaoui": "+212 6 66 55 44 33",
+      "Samira Berrada": "+212 6 77 88 99 00",
+      "Mohamed Fassi": "+212 6 33 44 55 66",
+    };
+
+    return {
+      passengerName,
+      phone: mockPhones[passengerName] || "+212 6 XX XX XX XX",
+      address: nextPoint.address,
+      type: nextPoint.type,
+    };
+  };
+
+  const handlePhoneCall = (phoneNumber: string, passengerName: string) => {
+    Alert.alert(
+      "Appeler le passager",
+      `Voulez-vous appeler ${passengerName} ?\n${phoneNumber}`,
+      [
+        { text: "Annuler", style: "cancel" },
+        {
+          text: "Appeler",
+          onPress: () => {
+            const phoneUrl = `tel:${phoneNumber.replace(/\s/g, "")}`;
+            Linking.canOpenURL(phoneUrl)
+              .then((supported) => {
+                if (supported) {
+                  return Linking.openURL(phoneUrl);
+                } else {
+                  Alert.alert("Erreur", "Impossible de passer l'appel");
+                }
+              })
+              .catch((error) => {
+                Alert.alert("Erreur", "Impossible de passer l'appel");
+                console.error("Phone call error:", error);
+              });
+          },
+        },
+      ]
+    );
+  };
+
+  const nextDestinationInfo = getNextDestinationPhone();
+  const nextPoint = getNextDestination();
 
   const styles = StyleSheet.create({
     container: {
+      marginBottom: 8,
+    },
+    // Simple phone bar above the card
+    phoneBar: {
+      backgroundColor: colors.primary,
+      paddingHorizontal: 16,
+      paddingVertical: 10,
+      marginBottom: 4,
+      borderRadius: 8,
+      flexDirection: "row",
+      alignItems: "center",
+      justifyContent: "space-between",
+    },
+    phoneBarLeft: {
+      flex: 1,
+    },
+    passengerName: {
+      color: "white",
+      fontSize: 14,
+      fontWeight: "600",
+    },
+    phoneNumber: {
+      color: "rgba(255, 255, 255, 0.9)",
+      fontSize: 12,
+      marginTop: 2,
+    },
+    callIcon: {
+      backgroundColor: "rgba(255, 255, 255, 0.2)",
+      padding: 8,
+      borderRadius: 20,
+    },
+    // Main trip card
+    tripCard: {
       backgroundColor: colors.card,
       borderRadius: 16,
-      marginBottom: 8,
       overflow: "hidden",
       ...Platform.select({
         ios: {
@@ -216,163 +330,193 @@ export const TripInfoCard: React.FC<TripInfoCardProps> = ({
 
   const animatedHeight = slideAnim.interpolate({
     inputRange: [0, 1],
-    outputRange: [200, 60], // Adjust these values based on your content
+    outputRange: [200, 60],
   });
 
   return (
-    <Animated.View
-      style={[
-        styles.container,
-        isMinimized && styles.minimizedContainer,
-        { height: animatedHeight },
-      ]}
-    >
-      <View style={[styles.content, isMinimized && styles.minimizedContent]}>
-        {/* Header */}
-        <View style={[styles.header, isMinimized && styles.minimizedHeader]}>
-          <View style={styles.titleContainer}>
-            <Text
-              style={[styles.title, isMinimized && styles.minimizedTitle]}
-              numberOfLines={1}
-            >
-              {trip.title}
+    <View style={styles.container}>
+      {/* Simple Phone Bar - Always visible when there's a next destination */}
+      <ConditionalComponent isValid={!!nextDestinationInfo}>
+        <TouchableOpacity
+          style={styles.phoneBar}
+          onPress={() =>
+            nextDestinationInfo &&
+            handlePhoneCall(
+              nextDestinationInfo.phone,
+              nextDestinationInfo.passengerName
+            )
+          }
+          activeOpacity={0.8}
+        >
+          <View style={styles.phoneBarLeft}>
+            <Text style={styles.passengerName}>
+              {nextDestinationInfo?.passengerName}
             </Text>
-            <ConditionalComponent
-              isValid={!isMinimized && !!trip.customerInfo?.name}
-            >
-              <Text style={styles.subtitle} numberOfLines={1}>
-                {trip.customerInfo?.name}
-              </Text>
-            </ConditionalComponent>
+            <Text style={styles.phoneNumber}>{nextDestinationInfo?.phone}</Text>
           </View>
+          <View style={styles.callIcon}>
+            <Ionicons name="call" size={16} color="white" />
+          </View>
+        </TouchableOpacity>
+      </ConditionalComponent>
 
-          <View style={styles.rightContainer}>
-            <View
-              style={[
-                styles.statusContainer,
-                isMinimized && styles.minimizedStatusContainer,
-              ]}
-            >
-              <Ionicons
-                name={getStatusIcon() as any}
-                size={isMinimized ? 12 : 14}
-                color={getStatusColor()}
-              />
+      {/* Trip Info Card */}
+      <Animated.View
+        style={[
+          styles.tripCard,
+          isMinimized && styles.minimizedContainer,
+          { height: animatedHeight },
+        ]}
+      >
+        <View style={[styles.content, isMinimized && styles.minimizedContent]}>
+          {/* Header */}
+          <View style={[styles.header, isMinimized && styles.minimizedHeader]}>
+            <View style={styles.titleContainer}>
               <Text
+                style={[styles.title, isMinimized && styles.minimizedTitle]}
+                numberOfLines={1}
+              >
+                {trip.title}
+              </Text>
+              <ConditionalComponent
+                isValid={!isMinimized && !!trip.customerInfo?.name}
+              >
+                <Text style={styles.subtitle} numberOfLines={1}>
+                  {trip.customerInfo?.name}
+                </Text>
+              </ConditionalComponent>
+            </View>
+
+            <View style={styles.rightContainer}>
+              <View
                 style={[
-                  styles.statusText,
-                  isMinimized && styles.minimizedStatusText,
+                  styles.statusContainer,
+                  isMinimized && styles.minimizedStatusContainer,
                 ]}
               >
-                {trip.status}
-              </Text>
-            </View>
+                <Ionicons
+                  name={getStatusIcon() as any}
+                  size={isMinimized ? 12 : 14}
+                  color={getStatusColor()}
+                />
+                <Text
+                  style={[
+                    styles.statusText,
+                    isMinimized && styles.minimizedStatusText,
+                  ]}
+                >
+                  {trip.status}
+                </Text>
+              </View>
 
-            <TouchableOpacity
-              style={styles.minimizeButton}
-              onPress={onMinimizeToggle}
-              activeOpacity={0.7}
-            >
-              <Ionicons
-                name={isMinimized ? "chevron-up" : "chevron-down"}
-                size={16}
-                color={colors.textSecondary}
-              />
-            </TouchableOpacity>
+              <TouchableOpacity
+                style={styles.minimizeButton}
+                onPress={onMinimizeToggle}
+                activeOpacity={0.7}
+              >
+                <Ionicons
+                  name={isMinimized ? "chevron-up" : "chevron-down"}
+                  size={16}
+                  color={colors.textSecondary}
+                />
+              </TouchableOpacity>
+            </View>
           </View>
-        </View>
 
-        {/* Details Section - Hidden when minimized */}
-        <ConditionalComponent isValid={!isMinimized}>
-          <Animated.View
-            style={[
-              styles.detailsSection,
-              {
-                opacity: slideAnim.interpolate({
-                  inputRange: [0, 1],
-                  outputRange: [1, 0],
-                }),
-              },
-            ]}
-          >
-            {/* Trip Info */}
-            <View style={styles.infoRow}>
-              <Ionicons
-                name="time-outline"
-                size={16}
-                color={colors.textSecondary}
-                style={styles.infoIcon}
-              />
-              <Text style={styles.infoText}>
-                Début: {trip.startTime} • Durée: {trip.estimatedDuration}
-              </Text>
-            </View>
-
-            <View style={styles.infoRow}>
-              <Ionicons
-                name="speedometer-outline"
-                size={16}
-                color={colors.textSecondary}
-                style={styles.infoIcon}
-              />
-              <Text style={styles.infoText}>Distance: {trip.distance} km</Text>
-            </View>
-
-            <ConditionalComponent isValid={!!nextPoint}>
+          {/* Details Section - Hidden when minimized */}
+          <ConditionalComponent isValid={!isMinimized}>
+            <Animated.View
+              style={[
+                styles.detailsSection,
+                {
+                  opacity: slideAnim.interpolate({
+                    inputRange: [0, 1],
+                    outputRange: [1, 0],
+                  }),
+                },
+              ]}
+            >
+              {/* Trip Info */}
               <View style={styles.infoRow}>
                 <Ionicons
-                  name="location-outline"
+                  name="time-outline"
                   size={16}
                   color={colors.textSecondary}
                   style={styles.infoIcon}
                 />
-                <Text style={styles.infoText} numberOfLines={1}>
-                  {nextPoint?.type === "pickup" ? "Ramassage" : "Destination"}:{" "}
-                  {nextPoint?.address}
+                <Text style={styles.infoText}>
+                  Début: {trip.startTime} • Durée: {trip.estimatedDuration}
                 </Text>
               </View>
-            </ConditionalComponent>
 
-            {/* Actions */}
-            <View style={styles.actionsRow}>
-              <TouchableOpacity
-                style={styles.actionButton}
-                onPress={onDetailsPress}
-                activeOpacity={0.7}
-              >
+              <View style={styles.infoRow}>
                 <Ionicons
-                  name="information-circle-outline"
+                  name="speedometer-outline"
                   size={16}
-                  color={colors.primary}
+                  color={colors.textSecondary}
+                  style={styles.infoIcon}
                 />
-                <Text style={styles.actionButtonText}>Détails</Text>
-              </TouchableOpacity>
+                <Text style={styles.infoText}>
+                  Distance: {trip.distance} km
+                </Text>
+              </View>
 
-              <ConditionalComponent
-                isValid={
-                  trip.status === "En cours" || trip.status === "A venir"
-                }
-              >
+              <ConditionalComponent isValid={!!nextPoint}>
+                <View style={styles.infoRow}>
+                  <Ionicons
+                    name="location-outline"
+                    size={16}
+                    color={colors.textSecondary}
+                    style={styles.infoIcon}
+                  />
+                  <Text style={styles.infoText} numberOfLines={1}>
+                    {nextPoint?.type === "pickup" ? "Ramassage" : "Destination"}
+                    : {nextPoint?.address}
+                  </Text>
+                </View>
+              </ConditionalComponent>
+
+              {/* Actions */}
+              <View style={styles.actionsRow}>
                 <TouchableOpacity
-                  style={[styles.actionButton, styles.primaryActionButton]}
-                  onPress={onNavigatePress}
+                  style={styles.actionButton}
+                  onPress={onDetailsPress}
                   activeOpacity={0.7}
                 >
-                  <Ionicons name="navigate" size={16} color="white" />
-                  <Text
-                    style={[
-                      styles.actionButtonText,
-                      styles.primaryActionButtonText,
-                    ]}
-                  >
-                    Navigation
-                  </Text>
+                  <Ionicons
+                    name="information-circle-outline"
+                    size={16}
+                    color={colors.primary}
+                  />
+                  <Text style={styles.actionButtonText}>Détails</Text>
                 </TouchableOpacity>
-              </ConditionalComponent>
-            </View>
-          </Animated.View>
-        </ConditionalComponent>
-      </View>
-    </Animated.View>
+
+                <ConditionalComponent
+                  isValid={
+                    trip.status === "En cours" || trip.status === "A venir"
+                  }
+                >
+                  <TouchableOpacity
+                    style={[styles.actionButton, styles.primaryActionButton]}
+                    onPress={onNavigatePress}
+                    activeOpacity={0.7}
+                  >
+                    <Ionicons name="navigate" size={16} color="white" />
+                    <Text
+                      style={[
+                        styles.actionButtonText,
+                        styles.primaryActionButtonText,
+                      ]}
+                    >
+                      Navigation
+                    </Text>
+                  </TouchableOpacity>
+                </ConditionalComponent>
+              </View>
+            </Animated.View>
+          </ConditionalComponent>
+        </View>
+      </Animated.View>
+    </View>
   );
 };
