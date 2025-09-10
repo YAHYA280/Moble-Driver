@@ -1,4 +1,3 @@
-// screens/innerApplication/fuelCards/components/FuelCardInfoCard.tsx
 import { FontAwesome } from "@expo/vector-icons";
 import React from "react";
 import { Platform, StyleSheet, Text, View, ViewStyle } from "react-native";
@@ -184,7 +183,6 @@ export const FuelCardInfoCard: React.FC<FuelCardInfoCardProps> = ({
 
   return (
     <View style={[styles.container, style]}>
-      {/* Header */}
       <View style={styles.header}>
         <View style={styles.cardIcon}>
           <FontAwesome name="credit-card" size={20} color={colors.primary} />
@@ -206,7 +204,6 @@ export const FuelCardInfoCard: React.FC<FuelCardInfoCardProps> = ({
 
       <View style={styles.divider} />
 
-      {/* Details Grid */}
       <View style={styles.detailsGrid}>
         <View style={styles.detailItem}>
           <Text style={styles.detailLabel}>Plafond</Text>
@@ -246,7 +243,6 @@ export const FuelCardInfoCard: React.FC<FuelCardInfoCardProps> = ({
         </View>
       </View>
 
-      {/* Progress Section */}
       <View style={styles.progressSection}>
         <Text style={styles.progressLabel}>Utilisation de la carte</Text>
         <View style={styles.progressBackground}>

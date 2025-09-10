@@ -1,4 +1,3 @@
-// screens/innerApplication/fuelCards/components/index.ts
 export { DateTimePickerComponent } from "./DateTimePicker";
 export { FuelCardInfoCard } from "./FuelCardInfoCard";
 export { FuelCardItem } from "./FuelCardItem";

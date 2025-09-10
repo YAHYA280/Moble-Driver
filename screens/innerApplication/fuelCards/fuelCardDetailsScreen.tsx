@@ -1,4 +1,3 @@
-// screens/innerApplication/fuelCards/fuelCardDetailsScreen.tsx
 import ConditionalComponent from "@/shared/components/conditionalComponent/conditionalComponent";
 import { FontAwesome } from "@expo/vector-icons";
 import { router, useLocalSearchParams } from "expo-router";
@@ -104,6 +103,8 @@ export const FuelCardDetailsScreen: React.FC = () => {
     (r) => r.paymentMethod === "Hors carte"
   );
 
+  const isCardExpired = selectedFuelCard.status === "Expired";
+
   const styles = StyleSheet.create({
     container: {
       flex: 1,
@@ -160,10 +161,25 @@ export const FuelCardDetailsScreen: React.FC = () => {
       borderRadius: 20,
       backgroundColor: colors.primary + "15",
     },
+    addButtonDisabled: {
+      flexDirection: "row",
+      alignItems: "center",
+      paddingHorizontal: 16,
+      paddingVertical: 8,
+      borderRadius: 20,
+      backgroundColor: colors.textTertiary + "15",
+      opacity: 0.6,
+    },
     addButtonText: {
       fontSize: 14,
       fontWeight: "600",
       color: colors.primary,
+      marginLeft: 6,
+    },
+    addButtonTextDisabled: {
+      fontSize: 14,
+      fontWeight: "600",
+      color: colors.textTertiary,
       marginLeft: 6,
     },
     emptyState: {
@@ -194,6 +210,23 @@ export const FuelCardDetailsScreen: React.FC = () => {
     },
     receiptsContainer: {
       gap: 8,
+    },
+    expiredNotice: {
+      backgroundColor: colors.error + "15",
+      borderColor: colors.error,
+      borderWidth: 1,
+      borderRadius: 8,
+      padding: 12,
+      marginTop: 8,
+      flexDirection: "row",
+      alignItems: "center",
+    },
+    expiredNoticeText: {
+      fontSize: 12,
+      color: colors.error,
+      fontWeight: "500",
+      marginLeft: 8,
+      flex: 1,
     },
   });
 
@@ -238,13 +271,27 @@ export const FuelCardDetailsScreen: React.FC = () => {
             <View style={styles.sectionContainer}>
               <View style={styles.sectionHeader}>
                 <Text style={styles.sectionTitle}>Reçus carte carburant</Text>
-                <TouchableOpacity
-                  style={styles.addButton}
-                  onPress={handleAddReceipt}
+                <ConditionalComponent
+                  isValid={!isCardExpired}
+                  defaultComponent={
+                    <View style={styles.addButtonDisabled}>
+                      <FontAwesome
+                        name="plus"
+                        size={12}
+                        color={colors.textTertiary}
+                      />
+                      <Text style={styles.addButtonTextDisabled}>Ajouter</Text>
+                    </View>
+                  }
                 >
-                  <FontAwesome name="plus" size={12} color={colors.primary} />
-                  <Text style={styles.addButtonText}>Ajouter</Text>
-                </TouchableOpacity>
+                  <TouchableOpacity
+                    style={styles.addButton}
+                    onPress={handleAddReceipt}
+                  >
+                    <FontAwesome name="plus" size={12} color={colors.primary} />
+                    <Text style={styles.addButtonText}>Ajouter</Text>
+                  </TouchableOpacity>
+                </ConditionalComponent>
               </View>
 
               <ConditionalComponent

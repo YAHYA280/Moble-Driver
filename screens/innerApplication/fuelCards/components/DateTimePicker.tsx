@@ -1,4 +1,3 @@
-// screens/innerApplication/fuelCards/components/DateTimePicker.tsx
 import { FontAwesome } from "@expo/vector-icons";
 import DateTimePicker from "@react-native-community/datetimepicker";
 import React, { useState } from "react";
@@ -11,6 +10,7 @@ import {
   View,
 } from "react-native";
 import { useThemeColors } from "../../../../hooks/useTheme";
+import ConditionalComponent from "../../../../shared/components/conditionalComponent/conditionalComponent";
 import { Button } from "../../../../shared/components/ui/Button";
 
 interface DateTimePickerComponentProps {
@@ -26,33 +26,32 @@ export const DateTimePickerComponent: React.FC<
 > = ({ label, value, onChange, mode, disabled = false }) => {
   const colors = useThemeColors();
   const [showPicker, setShowPicker] = useState(false);
-  const [tempValue, setTempValue] = useState(value);
+  const [temporaryValue, setTemporaryValue] = useState(value);
 
-  const handleChange = (event: any, selectedValue?: Date) => {
+  const handlePickerChange = (event: any, selectedValue?: Date) => {
     if (Platform.OS === "android") {
       setShowPicker(false);
       if (selectedValue) {
         onChange(selectedValue);
       }
     } else {
-      // iOS - handle temp value
       if (selectedValue) {
-        setTempValue(selectedValue);
+        setTemporaryValue(selectedValue);
       }
     }
   };
 
   const handleIOSConfirm = () => {
-    onChange(tempValue);
+    onChange(temporaryValue);
     setShowPicker(false);
   };
 
   const handleIOSCancel = () => {
-    setTempValue(value);
+    setTemporaryValue(value);
     setShowPicker(false);
   };
 
-  const formatValue = () => {
+  const formatDisplayValue = () => {
     if (mode === "date") {
       return value.toLocaleDateString("fr-FR");
     }
@@ -62,11 +61,19 @@ export const DateTimePickerComponent: React.FC<
     });
   };
 
+  const getModalTitle = () => {
+    return mode === "date" ? "Sélectionner la date" : "Sélectionner l'heure";
+  };
+
+  const getIconName = () => {
+    return mode === "date" ? "calendar" : "clock-o";
+  };
+
   const styles = StyleSheet.create({
     container: {
       flex: 1,
     },
-    button: {
+    touchableButton: {
       paddingVertical: 12,
       paddingHorizontal: 16,
       borderRadius: 8,
@@ -77,23 +84,22 @@ export const DateTimePickerComponent: React.FC<
       alignItems: "center",
       justifyContent: "space-between",
     },
-    content: {
+    contentWrapper: {
       flex: 1,
     },
-    label: {
+    labelText: {
       fontSize: 14,
       color: colors.textSecondary,
       marginBottom: 4,
     },
-    value: {
+    valueText: {
       fontSize: 16,
       color: disabled ? colors.textTertiary : colors.text,
       fontWeight: "500",
     },
-    icon: {
+    iconStyle: {
       marginLeft: 8,
     },
-    // iOS Modal Styles
     modalOverlay: {
       flex: 1,
       backgroundColor: "rgba(0, 0, 0, 0.5)",
@@ -103,7 +109,7 @@ export const DateTimePickerComponent: React.FC<
       backgroundColor: colors.card,
       borderTopLeftRadius: 20,
       borderTopRightRadius: 20,
-      paddingBottom: 34, // Safe area
+      paddingBottom: 34,
     },
     modalHeader: {
       flexDirection: "row",
@@ -136,35 +142,33 @@ export const DateTimePickerComponent: React.FC<
   return (
     <View style={styles.container}>
       <TouchableOpacity
-        style={styles.button}
+        style={styles.touchableButton}
         onPress={() => !disabled && setShowPicker(true)}
         disabled={disabled}
         activeOpacity={0.7}
       >
-        <View style={styles.content}>
-          <Text style={styles.label}>{label}</Text>
-          <Text style={styles.value}>{formatValue()}</Text>
+        <View style={styles.contentWrapper}>
+          <Text style={styles.labelText}>{label}</Text>
+          <Text style={styles.valueText}>{formatDisplayValue()}</Text>
         </View>
         <FontAwesome
-          name={mode === "date" ? "calendar" : "clock-o"}
+          name={getIconName()}
           size={16}
           color={disabled ? colors.textTertiary : colors.textSecondary}
-          style={styles.icon}
+          style={styles.iconStyle}
         />
       </TouchableOpacity>
 
-      {/* Android Picker */}
-      {showPicker && Platform.OS === "android" && (
+      <ConditionalComponent isValid={showPicker && Platform.OS === "android"}>
         <DateTimePicker
           value={value}
           mode={mode}
           display="default"
-          onChange={handleChange}
+          onChange={handlePickerChange}
         />
-      )}
+      </ConditionalComponent>
 
-      {/* iOS Modal Picker */}
-      {showPicker && Platform.OS === "ios" && (
+      <ConditionalComponent isValid={showPicker && Platform.OS === "ios"}>
         <Modal
           visible={showPicker}
           transparent
@@ -174,18 +178,14 @@ export const DateTimePickerComponent: React.FC<
           <View style={styles.modalOverlay}>
             <View style={styles.modalContent}>
               <View style={styles.modalHeader}>
-                <Text style={styles.modalTitle}>
-                  {mode === "date"
-                    ? "Sélectionner la date"
-                    : "Sélectionner l'heure"}
-                </Text>
+                <Text style={styles.modalTitle}>{getModalTitle()}</Text>
               </View>
 
               <DateTimePicker
-                value={tempValue}
+                value={temporaryValue}
                 mode={mode}
                 display="spinner"
-                onChange={handleChange}
+                onChange={handlePickerChange}
                 textColor={colors.text}
               />
 
@@ -204,7 +204,7 @@ export const DateTimePickerComponent: React.FC<
             </View>
           </View>
         </Modal>
-      )}
+      </ConditionalComponent>
     </View>
   );
 };

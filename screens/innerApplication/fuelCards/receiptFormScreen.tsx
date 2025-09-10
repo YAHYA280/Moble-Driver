@@ -1,4 +1,3 @@
-// screens/innerApplication/fuelCards/receiptFormScreen.tsx
 import { router, useLocalSearchParams } from "expo-router";
 import React, { useEffect, useRef, useState } from "react";
 import {
@@ -44,7 +43,6 @@ export const ReceiptFormScreen: React.FC = () => {
   const isEditing = id !== "new";
   const [isViewMode, setIsViewMode] = useState(isEditing);
 
-  // Form state
   const [amount, setAmount] = useState("");
   const [stationName, setStationName] = useState("");
   const [paymentMethod, setPaymentMethod] =
@@ -61,15 +59,45 @@ export const ReceiptFormScreen: React.FC = () => {
   }, [selectedFuelCard, cardId, id, isEditing, vehicles]);
 
   const initializeForm = () => {
-    // Set up fuel card if not already selected
     if (!selectedFuelCard && cardId) {
       const fuelCard = fuelCards.find((fc) => fc.id === cardId);
       if (fuelCard) {
         selectFuelCard(fuelCard);
+
+        if (!isEditing && fuelCard.status === "Expired") {
+          Alert.alert(
+            "Carte expirée",
+            "Vous ne pouvez pas ajouter de reçu à une carte expirée.",
+            [
+              {
+                text: "OK",
+                onPress: () => router.back(),
+              },
+            ]
+          );
+          return;
+        }
       }
     }
 
-    // Set up receipt if editing
+    if (
+      !isEditing &&
+      selectedFuelCard &&
+      selectedFuelCard.status === "Expired"
+    ) {
+      Alert.alert(
+        "Carte expirée",
+        "Vous ne pouvez pas ajouter de reçu à une carte expirée.",
+        [
+          {
+            text: "OK",
+            onPress: () => router.back(),
+          },
+        ]
+      );
+      return;
+    }
+
     if (isEditing && id && selectedFuelCard) {
       const receipt = selectedFuelCard.receipts.find((r) => r.id === id);
       if (receipt) {
@@ -80,7 +108,6 @@ export const ReceiptFormScreen: React.FC = () => {
       }
     }
 
-    // Set default vehicle if available
     if (!isEditing && vehicles.length > 0 && !vehiclePlateNumber) {
       setVehiclePlateNumber(vehicles[0].plateNumber);
     }
@@ -95,7 +122,6 @@ export const ReceiptFormScreen: React.FC = () => {
     setNotes(receipt.notes || "");
     setPhotoUri(receipt.photoUri);
 
-    // Set custom fuel date and time if available
     if (receipt.fuelDate && receipt.fuelTime) {
       const [day, month, year] = receipt.fuelDate.split("/");
       const [hours, minutes] = receipt.fuelTime.split(":");
@@ -123,6 +149,14 @@ export const ReceiptFormScreen: React.FC = () => {
   const handleSubmit = async () => {
     if (!selectedFuelCard) {
       Alert.alert("Erreur", "Carte carburant non trouvée");
+      return;
+    }
+
+    if (!isEditing && selectedFuelCard.status === "Expired") {
+      Alert.alert(
+        "Erreur",
+        "Vous ne pouvez pas ajouter de reçu à une carte expirée"
+      );
       return;
     }
 
@@ -220,11 +254,30 @@ export const ReceiptFormScreen: React.FC = () => {
       fontSize: 14,
       fontWeight: "500",
     },
+    expiredCardWarning: {
+      backgroundColor: colors.error + "15",
+      margin: 16,
+      padding: 16,
+      borderRadius: 8,
+      borderLeftWidth: 4,
+      borderLeftColor: colors.error,
+      flexDirection: "row",
+      alignItems: "center",
+    },
+    warningText: {
+      color: colors.error,
+      fontSize: 14,
+      fontWeight: "500",
+      marginLeft: 8,
+      flex: 1,
+    },
   });
 
   if (!selectedFuelCard) {
     return null;
   }
+
+  const isCardExpired = selectedFuelCard.status === "Expired";
 
   return (
     <SafeAreaView style={styles.container}>
@@ -251,7 +304,12 @@ export const ReceiptFormScreen: React.FC = () => {
       >
         <Animated.View style={[{ flex: 1 }, { opacity: headerAnim }]}>
           <View
-            style={[styles.contentOpacity, { opacity: isViewMode ? 0.8 : 1 }]}
+            style={[
+              styles.contentOpacity,
+              {
+                opacity: isViewMode || (isCardExpired && !isEditing) ? 0.8 : 1,
+              },
+            ]}
           >
             <ScrollView
               style={{ flex: 1 }}
@@ -266,7 +324,7 @@ export const ReceiptFormScreen: React.FC = () => {
                 placeholder="Ex: 2500"
                 keyboardType="numeric"
                 required
-                editable={!isViewMode}
+                editable={!isViewMode && !(isCardExpired && !isEditing)}
               />
 
               <View style={styles.dateTimeContainer}>
@@ -275,14 +333,14 @@ export const ReceiptFormScreen: React.FC = () => {
                   value={fuelDate}
                   onChange={setFuelDate}
                   mode="date"
-                  disabled={isViewMode}
+                  disabled={isViewMode || (isCardExpired && !isEditing)}
                 />
                 <DateTimePickerComponent
                   label="Heure du plein"
                   value={fuelTime}
                   onChange={setFuelTime}
                   mode="time"
-                  disabled={isViewMode}
+                  disabled={isViewMode || (isCardExpired && !isEditing)}
                 />
               </View>
 
@@ -291,7 +349,7 @@ export const ReceiptFormScreen: React.FC = () => {
                 value={stationName}
                 onChangeText={setStationName}
                 placeholder="Ex: Station Shell Centre-ville"
-                editable={!isViewMode}
+                editable={!isViewMode && !(isCardExpired && !isEditing)}
               />
 
               <Input
@@ -299,19 +357,19 @@ export const ReceiptFormScreen: React.FC = () => {
                 value={vehiclePlateNumber}
                 onChangeText={setVehiclePlateNumber}
                 placeholder="Ex: 95700L15"
-                editable={!isViewMode}
+                editable={!isViewMode && !(isCardExpired && !isEditing)}
               />
 
               <PaymentMethodSelector
                 value={paymentMethod}
                 onChange={setPaymentMethod}
-                disabled={isViewMode}
+                disabled={isViewMode || (isCardExpired && !isEditing)}
               />
 
               <PhotoPicker
                 photoUri={photoUri}
                 onPhotoChange={setPhotoUri}
-                disabled={isViewMode}
+                disabled={isViewMode || (isCardExpired && !isEditing)}
               />
 
               <Input
@@ -321,54 +379,56 @@ export const ReceiptFormScreen: React.FC = () => {
                 placeholder="Commentaires additionnels..."
                 multiline
                 numberOfLines={3}
-                editable={!isViewMode}
+                editable={!isViewMode && !(isCardExpired && !isEditing)}
               />
 
-              <View style={styles.buttonContainer}>
-                <ConditionalComponent
-                  isValid={isEditing}
-                  defaultComponent={
-                    <View style={styles.submitButton}>
-                      <Button
-                        title="Ajouter reçu"
-                        onPress={handleSubmit}
-                        loading={isLoading}
-                        disabled={!amount || isLoading}
-                      />
-                    </View>
-                  }
-                >
+              <ConditionalComponent isValid={!isCardExpired || isEditing}>
+                <View style={styles.buttonContainer}>
                   <ConditionalComponent
-                    isValid={isViewMode}
+                    isValid={isEditing}
                     defaultComponent={
-                      <>
-                        <View style={styles.editButton}>
-                          <Button
-                            title="Annuler"
-                            onPress={() => setIsViewMode(true)}
-                            variant="outline"
-                          />
-                        </View>
-                        <View style={styles.submitButton}>
-                          <Button
-                            title="Enregistrer"
-                            onPress={handleSubmit}
-                            loading={isLoading}
-                            disabled={!amount || isLoading}
-                          />
-                        </View>
-                      </>
+                      <View style={styles.submitButton}>
+                        <Button
+                          title="Ajouter reçu"
+                          onPress={handleSubmit}
+                          loading={isLoading}
+                          disabled={!amount || isLoading}
+                        />
+                      </View>
                     }
                   >
-                    <View style={styles.submitButton}>
-                      <Button
-                        title="Modifier"
-                        onPress={() => setIsViewMode(false)}
-                      />
-                    </View>
+                    <ConditionalComponent
+                      isValid={isViewMode}
+                      defaultComponent={
+                        <>
+                          <View style={styles.editButton}>
+                            <Button
+                              title="Annuler"
+                              onPress={() => setIsViewMode(true)}
+                              variant="outline"
+                            />
+                          </View>
+                          <View style={styles.submitButton}>
+                            <Button
+                              title="Enregistrer"
+                              onPress={handleSubmit}
+                              loading={isLoading}
+                              disabled={!amount || isLoading}
+                            />
+                          </View>
+                        </>
+                      }
+                    >
+                      <View style={styles.submitButton}>
+                        <Button
+                          title="Modifier"
+                          onPress={() => setIsViewMode(false)}
+                        />
+                      </View>
+                    </ConditionalComponent>
                   </ConditionalComponent>
-                </ConditionalComponent>
-              </View>
+                </View>
+              </ConditionalComponent>
             </ScrollView>
           </View>
         </Animated.View>

@@ -1,15 +1,13 @@
-// shared/types/fuelCard.ts
-
 export type PaymentMethod = "Carte carburant" | "Hors carte";
 export type FuelCardStatus = "Active" | "Inactive" | "Expired";
 
 export interface Receipt {
   id: string;
   amount: number;
-  date: string; // Date when the receipt was added to the system
-  time: string; // Time when the receipt was added to the system
-  fuelDate?: string; // Custom date when fuel was actually purchased
-  fuelTime?: string; // Custom time when fuel was actually purchased
+  date: string;
+  time: string;
+  fuelDate?: string;
+  fuelTime?: string;
   stationName?: string;
   paymentMethod: PaymentMethod;
   photoUri?: string;
@@ -21,14 +19,14 @@ export interface Receipt {
 export interface FuelCard {
   id: string;
   cardNumber: string;
-  plafond: number; // Maximum amount/credit limit
-  aConsomme: number; // Amount consumed
-  horsCarteTotal: number; // Out of pocket total amount
+  plafond: number;
+  aConsomme: number;
+  horsCarteTotal: number;
   status: FuelCardStatus;
   assignedDriverId: string;
   assignedDriverName: string;
   expiryDate: string;
-  issueDate: string; // Date when the card was issued
+  issueDate: string;
   receipts: Receipt[];
   createdAt: string;
   lastModified: string;

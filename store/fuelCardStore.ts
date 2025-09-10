@@ -1,5 +1,3 @@
-// store/fuelCardStore.ts
-
 import { create } from "zustand";
 import {
   FuelCard,
@@ -11,33 +9,28 @@ import {
 
 type FuelCardStore = FuelCardState & FuelCardActions;
 
-// Helper function to apply filters
 const applyFiltersToFuelCards = (
   fuelCards: FuelCard[],
   filters: FuelCardFilters
 ) => {
   let filtered = [...fuelCards];
 
-  // Filter by status
   if (filters.status) {
     filtered = filtered.filter((fc) => fc.status === filters.status);
   }
 
-  // Filter by driver ID
   if (filters.driverId) {
     filtered = filtered.filter(
       (fc) => fc.assignedDriverId === filters.driverId
     );
   }
 
-  // Filter by payment method (based on receipts)
   if (filters.paymentMethod) {
     filtered = filtered.filter((fc) =>
       fc.receipts.some((r) => r.paymentMethod === filters.paymentMethod)
     );
   }
 
-  // Filter by search query
   if (filters.searchQuery && filters.searchQuery.trim() !== "") {
     const query = filters.searchQuery.toLowerCase().trim();
     filtered = filtered.filter(
@@ -47,7 +40,6 @@ const applyFiltersToFuelCards = (
     );
   }
 
-  // Filter by date range
   if (filters.dateFrom) {
     filtered = filtered.filter((fc) =>
       fc.receipts.some((r) => new Date(r.date) >= filters.dateFrom!)
@@ -63,7 +55,6 @@ const applyFiltersToFuelCards = (
   return filtered;
 };
 
-// Mock data with issue dates and French notes
 const mockFuelCards: FuelCard[] = [
   {
     id: "card-1",
@@ -289,7 +280,6 @@ const mockFuelCards: FuelCard[] = [
 ];
 
 export const useFuelCardStore = create<FuelCardStore>((set, get) => ({
-  // State
   fuelCards: mockFuelCards,
   filteredFuelCards: mockFuelCards,
   selectedFuelCard: null,
@@ -299,7 +289,6 @@ export const useFuelCardStore = create<FuelCardStore>((set, get) => ({
   error: null,
   isEditMode: false,
 
-  // Actions
   fetchFuelCards: async () => {
     set({ isLoading: true, error: null });
     try {
@@ -335,6 +324,17 @@ export const useFuelCardStore = create<FuelCardStore>((set, get) => ({
   addReceipt: async (fuelCardId: string, receiptData) => {
     set({ isLoading: true, error: null });
     try {
+      const { fuelCards } = get();
+      const fuelCard = fuelCards.find((fc) => fc.id === fuelCardId);
+
+      if (!fuelCard) {
+        throw new Error("Carte carburant non trouvée");
+      }
+
+      if (fuelCard.status === "Expired") {
+        throw new Error("Impossible d'ajouter un reçu à une carte expirée");
+      }
+
       // Simulate API call
       await new Promise((resolve) => setTimeout(resolve, 500));
 
@@ -349,7 +349,6 @@ export const useFuelCardStore = create<FuelCardStore>((set, get) => ({
           if (fuelCard.id === fuelCardId) {
             const updatedReceipts = [...fuelCard.receipts, newReceipt];
 
-            // Update consumption amounts
             const newAConsomme = updatedReceipts
               .filter((r) => r.paymentMethod === "Carte carburant")
               .reduce((sum, r) => sum + r.amount, 0);
@@ -374,7 +373,6 @@ export const useFuelCardStore = create<FuelCardStore>((set, get) => ({
           state.filters
         );
 
-        // Update selected fuel card if it's the one being modified
         const selectedFuelCard =
           state.selectedFuelCard?.id === fuelCardId
             ? updatedFuelCards.find((fc) => fc.id === fuelCardId) ||
@@ -390,16 +388,19 @@ export const useFuelCardStore = create<FuelCardStore>((set, get) => ({
       });
     } catch (error) {
       set({
-        error: "Erreur lors de l'ajout du reçu",
+        error:
+          error instanceof Error
+            ? error.message
+            : "Erreur lors de l'ajout du reçu",
         isLoading: false,
       });
+      throw error;
     }
   },
 
   updateReceipt: async (fuelCardId: string, receiptId: string, receiptData) => {
     set({ isLoading: true, error: null });
     try {
-      // Simulate API call
       await new Promise((resolve) => setTimeout(resolve, 500));
 
       set((state) => {
@@ -411,7 +412,6 @@ export const useFuelCardStore = create<FuelCardStore>((set, get) => ({
                 : receipt
             );
 
-            // Recalculate consumption amounts
             const newAConsomme = updatedReceipts
               .filter((r) => r.paymentMethod === "Carte carburant")
               .reduce((sum, r) => sum + r.amount, 0);
@@ -436,7 +436,6 @@ export const useFuelCardStore = create<FuelCardStore>((set, get) => ({
           state.filters
         );
 
-        // Update selected fuel card and receipt if they're the ones being modified
         const selectedFuelCard =
           state.selectedFuelCard?.id === fuelCardId
             ? updatedFuelCards.find((fc) => fc.id === fuelCardId) ||
@@ -462,6 +461,7 @@ export const useFuelCardStore = create<FuelCardStore>((set, get) => ({
         error: "Erreur lors de la mise à jour du reçu",
         isLoading: false,
       });
+      throw error;
     }
   },
 
@@ -478,7 +478,6 @@ export const useFuelCardStore = create<FuelCardStore>((set, get) => ({
               (receipt) => receipt.id !== receiptId
             );
 
-            // Recalculate consumption amounts
             const newAConsomme = updatedReceipts
               .filter((r) => r.paymentMethod === "Carte carburant")
               .reduce((sum, r) => sum + r.amount, 0);
@@ -528,6 +527,7 @@ export const useFuelCardStore = create<FuelCardStore>((set, get) => ({
         error: "Erreur lors de la suppression du reçu",
         isLoading: false,
       });
+      throw error;
     }
   },
 

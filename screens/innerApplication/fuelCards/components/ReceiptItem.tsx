@@ -1,4 +1,3 @@
-// screens/innerApplication/fuelCards/components/ReceiptItem.tsx
 import { FontAwesome } from "@expo/vector-icons";
 import React from "react";
 import {
@@ -45,7 +44,6 @@ export const ReceiptItem: React.FC<ReceiptItemProps> = ({
 
   const paymentConfig = getPaymentMethodConfig();
 
-  // Use fuel date/time if available, otherwise use system date/time
   const displayDate = receipt.fuelDate || receipt.date;
   const displayTime = receipt.fuelTime || receipt.time;
 
@@ -178,7 +176,6 @@ export const ReceiptItem: React.FC<ReceiptItemProps> = ({
       onPress={onPress}
       activeOpacity={0.7}
     >
-      {/* Header */}
       <View style={styles.header}>
         <View style={styles.leftSection}>
           <View style={styles.iconContainer}>
@@ -207,7 +204,6 @@ export const ReceiptItem: React.FC<ReceiptItemProps> = ({
         </View>
       </View>
 
-      {/* Bottom Section */}
       <View style={styles.bottomSection}>
         <ConditionalComponent isValid={!!receipt.vehiclePlateNumber}>
           <Text style={styles.vehicleInfo}>
@@ -227,12 +223,10 @@ export const ReceiptItem: React.FC<ReceiptItemProps> = ({
         </ConditionalComponent>
       </View>
 
-      {/* Notes */}
       <ConditionalComponent isValid={!!receipt.notes}>
         <Text style={styles.notes}>{receipt.notes}</Text>
       </ConditionalComponent>
 
-      {/* System Date - Now at the bottom */}
       <ConditionalComponent isValid={!!(receipt.fuelDate && receipt.fuelTime)}>
         <Text style={styles.systemDate}>
           Ajouté le {receipt.date} à {receipt.time}

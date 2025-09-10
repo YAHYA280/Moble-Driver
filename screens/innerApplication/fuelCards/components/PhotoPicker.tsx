@@ -1,4 +1,3 @@
-// screens/innerApplication/fuelCards/components/PhotoPicker.tsx
 import { FontAwesome } from "@expo/vector-icons";
 import * as ImagePicker from "expo-image-picker";
 import React from "react";

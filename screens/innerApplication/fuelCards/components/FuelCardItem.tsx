@@ -190,7 +190,6 @@ export const FuelCardItem: React.FC<FuelCardItemProps> = ({
       onPress={onPress}
       activeOpacity={0.7}
     >
-      {/* Header */}
       <View style={styles.header}>
         <View style={styles.cardInfo}>
           <View style={styles.cardIcon}>
@@ -211,12 +210,10 @@ export const FuelCardItem: React.FC<FuelCardItemProps> = ({
         </View>
       </View>
 
-      {/* Issue Date */}
       <Text style={styles.issueDate}>
         Émise le {new Date(fuelCard.issueDate).toLocaleDateString("fr-FR")}
       </Text>
 
-      {/* Essential Amounts Only */}
       <View style={styles.amountsContainer}>
         <View style={styles.amountRow}>
           <Text style={styles.amountLabel}>Plafond</Text>
@@ -232,7 +229,6 @@ export const FuelCardItem: React.FC<FuelCardItemProps> = ({
         </View>
       </View>
 
-      {/* Progress Bar - Same Line */}
       <View style={styles.progressContainer}>
         <View style={styles.progressBackground}>
           <View
@@ -247,7 +243,6 @@ export const FuelCardItem: React.FC<FuelCardItemProps> = ({
         </Text>
       </View>
 
-      {/* Footer */}
       <View style={styles.footer}>
         <FontAwesome
           name="chevron-right"
