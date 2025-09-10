@@ -190,7 +190,7 @@ export const ReceiptItem: React.FC<ReceiptItemProps> = ({
           </View>
           <View style={styles.mainInfo}>
             <Text style={styles.amount}>
-              {receipt.amount.toLocaleString()} DA
+              {receipt.amount.toLocaleString()} €
             </Text>
             <ConditionalComponent isValid={!!receipt.stationName}>
               <Text style={styles.stationName}>{receipt.stationName}</Text>
