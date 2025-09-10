@@ -83,6 +83,16 @@ export const ReportIncidentScreen: React.FC = () => {
       },
       isActive: false,
     },
+    {
+      id: "fuelcards",
+      label: "Carte carburant",
+      icon: "credit-card" as const,
+      onPress: () => {
+        setShowSidebar(false);
+        router.push("/(tabs)/fuelcards");
+      },
+      isActive: false,
+    },
   ];
 
   const styles = StyleSheet.create({

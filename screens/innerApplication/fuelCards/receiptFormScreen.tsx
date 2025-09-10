@@ -260,7 +260,7 @@ export const ReceiptFormScreen: React.FC = () => {
               keyboardShouldPersistTaps="handled"
             >
               <Input
-                label="Montant (DA)"
+                label="Montant (€)"
                 value={amount}
                 onChangeText={setAmount}
                 placeholder="Ex: 2500"
