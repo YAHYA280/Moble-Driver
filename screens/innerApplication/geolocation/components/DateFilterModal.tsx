@@ -1,5 +1,3 @@
-// screens/innerApplication/geolocation/components/DateFilterModal.tsx
-import { useThemeColors } from "@/hooks/useTheme";
 import { Ionicons } from "@expo/vector-icons";
 import React, { useState } from "react";
 import {
@@ -12,6 +10,9 @@ import {
   View,
 } from "react-native";
 import { Calendar, DateData } from "react-native-calendars";
+
+import { useThemeColors } from "@/hooks/useTheme";
+
 import type { Theme } from "react-native-calendars/src/types";
 
 interface DateFilterModalProps {
@@ -52,13 +53,10 @@ export const DateFilterModal: React.FC<DateFilterModalProps> = ({
     const selectedDate = new Date(day.year, day.month - 1, day.day);
 
     if (!isSelectingEndDate && !startDate) {
-      // First selection - set start date
       setStartDate(selectedDate);
       setIsSelectingEndDate(true);
     } else if (isSelectingEndDate) {
-      // Second selection - set end date
       if (startDate && selectedDate < startDate) {
-        // If selected date is before start date, swap them
         setEndDate(startDate);
         setStartDate(selectedDate);
       } else {
@@ -66,7 +64,6 @@ export const DateFilterModal: React.FC<DateFilterModalProps> = ({
       }
       setIsSelectingEndDate(false);
     } else {
-      // Reset and start over
       setStartDate(selectedDate);
       setEndDate(null);
       setIsSelectingEndDate(true);
@@ -94,7 +91,6 @@ export const DateFilterModal: React.FC<DateFilterModalProps> = ({
       };
     }
 
-    // Mark days between start and end date
     if (startDate && endDate) {
       const currentDate = new Date(startDate);
       currentDate.setDate(currentDate.getDate() + 1);
@@ -149,6 +145,31 @@ export const DateFilterModal: React.FC<DateFilterModalProps> = ({
     textMonthFontSize: 16,
     textDayHeaderFontSize: 13,
   });
+
+  const getInstructionText = () => {
+    if (!startDate) {
+      return "Sélectionnez la date de début";
+    } else if (isSelectingEndDate) {
+      return "Sélectionnez la date de fin";
+    } else {
+      return "Période sélectionnée";
+    }
+  };
+
+  const getSelectionText = () => {
+    if (startDate && endDate) {
+      return `${formatDate(startDate)} - ${formatDate(endDate)}`;
+    } else if (startDate) {
+      return `Du ${formatDate(startDate)} ${
+        isSelectingEndDate ? "(sélectionnez la fin)" : ""
+      }`;
+    } else if (endDate) {
+      return `Jusqu'au ${formatDate(endDate)}`;
+    }
+    return "Aucune période sélectionnée";
+  };
+
+  const hasSelectedDates = !!(startDate || endDate);
 
   const styles = StyleSheet.create({
     overlay: {
@@ -249,29 +270,6 @@ export const DateFilterModal: React.FC<DateFilterModalProps> = ({
     },
   });
 
-  const getInstructionText = () => {
-    if (!startDate) {
-      return "Sélectionnez la date de début";
-    } else if (isSelectingEndDate) {
-      return "Sélectionnez la date de fin";
-    } else {
-      return "Période sélectionnée";
-    }
-  };
-
-  const getSelectionText = () => {
-    if (startDate && endDate) {
-      return `${formatDate(startDate)} - ${formatDate(endDate)}`;
-    } else if (startDate) {
-      return `Du ${formatDate(startDate)} ${
-        isSelectingEndDate ? "(sélectionnez la fin)" : ""
-      }`;
-    } else if (endDate) {
-      return `Jusqu'au ${formatDate(endDate)}`;
-    }
-    return "Aucune période sélectionnée";
-  };
-
   return (
     <Modal visible={visible} transparent animationType="fade">
       <TouchableOpacity
@@ -281,7 +279,6 @@ export const DateFilterModal: React.FC<DateFilterModalProps> = ({
       >
         <TouchableOpacity activeOpacity={1} onPress={() => {}}>
           <View style={styles.modal}>
-            {/* Header */}
             <View style={styles.header}>
               <Text style={styles.title}>Sélectionner une période</Text>
               <TouchableOpacity style={styles.closeButton} onPress={onClose}>
@@ -289,10 +286,8 @@ export const DateFilterModal: React.FC<DateFilterModalProps> = ({
               </TouchableOpacity>
             </View>
 
-            {/* Instruction */}
             <Text style={styles.instructionText}>{getInstructionText()}</Text>
 
-            {/* Calendar */}
             <View style={styles.calendarContainer}>
               <Calendar
                 onDayPress={handleCalendarDayPress}
@@ -305,14 +300,12 @@ export const DateFilterModal: React.FC<DateFilterModalProps> = ({
               />
             </View>
 
-            {/* Selection Info */}
-            {(startDate || endDate) && (
+            {hasSelectedDates && (
               <View style={styles.selectionInfo}>
                 <Text style={styles.selectionText}>{getSelectionText()}</Text>
               </View>
             )}
 
-            {/* Actions */}
             <View style={styles.actions}>
               <TouchableOpacity
                 style={[styles.actionButton, styles.clearButton]}

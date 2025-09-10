@@ -1,5 +1,3 @@
-// screens/innerApplication/geolocation/geolocationSettingsScreen.tsx
-import ConditionalComponent from "@/shared/components/conditionalComponent/conditionalComponent";
 import { Ionicons } from "@expo/vector-icons";
 import { router } from "expo-router";
 import React, { useEffect, useRef, useState } from "react";
@@ -14,9 +12,11 @@ import {
   View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { useTheme } from "../../../contexts/ThemeContext";
-import { Header } from "../../../shared/components/ui/Header";
-import { useGeolocationStore } from "../../../store/geolocationStore";
+
+import { useTheme } from "@/contexts/ThemeContext";
+import ConditionalComponent from "@/shared/components/conditionalComponent/conditionalComponent";
+import { Header } from "@/shared/components/ui/Header";
+import { useGeolocationStore } from "@/store/geolocationStore";
 
 export const GeolocationSettingsScreen: React.FC = () => {
   const { colors } = useTheme();
@@ -24,24 +24,20 @@ export const GeolocationSettingsScreen: React.FC = () => {
   const headerAnim = useRef(new Animated.Value(0)).current;
   const [hasChanges, setHasChanges] = useState(false);
 
-  const { settings, isLoading, error, updateSettings, clearError } =
-    useGeolocationStore();
-
+  const { settings, isLoading, error, updateSettings } = useGeolocationStore();
   const [localSettings, setLocalSettings] = useState(settings);
 
   useEffect(() => {
-    // Animate header
     Animated.timing(headerAnim, {
       toValue: 1,
       duration: 600,
       useNativeDriver: true,
     }).start();
 
-    // Check for changes
     const hasSettingsChanged =
       JSON.stringify(settings) !== JSON.stringify(localSettings);
     setHasChanges(hasSettingsChanged);
-  }, [localSettings, settings]);
+  }, [localSettings, settings, headerAnim]);
 
   const updateLocalSettings = (path: string, value: any) => {
     setLocalSettings((prev) => {
@@ -153,13 +149,13 @@ export const GeolocationSettingsScreen: React.FC = () => {
       <ConditionalComponent
         isValid={!!rightElement}
         defaultComponent={
-          onValueChange ? (
+          <ConditionalComponent isValid={!!onValueChange}>
             <ToggleSwitch
               value={value || false}
-              onValueChange={onValueChange}
+              onValueChange={onValueChange!}
               disabled={disabled}
             />
-          ) : null
+          </ConditionalComponent>
         }
       >
         {rightElement}
@@ -413,7 +409,6 @@ export const GeolocationSettingsScreen: React.FC = () => {
 
   return (
     <SafeAreaView style={styles.container}>
-      {/* Animated Header */}
       <Animated.View
         style={{
           opacity: headerAnim,
@@ -436,20 +431,17 @@ export const GeolocationSettingsScreen: React.FC = () => {
         />
       </Animated.View>
 
-      {/* Error Display */}
       <ConditionalComponent isValid={!!error}>
         <View style={styles.errorContainer}>
           <Text style={styles.errorText}>{error}</Text>
         </View>
       </ConditionalComponent>
 
-      {/* Content */}
       <ScrollView
         style={styles.scrollContainer}
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
       >
-        {/* Map Settings */}
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>Paramètres de la carte</Text>
 
@@ -535,7 +527,6 @@ export const GeolocationSettingsScreen: React.FC = () => {
             <TouchableOpacity
               style={styles.selectButton}
               onPress={() => {
-                // Fixed: Create proper Alert buttons array
                 const buttons = [
                   ...updateIntervalOptions.map((option) => ({
                     text: option.label,
@@ -569,7 +560,6 @@ export const GeolocationSettingsScreen: React.FC = () => {
           </View>
         </View>
 
-        {/* Notification Settings */}
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>Notifications et alertes</Text>
 
@@ -619,7 +609,6 @@ export const GeolocationSettingsScreen: React.FC = () => {
             <TouchableOpacity
               style={styles.selectButton}
               onPress={() => {
-                // Fixed: Create proper Alert buttons array
                 const buttons = [
                   ...approachDistanceOptions.map((option) => ({
                     text: option.label,
@@ -658,7 +647,6 @@ export const GeolocationSettingsScreen: React.FC = () => {
         </View>
       </ScrollView>
 
-      {/* Floating Action Buttons */}
       <View style={styles.floatingActions}>
         <TouchableOpacity
           style={[styles.actionButton, styles.secondaryButton]}

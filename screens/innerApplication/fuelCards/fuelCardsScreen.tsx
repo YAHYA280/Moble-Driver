@@ -1,5 +1,6 @@
-// screens/innerApplication/vehicles/vehiclesScreen.tsx - Updated sidebar items
+// screens/innerApplication/fuelCards/fuelCardsScreen.tsx - Updated import fix
 import ConditionalComponent from "@/shared/components/conditionalComponent/conditionalComponent";
+import { FontAwesome } from "@expo/vector-icons";
 import { router } from "expo-router";
 import React, { useEffect, useRef, useState } from "react";
 import {
@@ -16,58 +17,21 @@ import { useTheme } from "../../../contexts/ThemeContext";
 import { Header } from "../../../shared/components/ui/Header";
 import { SearchModal } from "../../../shared/components/ui/SearchModal";
 import { Sidebar } from "../../../shared/components/ui/Sidebar";
-import { Vehicle } from "../../../shared/types/vehicle";
+import { FuelCard } from "../../../shared/types/fuelCard";
 import { useAuthStore } from "../../../store/authStore";
+import { useFuelCardStore } from "../../../store/fuelCardStore";
 import { useVehicleStore } from "../../../store/vehicleStore";
-import { AssignedVehicleCard } from "./components/AssignedVehicleCard";
-import { VehicleHistoryCard } from "./components/VehicleHistoryCard";
+import { FuelCardItem } from "./components/FuelCardItem";
 
-const AnimatedAssignedVehicleCard: React.FC<{
-  vehicle: Vehicle;
-  onPress: () => void;
-}> = ({ vehicle, onPress }) => {
-  const animValue = useRef(new Animated.Value(0)).current;
-
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      Animated.timing(animValue, {
-        toValue: 1,
-        duration: 600,
-        useNativeDriver: true,
-      }).start();
-    }, 200);
-
-    return () => clearTimeout(timer);
-  }, [animValue]);
-
-  return (
-    <Animated.View
-      style={{
-        opacity: animValue,
-        transform: [
-          {
-            translateY: animValue.interpolate({
-              inputRange: [0, 1],
-              outputRange: [30, 0],
-            }),
-          },
-        ],
-      }}
-    >
-      <AssignedVehicleCard vehicle={vehicle} onPress={onPress} />
-    </Animated.View>
-  );
-};
-
-const AnimatedVehicleHistoryCard: React.FC<{
-  item: Vehicle;
+const AnimatedFuelCardItem: React.FC<{
+  item: FuelCard;
   index: number;
   onPress: () => void;
 }> = ({ item, index, onPress }) => {
   const animValue = useRef(new Animated.Value(0)).current;
 
   useEffect(() => {
-    const delay = 400 + index * 80;
+    const delay = index * 100;
     const timer = setTimeout(() => {
       Animated.timing(animValue, {
         toValue: 1,
@@ -93,35 +57,34 @@ const AnimatedVehicleHistoryCard: React.FC<{
         ],
       }}
     >
-      <VehicleHistoryCard vehicle={item} onPress={onPress} />
+      <FuelCardItem fuelCard={item} onPress={onPress} />
     </Animated.View>
   );
 };
 
-export const VehiclesScreen: React.FC = () => {
+export const FuelCardsScreen: React.FC = () => {
   const { colors } = useTheme();
   const [showSidebar, setShowSidebar] = useState(false);
   const [showSearchModal, setShowSearchModal] = useState(false);
   const headerAnim = useRef(new Animated.Value(0)).current;
-  const listAnim = useRef(new Animated.Value(0)).current;
 
   const {
-    vehicles,
-    filteredVehicles,
+    filteredFuelCards,
     filters,
     isLoading,
     error,
-    fetchVehicles,
+    fetchFuelCards,
     setFilters,
     clearFilters,
-    selectVehicle,
+    selectFuelCard,
     clearError,
-  } = useVehicleStore();
+  } = useFuelCardStore();
 
   const { logout } = useAuthStore();
+  const { selectVehicle, vehicles } = useVehicleStore();
 
   useEffect(() => {
-    fetchVehicles();
+    fetchFuelCards();
 
     Animated.timing(headerAnim, {
       toValue: 1,
@@ -130,13 +93,13 @@ export const VehiclesScreen: React.FC = () => {
     }).start();
   }, []);
 
-  const handleVehiclePress = (vehicle: Vehicle) => {
-    selectVehicle(vehicle);
-    router.push("/(tabs)/vehicles/details");
+  const handleFuelCardPress = (fuelCard: FuelCard) => {
+    selectFuelCard(fuelCard);
+    router.push(`./fuelcards/details/${fuelCard.id}`);
   };
 
   const handleRefresh = () => {
-    fetchVehicles();
+    fetchFuelCards();
   };
 
   const handleLogout = () => {
@@ -155,7 +118,7 @@ export const VehiclesScreen: React.FC = () => {
   };
 
   const handleNotificationPress = () => {
-    router.push("/notifications?returnTo=/vehicles");
+    router.push("/notifications?returnTo=/fuelcards");
   };
 
   const handleSearchPress = () => {
@@ -173,8 +136,12 @@ export const VehiclesScreen: React.FC = () => {
       icon: "car" as const,
       onPress: () => {
         setShowSidebar(false);
+        if (vehicles.length > 0) {
+          selectVehicle(vehicles[0]);
+        }
+        router.push("/(tabs)/vehicles");
       },
-      isActive: true,
+      isActive: false,
     },
     {
       id: "incidents",
@@ -205,50 +172,39 @@ export const VehiclesScreen: React.FC = () => {
       icon: "credit-card" as const,
       onPress: () => {
         setShowSidebar(false);
-        router.push("/(tabs)/fuelcards");
       },
-      isActive: false,
+      isActive: true,
     },
   ];
 
-  const assignedVehicle =
-    vehicles.find((v) => v.status === "En service") || vehicles[0];
-
-  const historyVehicles = filteredVehicles;
-
-  const renderHistoryItem = ({
+  const renderFuelCardItem = ({
     item,
     index,
   }: {
-    item: Vehicle;
+    item: FuelCard;
     index: number;
   }) => (
-    <AnimatedVehicleHistoryCard
+    <AnimatedFuelCardItem
       item={item}
       index={index}
-      onPress={() => handleVehiclePress(item)}
+      onPress={() => handleFuelCardPress(item)}
     />
-  );
-
-  const renderHistoryHeader = () => (
-    <View style={styles.historyHeaderContainer}>
-      <Text style={[styles.historyTitle, { color: colors.text }]}>
-        Historique
-      </Text>
-    </View>
   );
 
   const renderEmptyState = () => (
     <View style={styles.emptyState}>
+      <View style={styles.emptyIcon}>
+        <FontAwesome name="credit-card" size={32} color={colors.textTertiary} />
+      </View>
       <Text style={[styles.emptyTitle, { color: colors.text }]}>
-        Aucun véhicule trouvé
+        Aucune carte carburant
       </Text>
       <Text style={[styles.emptySubtitle, { color: colors.textSecondary }]}>
         <ConditionalComponent
           isValid={Object.keys(filters).length > 0}
-          defaultComponent="Vos véhicules apparaîtront ici."
+          defaultComponent="Vos cartes carburant apparaîtront ici."
         >
-          Aucun véhicule ne correspond à vos critères de recherche.
+          Aucune carte ne correspond à vos critères de recherche.
         </ConditionalComponent>
       </Text>
     </View>
@@ -259,29 +215,21 @@ export const VehiclesScreen: React.FC = () => {
       flex: 1,
       backgroundColor: colors.backgroundSecondary,
     },
-    assignedVehicleContainer: {
-      paddingHorizontal: 16,
-      paddingTop: 16,
-      paddingBottom: 8,
-    },
-    historyContainer: {
-      flex: 1,
-    },
-    historyHeaderContainer: {
-      paddingHorizontal: 16,
-      paddingVertical: 16,
-      paddingBottom: 8,
-    },
-    historyTitle: {
-      fontSize: 18,
-      fontWeight: "600",
-    },
     emptyState: {
       flex: 1,
       alignItems: "center",
       justifyContent: "center",
       paddingHorizontal: 32,
       paddingTop: 100,
+    },
+    emptyIcon: {
+      width: 80,
+      height: 80,
+      borderRadius: 40,
+      backgroundColor: colors.backgroundTertiary,
+      alignItems: "center",
+      justifyContent: "center",
+      marginBottom: 24,
     },
     emptyTitle: {
       fontSize: 20,
@@ -329,7 +277,7 @@ export const VehiclesScreen: React.FC = () => {
             icon: "bars",
             onPress: () => setShowSidebar(true),
           }}
-          title="Véhicules attribuées"
+          title="Cartes carburant"
           rightIcons={[
             {
               icon: "search",
@@ -352,57 +300,43 @@ export const VehiclesScreen: React.FC = () => {
       </ConditionalComponent>
 
       {/* Main Content */}
-      <View style={{ flex: 1 }}>
-        {/* Assigned Vehicle Card */}
-        <ConditionalComponent isValid={!!assignedVehicle}>
-          <View style={styles.assignedVehicleContainer}>
-            <AnimatedAssignedVehicleCard
-              vehicle={assignedVehicle!}
-              onPress={() => handleVehiclePress(assignedVehicle!)}
+      <Animated.View style={[{ flex: 1 }, { opacity: headerAnim }]}>
+        <FlatList
+          data={filteredFuelCards}
+          renderItem={renderFuelCardItem}
+          keyExtractor={(item) => item.id}
+          showsVerticalScrollIndicator={false}
+          contentContainerStyle={
+            filteredFuelCards.length === 0
+              ? { flex: 1 }
+              : { paddingBottom: 100, paddingTop: 16 }
+          }
+          ListEmptyComponent={renderEmptyState}
+          refreshControl={
+            <RefreshControl
+              refreshing={isLoading}
+              onRefresh={handleRefresh}
+              colors={[colors.primary]}
+              tintColor={colors.primary}
             />
-          </View>
-        </ConditionalComponent>
-
-        {/* History Section */}
-        <View style={styles.historyContainer}>
-          <FlatList
-            data={historyVehicles}
-            renderItem={renderHistoryItem}
-            keyExtractor={(item) => `history-${item.id}`}
-            ListHeaderComponent={renderHistoryHeader}
-            showsVerticalScrollIndicator={false}
-            contentContainerStyle={
-              historyVehicles.length === 0
-                ? { flex: 1 }
-                : { paddingBottom: 100 }
-            }
-            ListEmptyComponent={renderEmptyState}
-            refreshControl={
-              <RefreshControl
-                refreshing={isLoading}
-                onRefresh={handleRefresh}
-                colors={[colors.primary]}
-                tintColor={colors.primary}
-              />
-            }
-            ItemSeparatorComponent={() => <View style={{ height: 4 }} />}
-          />
-        </View>
-      </View>
+          }
+          ItemSeparatorComponent={() => <View style={{ height: 4 }} />}
+        />
+      </Animated.View>
 
       {/* Search Modal */}
       <SearchModal
         visible={showSearchModal}
         onClose={() => setShowSearchModal(false)}
         onSearch={handleSearch}
-        placeholder="Rechercher par plaque, modèle..."
+        placeholder="Rechercher par numéro de carte, conducteur..."
         initialQuery={filters.searchQuery || ""}
-        title="Rechercher véhicules"
+        title="Rechercher cartes"
       />
 
       {/* Sidebar */}
       <Sidebar
-        title="Mon parc"
+        title="Carburant"
         items={sidebarItems}
         visible={showSidebar}
         onClose={() => setShowSidebar(false)}

@@ -1,5 +1,3 @@
-// screens/innerApplication/geolocation/components/LocationStatusBar.tsx
-import ConditionalComponent from "@/shared/components/conditionalComponent/conditionalComponent";
 import React from "react";
 import {
   Platform,
@@ -8,8 +6,11 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
-import { useThemeColors } from "../../../../hooks/useTheme";
-import { Location } from "../../../../shared/types/geolocation";
+
+import { useThemeColors } from "@/hooks/useTheme";
+import ConditionalComponent from "@/shared/components/conditionalComponent/conditionalComponent";
+
+import type { Location } from "@/shared/types/geolocation";
 
 interface LocationStatusBarProps {
   isActive: boolean;
@@ -70,6 +71,9 @@ export const LocationStatusBar: React.FC<LocationStatusBarProps> = ({
       color: colors.textSecondary,
       marginTop: 2,
     },
+    textContainer: {
+      flex: 1,
+    },
     toggleButton: {
       paddingHorizontal: 16,
       paddingVertical: 8,
@@ -89,7 +93,7 @@ export const LocationStatusBar: React.FC<LocationStatusBarProps> = ({
         style={[styles.statusIndicator, isActive && styles.activeIndicator]}
       />
 
-      <View style={{ flex: 1 }}>
+      <View style={styles.textContainer}>
         <Text style={styles.statusText}>
           {isActive ? "Localisation active" : "Localisation inactive"}
         </Text>

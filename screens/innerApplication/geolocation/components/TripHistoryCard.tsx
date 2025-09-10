@@ -1,5 +1,3 @@
-// screens/innerApplication/geolocation/components/TripHistoryCard.tsx
-import { useThemeColors } from "@/hooks/useTheme";
 import { Ionicons } from "@expo/vector-icons";
 import React from "react";
 import {
@@ -9,7 +7,10 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
-import { Trip } from "../../../../shared/types/geolocation";
+
+import { useThemeColors } from "@/hooks/useTheme";
+
+import type { Trip } from "@/shared/types/geolocation";
 
 interface TripHistoryCardProps {
   trip: Trip;
@@ -52,7 +53,6 @@ export const TripHistoryCard: React.FC<TripHistoryCardProps> = ({
     }
   };
 
-  // Format date from trip startTime
   const formatDate = () => {
     const today = new Date();
     return today.toLocaleDateString("fr-FR", {
@@ -61,6 +61,9 @@ export const TripHistoryCard: React.FC<TripHistoryCardProps> = ({
       year: "numeric",
     });
   };
+
+  const statusColor = getStatusColor();
+  const statusIcon = getStatusIcon();
 
   const styles = StyleSheet.create({
     container: {
@@ -110,7 +113,7 @@ export const TripHistoryCard: React.FC<TripHistoryCardProps> = ({
     statusContainer: {
       flexDirection: "row",
       alignItems: "center",
-      backgroundColor: getStatusColor() + "15",
+      backgroundColor: statusColor + "15",
       paddingHorizontal: 12,
       paddingVertical: 6,
       borderRadius: 12,
@@ -118,7 +121,7 @@ export const TripHistoryCard: React.FC<TripHistoryCardProps> = ({
     statusText: {
       fontSize: 12,
       fontWeight: "600",
-      color: getStatusColor(),
+      color: statusColor,
       marginLeft: 4,
     },
   });
@@ -139,11 +142,7 @@ export const TripHistoryCard: React.FC<TripHistoryCardProps> = ({
         </View>
 
         <View style={styles.statusContainer}>
-          <Ionicons
-            name={getStatusIcon() as any}
-            size={14}
-            color={getStatusColor()}
-          />
+          <Ionicons name={statusIcon as any} size={14} color={statusColor} />
           <Text style={styles.statusText}>{trip.status}</Text>
         </View>
       </View>

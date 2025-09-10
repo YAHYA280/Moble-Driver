@@ -335,6 +335,12 @@ export default function TabLayout() {
           href: null,
         }}
       />
+      <Tabs.Screen
+        name="fuelcards"
+        options={{
+          href: null,
+        }}
+      />
     </Tabs>
   );
 }

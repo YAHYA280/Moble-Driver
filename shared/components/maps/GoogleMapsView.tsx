@@ -1,4 +1,3 @@
-// shared/components/maps/GoogleMapsView.tsx
 import ConditionalComponent from "@/shared/components/conditionalComponent/conditionalComponent";
 import { Ionicons } from "@expo/vector-icons";
 import React, { useEffect, useRef, useState } from "react";
@@ -45,6 +44,7 @@ const GoogleMapsView: React.FC<GoogleMapsViewProps> = ({
   const colors = useThemeColors();
   const mapRef = useRef<MapView>(null);
   const [isMapReady, setIsMapReady] = useState(false);
+
   const [region, setRegion] = useState<Region>({
     latitude: currentLocation?.latitude || 35.7595,
     longitude: currentLocation?.longitude || -5.834,
@@ -52,11 +52,11 @@ const GoogleMapsView: React.FC<GoogleMapsViewProps> = ({
     longitudeDelta: 0.0421,
   });
 
-  // Google Maps API Key from environment
   const GOOGLE_MAPS_API_KEY =
-    process.env.EXPO_PUBLIC_GOOGLE_API_KEY || "YOUR_GOOGLE_MAPS_API_KEY";
+    process.env.EXPO_PUBLIC_GOOGLE_API_KEY || "GOOGLE_MAPS_API_KEY";
+  const isApiKeyMissing =
+    !GOOGLE_MAPS_API_KEY || GOOGLE_MAPS_API_KEY === "GOOGLE_MAPS_API_KEY";
 
-  // Convert our map types to react-native-maps types
   const getMapType = (): RNMapType => {
     switch (mapType) {
       case "satellite":
@@ -70,23 +70,13 @@ const GoogleMapsView: React.FC<GoogleMapsViewProps> = ({
     }
   };
 
-  // Get night mode styles
   const getNightModeStyle = () => {
     if (!nightMode) return [];
 
     return [
-      {
-        elementType: "geometry",
-        stylers: [{ color: "#242f3e" }],
-      },
-      {
-        elementType: "labels.text.stroke",
-        stylers: [{ color: "#242f3e" }],
-      },
-      {
-        elementType: "labels.text.fill",
-        stylers: [{ color: "#746855" }],
-      },
+      { elementType: "geometry", stylers: [{ color: "#242f3e" }] },
+      { elementType: "labels.text.stroke", stylers: [{ color: "#242f3e" }] },
+      { elementType: "labels.text.fill", stylers: [{ color: "#746855" }] },
       {
         featureType: "administrative.locality",
         elementType: "labels.text.fill",
@@ -165,74 +155,34 @@ const GoogleMapsView: React.FC<GoogleMapsViewProps> = ({
     ];
   };
 
-  // Update region when current location changes
-  useEffect(() => {
-    if (currentLocation && isMapReady) {
-      const newRegion = {
-        latitude: currentLocation.latitude,
-        longitude: currentLocation.longitude,
-        latitudeDelta: 0.0922,
-        longitudeDelta: 0.0421,
-      };
-      setRegion(newRegion);
-      mapRef.current?.animateToRegion(newRegion, 1000);
-    }
-  }, [currentLocation, isMapReady]);
-
-  // Handle centerOnLocation prop change
-  useEffect(() => {
-    if (centerOnLocation && currentLocation && isMapReady) {
-      const newRegion = {
-        latitude: currentLocation.latitude,
-        longitude: currentLocation.longitude,
-        latitudeDelta: 0.0922,
-        longitudeDelta: 0.0421,
-      };
-      mapRef.current?.animateToRegion(newRegion, 1000);
-    }
-  }, [centerOnLocation, currentLocation, isMapReady]);
-
-  // Handle map ready
-  const handleMapReady = () => {
-    setIsMapReady(true);
-  };
-
-  // Handle trip point marker press
-  const handleTripPointPress = (tripId: string, pointId: string) => {
-    onTripPointClick?.(tripId, pointId);
-  };
-
-  // Get marker color for trip points
   const getMarkerColor = (type: string) => {
     switch (type) {
       case "pickup":
-        return colors.info; // Blue
+        return colors.info;
       case "destination":
-        return colors.error; // Red
+        return colors.error;
       case "waypoint":
-        return colors.warning; // Amber
+        return colors.warning;
       default:
-        return colors.primary; // Purple
+        return colors.primary;
     }
   };
 
-  // Get POI marker color
   const getPOIColor = (type: string) => {
     switch (type) {
       case "station-service":
-        return "#f59e0b"; // Amber
+        return "#f59e0b";
       case "restaurant":
-        return "#10b981"; // Emerald
+        return "#10b981";
       case "hopital":
-        return "#ef4444"; // Red
+        return "#ef4444";
       case "parking":
-        return "#6366f1"; // Indigo
+        return "#6366f1";
       default:
-        return "#8b5cf6"; // Violet
+        return "#8b5cf6";
     }
   };
 
-  // Get icon for trip point type
   const getTripPointIcon = (type: string) => {
     switch (type) {
       case "pickup":
@@ -246,7 +196,6 @@ const GoogleMapsView: React.FC<GoogleMapsViewProps> = ({
     }
   };
 
-  // Create custom marker component
   const CustomMarker: React.FC<{
     type: string;
     color: string;
@@ -266,9 +215,8 @@ const GoogleMapsView: React.FC<GoogleMapsViewProps> = ({
     </View>
   );
 
-  // Render current trip directions
   const renderDirections = () => {
-    if (!currentTrip || !GOOGLE_MAPS_API_KEY || currentTrip.points.length < 2) {
+    if (!currentTrip || isApiKeyMissing || currentTrip.points.length < 2) {
       return null;
     }
 
@@ -288,34 +236,46 @@ const GoogleMapsView: React.FC<GoogleMapsViewProps> = ({
         strokeWidth={4}
         strokeColor={colors.primary}
         optimizeWaypoints={true}
-        onStart={(params) => {
-          console.log(
-            `Started routing between "${params.origin}" and "${params.destination}"`
-          );
-        }}
         onReady={(result) => {
-          console.log(`Distance: ${result.distance} km`);
-          console.log(`Duration: ${result.duration} min.`);
-
-          // Fit the map to show the entire route
           if (mapRef.current) {
             mapRef.current.fitToCoordinates(result.coordinates, {
-              edgePadding: {
-                right: 30,
-                bottom: 300,
-                left: 30,
-                top: 100,
-              },
+              edgePadding: { right: 30, bottom: 300, left: 30, top: 100 },
               animated: true,
             });
           }
         }}
-        onError={(errorMessage) => {
-          console.error("Directions error:", errorMessage);
-        }}
       />
     );
   };
+
+  useEffect(() => {
+    if (currentLocation && isMapReady) {
+      const newRegion = {
+        latitude: currentLocation.latitude,
+        longitude: currentLocation.longitude,
+        latitudeDelta: 0.0922,
+        longitudeDelta: 0.0421,
+      };
+      setRegion(newRegion);
+      mapRef.current?.animateToRegion(newRegion, 1000);
+    }
+  }, [currentLocation, isMapReady]);
+
+  useEffect(() => {
+    if (centerOnLocation && currentLocation && isMapReady) {
+      const newRegion = {
+        latitude: currentLocation.latitude,
+        longitude: currentLocation.longitude,
+        latitudeDelta: 0.0922,
+        longitudeDelta: 0.0421,
+      };
+      mapRef.current?.animateToRegion(newRegion, 1000);
+    }
+  }, [centerOnLocation, currentLocation, isMapReady]);
+
+  const handleMapReady = () => setIsMapReady(true);
+  const handleTripPointPress = (tripId: string, pointId: string) =>
+    onTripPointClick?.(tripId, pointId);
 
   const styles = StyleSheet.create({
     container: {
@@ -391,7 +351,6 @@ const GoogleMapsView: React.FC<GoogleMapsViewProps> = ({
       fontSize: 12,
       color: colors.textSecondary,
     },
-    // FIXED: Clean custom marker styles
     customMarker: {
       width: 36,
       height: 36,
@@ -424,11 +383,7 @@ const GoogleMapsView: React.FC<GoogleMapsViewProps> = ({
     },
   });
 
-  // Show fallback if no API key (but still functional)
-  if (
-    !GOOGLE_MAPS_API_KEY ||
-    GOOGLE_MAPS_API_KEY === "YOUR_GOOGLE_MAPS_API_KEY"
-  ) {
+  if (isApiKeyMissing) {
     return (
       <View style={[styles.container, style]}>
         <View style={styles.errorContainer}>
@@ -488,7 +443,6 @@ const GoogleMapsView: React.FC<GoogleMapsViewProps> = ({
         loadingIndicatorColor={colors.primary}
         moveOnMarkerPress={false}
       >
-        {/* Current Location Marker */}
         {currentLocation && (
           <Marker
             coordinate={{
@@ -506,7 +460,6 @@ const GoogleMapsView: React.FC<GoogleMapsViewProps> = ({
           </Marker>
         )}
 
-        {/* Trip Points Markers with Custom Icons */}
         {trips.map((trip) =>
           trip.points.map((point) => (
             <Marker
@@ -531,9 +484,8 @@ const GoogleMapsView: React.FC<GoogleMapsViewProps> = ({
           ))
         )}
 
-        {/* Points of Interest Markers */}
-        {showPOI &&
-          pointsOfInterest.map((poi) => (
+        <ConditionalComponent isValid={showPOI}>
+          {pointsOfInterest.map((poi) => (
             <Marker
               key={poi.id}
               coordinate={poi.coordinates}
@@ -543,16 +495,16 @@ const GoogleMapsView: React.FC<GoogleMapsViewProps> = ({
             >
               <View style={styles.markerCallout}>
                 <Text style={styles.calloutTitle}>{poi.name}</Text>
-                {poi.description && (
+                <ConditionalComponent isValid={!!poi.description}>
                   <Text style={styles.calloutDescription}>
                     {poi.description}
                   </Text>
-                )}
+                </ConditionalComponent>
               </View>
             </Marker>
           ))}
+        </ConditionalComponent>
 
-        {/* Directions for current trip */}
         {renderDirections()}
       </MapView>
     </View>

@@ -1,4 +1,3 @@
-// screens/innerApplication/geolocation/components/MapControlsPanel.tsx
 import { Ionicons } from "@expo/vector-icons";
 import React from "react";
 import {
@@ -8,8 +7,10 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
-import { useThemeColors } from "../../../../hooks/useTheme";
-import { MapSettings } from "../../../../shared/types/geolocation";
+
+import { useThemeColors } from "@/hooks/useTheme";
+
+import type { MapSettings } from "@/shared/types/geolocation";
 
 interface MapControlsPanelProps {
   settings: MapSettings;
@@ -194,7 +195,6 @@ export const MapControlsPanel: React.FC<MapControlsPanelProps> = ({
 
   return (
     <View style={styles.container}>
-      {/* Header */}
       <View style={styles.header}>
         <Text style={styles.headerTitle}>Options de la carte</Text>
         <TouchableOpacity
@@ -206,7 +206,6 @@ export const MapControlsPanel: React.FC<MapControlsPanelProps> = ({
         </TouchableOpacity>
       </View>
 
-      {/* Map Type Selection */}
       <View style={styles.section}>
         <Text style={styles.sectionTitle}>Type de carte</Text>
         <View style={styles.mapTypeGrid}>
@@ -243,7 +242,6 @@ export const MapControlsPanel: React.FC<MapControlsPanelProps> = ({
         </View>
       </View>
 
-      {/* Display Options */}
       <View style={[styles.section, styles.lastSection]}>
         <Text style={styles.sectionTitle}>Affichage</Text>
 

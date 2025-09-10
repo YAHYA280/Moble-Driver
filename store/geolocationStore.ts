@@ -1,4 +1,3 @@
-// store/geolocationStore.ts
 import { create } from "zustand";
 import {
   GeolocationActions,
@@ -280,7 +279,7 @@ export const useGeolocationStore = create<GeolocationStore>((set, get) => ({
   // State
   currentLocation: null,
   trips: mockTrips,
-  currentTrip: mockTrips[0], // Current trip in progress (En cours)
+  currentTrip: mockTrips[0],
   pointsOfInterest: mockPOI,
   alerts: [],
   settings: defaultSettings,

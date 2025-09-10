@@ -1,6 +1,3 @@
-// screens/innerApplication/geolocation/components/FilterHeader.tsx
-import { useThemeColors } from "@/hooks/useTheme";
-import ConditionalComponent from "@/shared/components/conditionalComponent/conditionalComponent";
 import { Ionicons } from "@expo/vector-icons";
 import React from "react";
 import {
@@ -10,7 +7,11 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
-import { TripStatus } from "../../../../shared/types/geolocation";
+
+import { useThemeColors } from "@/hooks/useTheme";
+import ConditionalComponent from "@/shared/components/conditionalComponent/conditionalComponent";
+
+import type { TripStatus } from "@/shared/types/geolocation";
 
 interface FilterHeaderProps {
   selectedStatus: TripStatus | "Tous";
@@ -60,6 +61,8 @@ export const FilterHeader: React.FC<FilterHeaderProps> = ({
     startDate ||
     endDate
   );
+
+  const hasDateFilter = !!(startDate || endDate);
 
   const styles = StyleSheet.create({
     container: {
@@ -139,11 +142,10 @@ export const FilterHeader: React.FC<FilterHeaderProps> = ({
 
   return (
     <View style={styles.container}>
-      {/* Date Filter */}
       <TouchableOpacity
         style={[
           styles.dateFilterButton,
-          (startDate || endDate) && styles.activeDateFilterButton,
+          hasDateFilter && styles.activeDateFilterButton,
         ]}
         onPress={onDateFilterPress}
         activeOpacity={0.7}
@@ -151,19 +153,18 @@ export const FilterHeader: React.FC<FilterHeaderProps> = ({
         <Ionicons
           name="calendar"
           size={16}
-          color={startDate || endDate ? colors.primary : colors.textSecondary}
+          color={hasDateFilter ? colors.primary : colors.textSecondary}
         />
         <Text
           style={[
             styles.dateFilterButtonText,
-            (startDate || endDate) && styles.activeDateFilterButtonText,
+            hasDateFilter && styles.activeDateFilterButtonText,
           ]}
         >
-          {startDate || endDate ? formatDateRange() : "Filtre de date"}
+          {hasDateFilter ? formatDateRange() : "Filtre de date"}
         </Text>
       </TouchableOpacity>
 
-      {/* Status Filter Container */}
       <View style={styles.statusFilterContainer}>
         <FlatList
           horizontal
@@ -194,7 +195,6 @@ export const FilterHeader: React.FC<FilterHeaderProps> = ({
         />
       </View>
 
-      {/* Clear Filters Button */}
       <ConditionalComponent isValid={hasActiveFilters}>
         <TouchableOpacity
           style={styles.clearFiltersButton}

@@ -1,5 +1,3 @@
-// screens/innerApplication/geolocation/components/TripInfoCard.tsx
-import ConditionalComponent from "@/shared/components/conditionalComponent/conditionalComponent";
 import { Ionicons } from "@expo/vector-icons";
 import React, { useEffect, useRef } from "react";
 import {
@@ -12,8 +10,11 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
-import { useThemeColors } from "../../../../hooks/useTheme";
-import { Trip } from "../../../../shared/types/geolocation";
+
+import { useThemeColors } from "@/hooks/useTheme";
+import ConditionalComponent from "@/shared/components/conditionalComponent/conditionalComponent";
+
+import type { Trip } from "@/shared/types/geolocation";
 
 interface TripInfoCardProps {
   trip: Trip;
@@ -72,7 +73,6 @@ export const TripInfoCard: React.FC<TripInfoCardProps> = ({
     }
   };
 
-  // Get next destination based on trip progress
   const getNextDestination = () => {
     if (!trip) return null;
 
@@ -99,7 +99,6 @@ export const TripInfoCard: React.FC<TripInfoCardProps> = ({
     return null;
   };
 
-  // Get phone number for the next destination
   const getNextDestinationPhone = () => {
     const nextPoint = getNextDestination();
     if (!nextPoint) return null;
@@ -125,7 +124,10 @@ export const TripInfoCard: React.FC<TripInfoCardProps> = ({
     };
   };
 
-  const handlePhoneCall = (phoneNumber: string, passengerName: string) => {
+  const handlePhoneCall = async (
+    phoneNumber: string,
+    passengerName: string
+  ) => {
     Alert.alert(
       "Appeler le passager",
       `Voulez-vous appeler ${passengerName} ?\n${phoneNumber}`,
@@ -133,20 +135,19 @@ export const TripInfoCard: React.FC<TripInfoCardProps> = ({
         { text: "Annuler", style: "cancel" },
         {
           text: "Appeler",
-          onPress: () => {
-            const phoneUrl = `tel:${phoneNumber.replace(/\s/g, "")}`;
-            Linking.canOpenURL(phoneUrl)
-              .then((supported) => {
-                if (supported) {
-                  return Linking.openURL(phoneUrl);
-                } else {
-                  Alert.alert("Erreur", "Impossible de passer l'appel");
-                }
-              })
-              .catch((error) => {
+          onPress: async () => {
+            try {
+              const phoneUrl = `tel:${phoneNumber.replace(/\s/g, "")}`;
+              const supported = await Linking.canOpenURL(phoneUrl);
+
+              if (supported) {
+                await Linking.openURL(phoneUrl);
+              } else {
                 Alert.alert("Erreur", "Impossible de passer l'appel");
-                console.error("Phone call error:", error);
-              });
+              }
+            } catch (error) {
+              Alert.alert("Erreur", "Impossible de passer l'appel");
+            }
           },
         },
       ]
@@ -155,12 +156,13 @@ export const TripInfoCard: React.FC<TripInfoCardProps> = ({
 
   const nextDestinationInfo = getNextDestinationPhone();
   const nextPoint = getNextDestination();
+  const statusColor = getStatusColor();
+  const statusIcon = getStatusIcon();
 
   const styles = StyleSheet.create({
     container: {
-      marginBottom: 8,
+      marginBottom: Platform.OS === "android" ? 15 : 10,
     },
-    // Simple phone bar above the card
     phoneBar: {
       backgroundColor: colors.primary,
       paddingHorizontal: 16,
@@ -189,7 +191,6 @@ export const TripInfoCard: React.FC<TripInfoCardProps> = ({
       padding: 8,
       borderRadius: 20,
     },
-    // Main trip card
     tripCard: {
       backgroundColor: colors.card,
       borderRadius: 16,
@@ -255,7 +256,7 @@ export const TripInfoCard: React.FC<TripInfoCardProps> = ({
     statusContainer: {
       flexDirection: "row",
       alignItems: "center",
-      backgroundColor: getStatusColor() + "15",
+      backgroundColor: statusColor + "15",
       paddingHorizontal: 12,
       paddingVertical: 6,
       borderRadius: 12,
@@ -267,7 +268,7 @@ export const TripInfoCard: React.FC<TripInfoCardProps> = ({
     statusText: {
       fontSize: 12,
       fontWeight: "600",
-      color: getStatusColor(),
+      color: statusColor,
       marginLeft: 4,
     },
     minimizedStatusText: {
@@ -335,7 +336,6 @@ export const TripInfoCard: React.FC<TripInfoCardProps> = ({
 
   return (
     <View style={styles.container}>
-      {/* Simple Phone Bar - Always visible when there's a next destination */}
       <ConditionalComponent isValid={!!nextDestinationInfo}>
         <TouchableOpacity
           style={styles.phoneBar}
@@ -360,7 +360,6 @@ export const TripInfoCard: React.FC<TripInfoCardProps> = ({
         </TouchableOpacity>
       </ConditionalComponent>
 
-      {/* Trip Info Card */}
       <Animated.View
         style={[
           styles.tripCard,
@@ -369,7 +368,6 @@ export const TripInfoCard: React.FC<TripInfoCardProps> = ({
         ]}
       >
         <View style={[styles.content, isMinimized && styles.minimizedContent]}>
-          {/* Header */}
           <View style={[styles.header, isMinimized && styles.minimizedHeader]}>
             <View style={styles.titleContainer}>
               <Text
@@ -395,9 +393,9 @@ export const TripInfoCard: React.FC<TripInfoCardProps> = ({
                 ]}
               >
                 <Ionicons
-                  name={getStatusIcon() as any}
+                  name={statusIcon as any}
                   size={isMinimized ? 12 : 14}
-                  color={getStatusColor()}
+                  color={statusColor}
                 />
                 <Text
                   style={[
@@ -423,7 +421,6 @@ export const TripInfoCard: React.FC<TripInfoCardProps> = ({
             </View>
           </View>
 
-          {/* Details Section - Hidden when minimized */}
           <ConditionalComponent isValid={!isMinimized}>
             <Animated.View
               style={[
@@ -436,7 +433,6 @@ export const TripInfoCard: React.FC<TripInfoCardProps> = ({
                 },
               ]}
             >
-              {/* Trip Info */}
               <View style={styles.infoRow}>
                 <Ionicons
                   name="time-outline"
@@ -476,7 +472,6 @@ export const TripInfoCard: React.FC<TripInfoCardProps> = ({
                 </View>
               </ConditionalComponent>
 
-              {/* Actions */}
               <View style={styles.actionsRow}>
                 <TouchableOpacity
                   style={styles.actionButton}

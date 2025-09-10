@@ -1,5 +1,3 @@
-// screens/innerApplication/geolocation/geolocationScreen.tsx
-import ConditionalComponent from "@/shared/components/conditionalComponent/conditionalComponent";
 import { Ionicons } from "@expo/vector-icons";
 import { router } from "expo-router";
 import React, { useEffect, useRef, useState } from "react";
@@ -14,12 +12,14 @@ import {
   View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { useTheme } from "../../../contexts/ThemeContext";
-import { GoogleMapsView } from "../../../shared/components/maps/GoogleMapsView";
-import { InAppNavigation } from "../../../shared/components/navigation/InAppNavigation";
-import { Header } from "../../../shared/components/ui/Header";
-import { Sidebar } from "../../../shared/components/ui/Sidebar";
-import { useGeolocationStore } from "../../../store/geolocationStore";
+
+import { useTheme } from "@/contexts/ThemeContext";
+import ConditionalComponent from "@/shared/components/conditionalComponent/conditionalComponent";
+import { GoogleMapsView } from "@/shared/components/maps/GoogleMapsView";
+import { InAppNavigation } from "@/shared/components/navigation/InAppNavigation";
+import { Header } from "@/shared/components/ui/Header";
+import { Sidebar } from "@/shared/components/ui/Sidebar";
+import { useGeolocationStore } from "@/store/geolocationStore";
 import { MapControlsPanel } from "./components/MapControlsPanel";
 import { TripInfoCard } from "./components/TripInfoCard";
 
@@ -55,93 +55,98 @@ export const GeolocationScreen: React.FC = () => {
     fetchPointsOfInterest,
     updateSettings,
     addAlert,
-    clearError,
   } = useGeolocationStore();
 
   useEffect(() => {
-    // Initialize screen
     fetchTrips();
     fetchPointsOfInterest();
 
-    // Animate header
     Animated.timing(headerAnim, {
       toValue: 1,
       duration: 600,
       useNativeDriver: true,
     }).start();
 
-    // Check location permission and start tracking
     const initializeLocation = async () => {
-      if (!isLocationPermissionGranted) {
-        const granted = await requestLocationPermission();
-        if (granted) {
-          startTracking();
+      try {
+        if (!isLocationPermissionGranted) {
+          const granted = await requestLocationPermission();
+          if (granted) {
+            await startTracking();
+          }
+        } else if (!isTrackingActive) {
+          await startTracking();
         }
-      } else if (!isTrackingActive) {
-        startTracking();
+      } catch (error) {
+        Alert.alert("Erreur", "Impossible d'initialiser la géolocalisation");
       }
     };
 
     initializeLocation();
 
     return () => {
-      // Clean up tracking when component unmounts
       if (isTrackingActive) {
         stopTracking();
       }
     };
-  }, []);
+  }, [
+    fetchTrips,
+    fetchPointsOfInterest,
+    headerAnim,
+    isLocationPermissionGranted,
+    isTrackingActive,
+    requestLocationPermission,
+    startTracking,
+    stopTracking,
+  ]);
 
   useEffect(() => {
-    // Animate controls panel
     Animated.timing(controlsAnim, {
       toValue: showMapControls ? 1 : 0,
       duration: 300,
       useNativeDriver: true,
     }).start();
-  }, [showMapControls]);
+  }, [showMapControls, controlsAnim]);
 
-  // Navigation helpers
-  const openInMaps = (latitude: number, longitude: number, label?: string) => {
+  const openInMaps = async (
+    latitude: number,
+    longitude: number,
+    label?: string
+  ) => {
     const destination = `${latitude},${longitude}`;
-    const encodedLabel = encodeURIComponent(label || "Destination");
 
     if (Platform.OS === "ios") {
-      // Try Apple Maps first, fallback to Google Maps
       const appleMapsUrl = `http://maps.apple.com/?daddr=${destination}&dirflg=d`;
       const googleMapsUrl = `https://maps.google.com/?daddr=${destination}&directionsmode=driving`;
 
-      Linking.canOpenURL(appleMapsUrl)
-        .then((supported) => {
-          if (supported) {
-            return Linking.openURL(appleMapsUrl);
-          } else {
-            return Linking.openURL(googleMapsUrl);
-          }
-        })
-        .catch(() => {
-          Alert.alert(
-            "Erreur",
-            "Impossible d'ouvrir l'application de navigation"
-          );
-        });
+      try {
+        const supported = await Linking.canOpenURL(appleMapsUrl);
+        if (supported) {
+          await Linking.openURL(appleMapsUrl);
+        } else {
+          await Linking.openURL(googleMapsUrl);
+        }
+      } catch {
+        Alert.alert(
+          "Erreur",
+          "Impossible d'ouvrir l'application de navigation"
+        );
+      }
     } else {
-      // Android - use Google Maps
       const googleMapsUrl = `https://maps.google.com/?daddr=${destination}&directionsmode=driving`;
 
-      Linking.openURL(googleMapsUrl).catch(() => {
+      try {
+        await Linking.openURL(googleMapsUrl);
+      } catch {
         Alert.alert("Erreur", "Impossible d'ouvrir Google Maps");
-      });
+      }
     }
   };
 
-  // FIXED: Better logic to get all stops in sequence
   const getAllTripStops = (trip: any) => {
     if (!trip) return [];
 
-    // Get all points in order: pickup -> waypoints -> destination
     const allStops = trip.points.sort((a: any, b: any) => {
-      // Sort by type priority: pickup first, then waypoints, then destination
       const typeOrder: { [key: string]: number } = {
         pickup: 0,
         waypoint: 1,
@@ -153,15 +158,12 @@ export const GeolocationScreen: React.FC = () => {
     return allStops;
   };
 
-  // FIXED: Get next destination - now returns the first logical destination
   const getNextDestination = (trip: any) => {
     if (!trip) return null;
 
     const allStops = getAllTripStops(trip);
 
-    // If trip is in progress, find the next unvisited stop (first passenger)
     if (trip.status === "En cours") {
-      // Return the first waypoint or destination (first passenger pickup)
       const nextStop = allStops.find(
         (point: any) =>
           point.type === "waypoint" || point.type === "destination"
@@ -169,7 +171,6 @@ export const GeolocationScreen: React.FC = () => {
       return nextStop;
     }
 
-    // If trip is upcoming, go to pickup point
     if (trip.status === "A venir") {
       return allStops.find((point: any) => point.type === "pickup");
     }
@@ -177,7 +178,6 @@ export const GeolocationScreen: React.FC = () => {
     return null;
   };
 
-  // SIMPLIFIED: Direct navigation to the next logical destination (removes menu selection)
   const handleNavigateToTrip = (trip: any) => {
     if (!trip) return;
 
@@ -191,7 +191,6 @@ export const GeolocationScreen: React.FC = () => {
       return;
     }
 
-    // Show navigation mode selection (internal vs external) for the next destination
     Alert.alert(
       "Mode de navigation",
       `Navigation vers: ${nextDestination.address}`,
@@ -253,7 +252,6 @@ export const GeolocationScreen: React.FC = () => {
         style: "destructive",
         onPress: () => {
           setShowSidebar(false);
-          // Add logout logic here
           router.replace("/auth/login");
         },
       },
@@ -411,6 +409,10 @@ export const GeolocationScreen: React.FC = () => {
     },
   ];
 
+  const hasValidError = Boolean(
+    error && typeof error === "string" && error.trim() !== ""
+  );
+
   const styles = StyleSheet.create({
     container: {
       flex: 1,
@@ -494,14 +496,8 @@ export const GeolocationScreen: React.FC = () => {
     },
   });
 
-  // Helper to check if error is a valid string
-  const hasValidError = Boolean(
-    error && typeof error === "string" && error.trim() !== ""
-  );
-
   return (
     <SafeAreaView style={styles.container}>
-      {/* Animated Header */}
       <Animated.View
         style={{
           opacity: headerAnim,
@@ -535,7 +531,6 @@ export const GeolocationScreen: React.FC = () => {
         />
       </Animated.View>
 
-      {/* Error Display - FIXED: Proper error handling */}
       <ConditionalComponent isValid={hasValidError}>
         <View style={styles.errorContainer}>
           <Text style={styles.errorText}>
@@ -544,9 +539,7 @@ export const GeolocationScreen: React.FC = () => {
         </View>
       </ConditionalComponent>
 
-      {/* Main Content */}
       <View style={styles.content}>
-        {/* Google Maps */}
         <View style={styles.mapContainer}>
           <GoogleMapsView
             currentLocation={currentLocation}
@@ -563,9 +556,7 @@ export const GeolocationScreen: React.FC = () => {
           />
         </View>
 
-        {/* Overlays */}
         <View style={styles.overlayContainer}>
-          {/* Bottom Overlay - Trip Info - FIXED: Better validation */}
           <View style={styles.bottomOverlay}>
             <ConditionalComponent isValid={Boolean(currentTrip)}>
               <TripInfoCard
@@ -586,7 +577,6 @@ export const GeolocationScreen: React.FC = () => {
             </ConditionalComponent>
           </View>
 
-          {/* Right Overlay - Floating Action Buttons */}
           <View style={styles.rightOverlay}>
             <TouchableOpacity
               style={styles.floatingButton}
@@ -606,7 +596,6 @@ export const GeolocationScreen: React.FC = () => {
           </View>
         </View>
 
-        {/* Map Controls Panel */}
         <Animated.View
           style={{
             position: "absolute",
@@ -640,18 +629,18 @@ export const GeolocationScreen: React.FC = () => {
           />
         </Animated.View>
 
-        {/* In-App Navigation - FIXED: Safer conditional rendering */}
-        {showInAppNavigation && navigationDestination && (
+        <ConditionalComponent
+          isValid={showInAppNavigation && !!navigationDestination}
+        >
           <InAppNavigation
             currentLocation={currentLocation}
-            destination={navigationDestination}
+            destination={navigationDestination!}
             onClose={handleCloseNavigation}
             onExternalNavigation={handleExternalNavigation}
           />
-        )}
+        </ConditionalComponent>
       </View>
 
-      {/* Sidebar */}
       <Sidebar
         title="Navigation"
         items={sidebarItems}

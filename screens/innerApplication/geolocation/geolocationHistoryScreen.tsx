@@ -1,5 +1,3 @@
-// screens/innerApplication/geolocation/geolocationHistoryScreen.tsx
-import ConditionalComponent from "@/shared/components/conditionalComponent/conditionalComponent";
 import { Ionicons } from "@expo/vector-icons";
 import { router } from "expo-router";
 import React, { useEffect, useRef, useState } from "react";
@@ -13,20 +11,22 @@ import {
   View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { useTheme } from "../../../contexts/ThemeContext";
-import { Header } from "../../../shared/components/ui/Header";
-import { SearchModal } from "../../../shared/components/ui/SearchModal";
-import { Trip, TripStatus } from "../../../shared/types/geolocation";
-import { useGeolocationStore } from "../../../store/geolocationStore";
+
+import { useTheme } from "@/contexts/ThemeContext";
+import ConditionalComponent from "@/shared/components/conditionalComponent/conditionalComponent";
+import { Header } from "@/shared/components/ui/Header";
+import { SearchModal } from "@/shared/components/ui/SearchModal";
+import { useGeolocationStore } from "@/store/geolocationStore";
 import { DateFilterModal } from "./components/DateFilterModal";
 import { FilterHeader } from "./components/FilterHeader";
 import { TripHistoryCard } from "./components/TripHistoryCard";
+
+import type { Trip, TripStatus } from "@/shared/types/geolocation";
 
 export const GeolocationHistoryScreen: React.FC = () => {
   const { colors } = useTheme();
   const headerAnim = useRef(new Animated.Value(0)).current;
 
-  // State management
   const [showSearchModal, setShowSearchModal] = useState(false);
   const [showDateFilterModal, setShowDateFilterModal] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
@@ -36,21 +36,17 @@ export const GeolocationHistoryScreen: React.FC = () => {
   const [startDate, setStartDate] = useState<Date | null>(null);
   const [endDate, setEndDate] = useState<Date | null>(null);
 
-  // Store hooks
-  const { trips, isLoading, error, fetchTrips, clearError } =
-    useGeolocationStore();
+  const { trips, isLoading, error, fetchTrips } = useGeolocationStore();
 
   useEffect(() => {
     fetchTrips();
-    // Animate header
     Animated.timing(headerAnim, {
       toValue: 1,
       duration: 600,
       useNativeDriver: true,
     }).start();
-  }, []);
+  }, [fetchTrips, headerAnim]);
 
-  // Filter trips based on search, status, and date range
   const filteredTrips = trips.filter((trip) => {
     const matchesSearch =
       searchQuery === "" ||
@@ -65,14 +61,11 @@ export const GeolocationHistoryScreen: React.FC = () => {
     const matchesStatus =
       selectedStatus === "Tous" || trip.status === selectedStatus;
 
-    // For date filtering, we'll use current date as a mock since trips don't have actual dates
-    // In a real app, you would have actual trip dates to filter by
-    const matchesDateRange = true; // Simplified for demo
+    const matchesDateRange = true;
 
     return matchesSearch && matchesStatus && matchesDateRange;
   });
 
-  // Event handlers
   const handleTripPress = (trip: Trip) => {
     router.push(`/(tabs)/geolocation/trip/${trip.id}`);
   };
@@ -97,7 +90,6 @@ export const GeolocationHistoryScreen: React.FC = () => {
     setEndDate(null);
   };
 
-  // Helper functions
   const getStatusCounts = () => {
     const counts: Record<string, number> = {
       Tous: trips.length,
@@ -115,22 +107,23 @@ export const GeolocationHistoryScreen: React.FC = () => {
   };
 
   const statusCounts = getStatusCounts();
+  const hasActiveFilters = !!(
+    searchQuery ||
+    selectedStatus !== "Tous" ||
+    startDate ||
+    endDate
+  );
 
-  // Render functions
   const renderEmptyState = () => (
     <View style={styles.emptyState}>
       <Ionicons name="car-outline" size={64} color={colors.textTertiary} />
       <Text style={styles.emptyTitle}>Aucun trajet trouvé</Text>
       <Text style={styles.emptySubtitle}>
-        {searchQuery || selectedStatus !== "Tous" || startDate || endDate
+        {hasActiveFilters
           ? "Aucun trajet ne correspond à vos critères de recherche."
           : "Vos trajets apparaîtront ici une fois effectués."}
       </Text>
-      <ConditionalComponent
-        isValid={
-          !!(searchQuery || selectedStatus !== "Tous" || startDate || endDate)
-        }
-      >
+      <ConditionalComponent isValid={hasActiveFilters}>
         <TouchableOpacity
           style={styles.clearFiltersButton}
           onPress={clearAllFilters}
@@ -142,7 +135,7 @@ export const GeolocationHistoryScreen: React.FC = () => {
     </View>
   );
 
-  const renderTripItem = ({ item, index }: { item: Trip; index: number }) => (
+  const renderTripItem = ({ item }: { item: Trip; index: number }) => (
     <Animated.View
       style={{
         opacity: headerAnim,
@@ -215,7 +208,6 @@ export const GeolocationHistoryScreen: React.FC = () => {
 
   return (
     <SafeAreaView style={styles.container}>
-      {/* Animated Header */}
       <Animated.View
         style={{
           opacity: headerAnim,
@@ -244,7 +236,6 @@ export const GeolocationHistoryScreen: React.FC = () => {
         />
       </Animated.View>
 
-      {/* Filter Header */}
       <FilterHeader
         selectedStatus={selectedStatus}
         onStatusChange={setSelectedStatus}
@@ -256,14 +247,12 @@ export const GeolocationHistoryScreen: React.FC = () => {
         searchQuery={searchQuery}
       />
 
-      {/* Error Display */}
       <ConditionalComponent isValid={!!error}>
         <View style={styles.errorContainer}>
           <Text style={styles.errorText}>{error}</Text>
         </View>
       </ConditionalComponent>
 
-      {/* Trips List */}
       <FlatList
         data={filteredTrips}
         renderItem={renderTripItem}
@@ -284,7 +273,6 @@ export const GeolocationHistoryScreen: React.FC = () => {
         ItemSeparatorComponent={() => <View style={{ height: 4 }} />}
       />
 
-      {/* Search Modal */}
       <SearchModal
         visible={showSearchModal}
         onClose={() => setShowSearchModal(false)}
@@ -294,7 +282,6 @@ export const GeolocationHistoryScreen: React.FC = () => {
         title="Rechercher trajets"
       />
 
-      {/* Date Filter Modal */}
       <DateFilterModal
         visible={showDateFilterModal}
         onClose={() => setShowDateFilterModal(false)}
