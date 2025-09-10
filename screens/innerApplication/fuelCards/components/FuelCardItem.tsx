@@ -118,6 +118,12 @@ export const FuelCardItem: React.FC<FuelCardItemProps> = ({
       fontWeight: "600",
       color: statusConfig.color,
     },
+    issueDate: {
+      fontSize: 12,
+      color: colors.textTertiary,
+      marginTop: 8,
+      textAlign: "center",
+    },
     amountsContainer: {
       marginBottom: 12,
     },
@@ -190,7 +196,9 @@ export const FuelCardItem: React.FC<FuelCardItemProps> = ({
           <View style={styles.cardIcon}>
             <FontAwesome name="credit-card" size={16} color={colors.primary} />
           </View>
-          <Text style={styles.cardNumber}>{fuelCard.cardNumber}</Text>
+          <View style={{ flex: 1 }}>
+            <Text style={styles.cardNumber}>{fuelCard.cardNumber}</Text>
+          </View>
         </View>
         <View style={styles.statusBadge}>
           <FontAwesome
@@ -203,18 +211,23 @@ export const FuelCardItem: React.FC<FuelCardItemProps> = ({
         </View>
       </View>
 
+      {/* Issue Date */}
+      <Text style={styles.issueDate}>
+        Émise le {new Date(fuelCard.issueDate).toLocaleDateString("fr-FR")}
+      </Text>
+
       {/* Essential Amounts Only */}
       <View style={styles.amountsContainer}>
         <View style={styles.amountRow}>
           <Text style={styles.amountLabel}>Plafond</Text>
           <Text style={[styles.amountValue, styles.plafondValue]}>
-            {fuelCard.plafond.toLocaleString()} DA
+            {fuelCard.plafond.toLocaleString()} €
           </Text>
         </View>
         <View style={styles.amountRow}>
           <Text style={styles.amountLabel}>À consommé</Text>
           <Text style={[styles.amountValue, styles.consommeValue]}>
-            {fuelCard.aConsomme.toLocaleString()} DA
+            {fuelCard.aConsomme.toLocaleString()} €
           </Text>
         </View>
       </View>

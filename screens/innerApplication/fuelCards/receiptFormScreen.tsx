@@ -1,66 +1,28 @@
 // screens/innerApplication/fuelCards/receiptFormScreen.tsx
-import ConditionalComponent from "@/shared/components/conditionalComponent/conditionalComponent";
-import { FontAwesome } from "@expo/vector-icons";
-import * as ImagePicker from "expo-image-picker";
 import { router, useLocalSearchParams } from "expo-router";
 import React, { useEffect, useRef, useState } from "react";
 import {
   Alert,
   Animated,
-  Image,
   KeyboardAvoidingView,
   Platform,
   ScrollView,
   StyleSheet,
   Text,
-  TouchableOpacity,
   View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useTheme } from "../../../contexts/ThemeContext";
+import ConditionalComponent from "../../../shared/components/conditionalComponent/conditionalComponent";
 import { Button } from "../../../shared/components/ui/Button";
 import { Header } from "../../../shared/components/ui/Header";
 import { Input } from "../../../shared/components/ui/Input";
 import { PaymentMethod } from "../../../shared/types/fuelCard";
 import { useFuelCardStore } from "../../../store/fuelCardStore";
 import { useVehicleStore } from "../../../store/vehicleStore";
-
-const AnimatedFormSection: React.FC<{
-  children: React.ReactNode;
-  delay?: number;
-}> = ({ children, delay = 0 }) => {
-  const animValue = useRef(new Animated.Value(0)).current;
-
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      Animated.timing(animValue, {
-        toValue: 1,
-        duration: 400,
-        useNativeDriver: true,
-      }).start();
-    }, delay);
-
-    return () => clearTimeout(timer);
-  }, [animValue, delay]);
-
-  return (
-    <Animated.View
-      style={{
-        opacity: animValue,
-        transform: [
-          {
-            translateY: animValue.interpolate({
-              inputRange: [0, 1],
-              outputRange: [20, 0],
-            }),
-          },
-        ],
-      }}
-    >
-      {children}
-    </Animated.View>
-  );
-};
+import { DateTimePickerComponent } from "./components/DateTimePicker";
+import { PaymentMethodSelector } from "./components/PaymentMethodSelector";
+import { PhotoPicker } from "./components/PhotoPicker";
 
 export const ReceiptFormScreen: React.FC = () => {
   const { colors } = useTheme();
@@ -80,6 +42,7 @@ export const ReceiptFormScreen: React.FC = () => {
 
   const headerAnim = useRef(new Animated.Value(0)).current;
   const isEditing = id !== "new";
+  const [isViewMode, setIsViewMode] = useState(isEditing);
 
   // Form state
   const [amount, setAmount] = useState("");
@@ -89,8 +52,15 @@ export const ReceiptFormScreen: React.FC = () => {
   const [vehiclePlateNumber, setVehiclePlateNumber] = useState("");
   const [notes, setNotes] = useState("");
   const [photoUri, setPhotoUri] = useState<string | undefined>();
+  const [fuelDate, setFuelDate] = useState(new Date());
+  const [fuelTime, setFuelTime] = useState(new Date());
 
   useEffect(() => {
+    initializeForm();
+    animateHeader();
+  }, [selectedFuelCard, cardId, id, isEditing, vehicles]);
+
+  const initializeForm = () => {
     // Set up fuel card if not already selected
     if (!selectedFuelCard && cardId) {
       const fuelCard = fuelCards.find((fc) => fc.id === cardId);
@@ -103,13 +73,7 @@ export const ReceiptFormScreen: React.FC = () => {
     if (isEditing && id && selectedFuelCard) {
       const receipt = selectedFuelCard.receipts.find((r) => r.id === id);
       if (receipt) {
-        selectReceipt(receipt);
-        setAmount(receipt.amount.toString());
-        setStationName(receipt.stationName || "");
-        setPaymentMethod(receipt.paymentMethod);
-        setVehiclePlateNumber(receipt.vehiclePlateNumber || "");
-        setNotes(receipt.notes || "");
-        setPhotoUri(receipt.photoUri);
+        populateFormFromReceipt(receipt);
       } else {
         router.back();
         return;
@@ -120,69 +84,40 @@ export const ReceiptFormScreen: React.FC = () => {
     if (!isEditing && vehicles.length > 0 && !vehiclePlateNumber) {
       setVehiclePlateNumber(vehicles[0].plateNumber);
     }
+  };
 
+  const populateFormFromReceipt = (receipt: any) => {
+    selectReceipt(receipt);
+    setAmount(receipt.amount.toString());
+    setStationName(receipt.stationName || "");
+    setPaymentMethod(receipt.paymentMethod);
+    setVehiclePlateNumber(receipt.vehiclePlateNumber || "");
+    setNotes(receipt.notes || "");
+    setPhotoUri(receipt.photoUri);
+
+    // Set custom fuel date and time if available
+    if (receipt.fuelDate && receipt.fuelTime) {
+      const [day, month, year] = receipt.fuelDate.split("/");
+      const [hours, minutes] = receipt.fuelTime.split(":");
+      const fuelDateTime = new Date(
+        parseInt(year),
+        parseInt(month) - 1,
+        parseInt(day)
+      );
+      const timeDateTime = new Date();
+      timeDateTime.setHours(parseInt(hours), parseInt(minutes));
+
+      setFuelDate(fuelDateTime);
+      setFuelTime(timeDateTime);
+    }
+  };
+
+  const animateHeader = () => {
     Animated.timing(headerAnim, {
       toValue: 1,
       duration: 600,
       useNativeDriver: true,
     }).start();
-  }, [selectedFuelCard, cardId, id, isEditing, vehicles]);
-
-  const handleTakePhoto = async () => {
-    try {
-      const { status } = await ImagePicker.requestCameraPermissionsAsync();
-      if (status !== "granted") {
-        Alert.alert(
-          "Permission requise",
-          "Nous avons besoin d'accéder à votre appareil photo."
-        );
-        return;
-      }
-
-      const result = await ImagePicker.launchCameraAsync({
-        mediaTypes: ImagePicker.MediaTypeOptions.Images,
-        allowsEditing: true,
-        aspect: [4, 3],
-        quality: 0.8,
-      });
-
-      if (!result.canceled && result.assets[0]) {
-        setPhotoUri(result.assets[0].uri);
-      }
-    } catch (error) {
-      Alert.alert("Erreur", "Impossible d'accéder à l'appareil photo");
-    }
-  };
-
-  const handlePickImage = async () => {
-    try {
-      const { status } =
-        await ImagePicker.requestMediaLibraryPermissionsAsync();
-      if (status !== "granted") {
-        Alert.alert(
-          "Permission requise",
-          "Nous avons besoin d'accéder à votre galerie."
-        );
-        return;
-      }
-
-      const result = await ImagePicker.launchImageLibraryAsync({
-        mediaTypes: ImagePicker.MediaTypeOptions.Images,
-        allowsEditing: true,
-        aspect: [4, 3],
-        quality: 0.8,
-      });
-
-      if (!result.canceled && result.assets[0]) {
-        setPhotoUri(result.assets[0].uri);
-      }
-    } catch (error) {
-      Alert.alert("Erreur", "Impossible d'accéder à la galerie");
-    }
-  };
-
-  const handleRemovePhoto = () => {
-    setPhotoUri(undefined);
   };
 
   const handleSubmit = async () => {
@@ -202,6 +137,11 @@ export const ReceiptFormScreen: React.FC = () => {
       amount: numAmount,
       date: now.toLocaleDateString("fr-FR"),
       time: now.toLocaleTimeString("fr-FR", {
+        hour: "2-digit",
+        minute: "2-digit",
+      }),
+      fuelDate: fuelDate.toLocaleDateString("fr-FR"),
+      fuelTime: fuelTime.toLocaleTimeString("fr-FR", {
         hour: "2-digit",
         minute: "2-digit",
       }),
@@ -228,22 +168,12 @@ export const ReceiptFormScreen: React.FC = () => {
     }
   };
 
-  const paymentMethods: {
-    value: PaymentMethod;
-    label: string;
-    color: string;
-  }[] = [
-    {
-      value: "Carte carburant",
-      label: "Carte carburant",
-      color: colors.primary,
-    },
-    {
-      value: "Hors carte",
-      label: "Hors carte (de ma poche)",
-      color: colors.error,
-    },
-  ];
+  const getTitle = () => {
+    if (isEditing) {
+      return isViewMode ? "Détails du reçu" : "Modifier reçu";
+    }
+    return "Ajouter reçu";
+  };
 
   const styles = StyleSheet.create({
     container: {
@@ -255,91 +185,27 @@ export const ReceiptFormScreen: React.FC = () => {
       paddingHorizontal: 16,
       paddingTop: 16,
     },
+    contentOpacity: {
+      flex: 1,
+    },
     scrollContent: {
       paddingBottom: 100,
     },
-    section: {
-      marginBottom: 24,
-    },
-    sectionTitle: {
-      fontSize: 16,
-      fontWeight: "600",
-      color: colors.text,
-      marginBottom: 12,
-    },
-    paymentMethodContainer: {
+    dateTimeContainer: {
       flexDirection: "row",
       gap: 12,
-    },
-    paymentMethodButton: {
-      flex: 1,
-      flexDirection: "row",
-      alignItems: "center",
-      justifyContent: "center",
-      paddingVertical: 12,
-      paddingHorizontal: 16,
-      borderRadius: 8,
-      borderWidth: 2,
-    },
-    paymentMethodIcon: {
-      marginRight: 8,
-    },
-    paymentMethodText: {
-      fontSize: 14,
-      fontWeight: "600",
-    },
-    photoSection: {
       marginBottom: 24,
     },
-    photoButtons: {
+    buttonContainer: {
       flexDirection: "row",
       gap: 12,
-      marginBottom: 16,
+      marginBottom: 32,
     },
-    photoButton: {
+    editButton: {
       flex: 1,
-      flexDirection: "row",
-      alignItems: "center",
-      justifyContent: "center",
-      paddingVertical: 12,
-      paddingHorizontal: 16,
-      borderRadius: 8,
-      backgroundColor: colors.primary + "15",
-      borderWidth: 2,
-      borderColor: colors.primary + "30",
-      borderStyle: "dashed",
-    },
-    photoButtonIcon: {
-      marginRight: 8,
-    },
-    photoButtonText: {
-      fontSize: 14,
-      fontWeight: "600",
-      color: colors.primary,
-    },
-    photoPreview: {
-      position: "relative",
-      borderRadius: 12,
-      overflow: "hidden",
-    },
-    photoImage: {
-      width: "100%",
-      height: 200,
-      borderRadius: 12,
-    },
-    removePhotoButton: {
-      position: "absolute",
-      top: 8,
-      right: 8,
-      backgroundColor: colors.error,
-      borderRadius: 16,
-      width: 32,
-      height: 32,
-      alignItems: "center",
-      justifyContent: "center",
     },
     submitButton: {
-      marginBottom: 32,
+      flex: 1,
     },
     errorContainer: {
       backgroundColor: colors.error + "15",
@@ -362,51 +228,37 @@ export const ReceiptFormScreen: React.FC = () => {
 
   return (
     <SafeAreaView style={styles.container}>
-      {/* Animated Header */}
-      <Animated.View
-        style={{
-          opacity: headerAnim,
-          transform: [
-            {
-              translateY: headerAnim.interpolate({
-                inputRange: [0, 1],
-                outputRange: [-50, 0],
-              }),
-            },
-          ],
-        }}
-      >
+      <Animated.View style={{ opacity: headerAnim }}>
         <Header
           leftIcon={{
             icon: "chevron-left",
             onPress: () => router.back(),
           }}
-          title={isEditing ? "Modifier reçu" : "Ajouter reçu"}
+          title={getTitle()}
         />
       </Animated.View>
 
-      {/* Error Display */}
       <ConditionalComponent isValid={!!error}>
         <View style={styles.errorContainer}>
           <Text style={styles.errorText}>{error}</Text>
         </View>
       </ConditionalComponent>
 
-      {/* Content */}
       <KeyboardAvoidingView
         style={styles.content}
         behavior={Platform.OS === "ios" ? "padding" : "height"}
         keyboardVerticalOffset={Platform.OS === "ios" ? 0 : 20}
       >
         <Animated.View style={[{ flex: 1 }, { opacity: headerAnim }]}>
-          <ScrollView
-            style={{ flex: 1 }}
-            contentContainerStyle={styles.scrollContent}
-            showsVerticalScrollIndicator={false}
-            keyboardShouldPersistTaps="handled"
+          <View
+            style={[styles.contentOpacity, { opacity: isViewMode ? 0.8 : 1 }]}
           >
-            {/* Amount Input */}
-            <AnimatedFormSection delay={200}>
+            <ScrollView
+              style={{ flex: 1 }}
+              contentContainerStyle={styles.scrollContent}
+              showsVerticalScrollIndicator={false}
+              keyboardShouldPersistTaps="handled"
+            >
               <Input
                 label="Montant (DA)"
                 value={amount}
@@ -414,141 +266,54 @@ export const ReceiptFormScreen: React.FC = () => {
                 placeholder="Ex: 2500"
                 keyboardType="numeric"
                 required
+                editable={!isViewMode}
               />
-            </AnimatedFormSection>
 
-            {/* Station Name */}
-            <AnimatedFormSection delay={300}>
+              <View style={styles.dateTimeContainer}>
+                <DateTimePickerComponent
+                  label="Date du plein"
+                  value={fuelDate}
+                  onChange={setFuelDate}
+                  mode="date"
+                  disabled={isViewMode}
+                />
+                <DateTimePickerComponent
+                  label="Heure du plein"
+                  value={fuelTime}
+                  onChange={setFuelTime}
+                  mode="time"
+                  disabled={isViewMode}
+                />
+              </View>
+
               <Input
                 label="Nom de la station"
                 value={stationName}
                 onChangeText={setStationName}
                 placeholder="Ex: Station Shell Centre-ville"
+                editable={!isViewMode}
               />
-            </AnimatedFormSection>
 
-            {/* Vehicle Selection */}
-            <AnimatedFormSection delay={400}>
               <Input
-                label="Numéro de plaque"
+                label="Numéro d'immatriculation"
                 value={vehiclePlateNumber}
                 onChangeText={setVehiclePlateNumber}
                 placeholder="Ex: 95700L15"
+                editable={!isViewMode}
               />
-            </AnimatedFormSection>
 
-            {/* Payment Method */}
-            <AnimatedFormSection delay={500}>
-              <View style={styles.section}>
-                <Text style={styles.sectionTitle}>Méthode de paiement</Text>
-                <View style={styles.paymentMethodContainer}>
-                  {paymentMethods.map((method) => (
-                    <TouchableOpacity
-                      key={method.value}
-                      style={[
-                        styles.paymentMethodButton,
-                        {
-                          backgroundColor:
-                            paymentMethod === method.value
-                              ? method.color + "20"
-                              : colors.surface,
-                          borderColor:
-                            paymentMethod === method.value
-                              ? method.color
-                              : colors.border,
-                        },
-                      ]}
-                      onPress={() => setPaymentMethod(method.value)}
-                      activeOpacity={0.7}
-                    >
-                      <FontAwesome
-                        name={
-                          method.value === "Carte carburant"
-                            ? "credit-card"
-                            : "money"
-                        }
-                        size={14}
-                        color={
-                          paymentMethod === method.value
-                            ? method.color
-                            : colors.textSecondary
-                        }
-                        style={styles.paymentMethodIcon}
-                      />
-                      <Text
-                        style={[
-                          styles.paymentMethodText,
-                          {
-                            color:
-                              paymentMethod === method.value
-                                ? method.color
-                                : colors.textSecondary,
-                          },
-                        ]}
-                      >
-                        {method.label}
-                      </Text>
-                    </TouchableOpacity>
-                  ))}
-                </View>
-              </View>
-            </AnimatedFormSection>
+              <PaymentMethodSelector
+                value={paymentMethod}
+                onChange={setPaymentMethod}
+                disabled={isViewMode}
+              />
 
-            {/* Photo Section */}
-            <AnimatedFormSection delay={600}>
-              <View style={styles.photoSection}>
-                <Text style={styles.sectionTitle}>Photo du reçu</Text>
-                <ConditionalComponent
-                  isValid={!photoUri}
-                  defaultComponent={
-                    <View style={styles.photoPreview}>
-                      <Image
-                        source={{ uri: photoUri }}
-                        style={styles.photoImage}
-                      />
-                      <TouchableOpacity
-                        style={styles.removePhotoButton}
-                        onPress={handleRemovePhoto}
-                      >
-                        <FontAwesome name="times" size={16} color="white" />
-                      </TouchableOpacity>
-                    </View>
-                  }
-                >
-                  <View style={styles.photoButtons}>
-                    <TouchableOpacity
-                      style={styles.photoButton}
-                      onPress={handleTakePhoto}
-                      activeOpacity={0.7}
-                    >
-                      <FontAwesome
-                        name="camera"
-                        size={16}
-                        color={colors.primary}
-                        style={styles.photoButtonIcon}
-                      />
-                      <Text style={styles.photoButtonText}>Prendre photo</Text>
-                    </TouchableOpacity>
-                    <TouchableOpacity
-                      style={styles.photoButton}
-                      onPress={handlePickImage}
-                      activeOpacity={0.7}
-                    >
-                      <FontAwesome
-                        name="image"
-                        size={16}
-                        color={colors.primary}
-                        style={styles.photoButtonIcon}
-                      />
-                      <Text style={styles.photoButtonText}>Galerie</Text>
-                    </TouchableOpacity>
-                  </View>
-                </ConditionalComponent>
-              </View>
-            </AnimatedFormSection>
+              <PhotoPicker
+                photoUri={photoUri}
+                onPhotoChange={setPhotoUri}
+                disabled={isViewMode}
+              />
 
-            {/* Notes */}
-            <AnimatedFormSection delay={700}>
               <Input
                 label="Notes (optionnel)"
                 value={notes}
@@ -556,21 +321,56 @@ export const ReceiptFormScreen: React.FC = () => {
                 placeholder="Commentaires additionnels..."
                 multiline
                 numberOfLines={3}
+                editable={!isViewMode}
               />
-            </AnimatedFormSection>
 
-            {/* Submit Button */}
-            <AnimatedFormSection delay={800}>
-              <View style={styles.submitButton}>
-                <Button
-                  title={isEditing ? "Modifier reçu" : "Ajouter reçu"}
-                  onPress={handleSubmit}
-                  loading={isLoading}
-                  disabled={!amount || isLoading}
-                />
+              <View style={styles.buttonContainer}>
+                <ConditionalComponent
+                  isValid={isEditing}
+                  defaultComponent={
+                    <View style={styles.submitButton}>
+                      <Button
+                        title="Ajouter reçu"
+                        onPress={handleSubmit}
+                        loading={isLoading}
+                        disabled={!amount || isLoading}
+                      />
+                    </View>
+                  }
+                >
+                  <ConditionalComponent
+                    isValid={isViewMode}
+                    defaultComponent={
+                      <>
+                        <View style={styles.editButton}>
+                          <Button
+                            title="Annuler"
+                            onPress={() => setIsViewMode(true)}
+                            variant="outline"
+                          />
+                        </View>
+                        <View style={styles.submitButton}>
+                          <Button
+                            title="Enregistrer"
+                            onPress={handleSubmit}
+                            loading={isLoading}
+                            disabled={!amount || isLoading}
+                          />
+                        </View>
+                      </>
+                    }
+                  >
+                    <View style={styles.submitButton}>
+                      <Button
+                        title="Modifier"
+                        onPress={() => setIsViewMode(false)}
+                      />
+                    </View>
+                  </ConditionalComponent>
+                </ConditionalComponent>
               </View>
-            </AnimatedFormSection>
-          </ScrollView>
+            </ScrollView>
+          </View>
         </Animated.View>
       </KeyboardAvoidingView>
     </SafeAreaView>

@@ -211,27 +211,27 @@ export const FuelCardInfoCard: React.FC<FuelCardInfoCardProps> = ({
         <View style={styles.detailItem}>
           <Text style={styles.detailLabel}>Plafond</Text>
           <Text style={[styles.detailValue, styles.plafondValue]}>
-            {fuelCard.plafond.toLocaleString()} DA
+            {fuelCard.plafond.toLocaleString()} €
           </Text>
         </View>
         <View style={styles.detailItem}>
           <Text style={styles.detailLabel}>À consommé</Text>
           <Text style={[styles.detailValue, styles.consommeValue]}>
-            {fuelCard.aConsomme.toLocaleString()} DA
+            {fuelCard.aConsomme.toLocaleString()} €
           </Text>
         </View>
         <ConditionalComponent isValid={fuelCard.horsCarteTotal > 0}>
           <View style={styles.detailItem}>
             <Text style={styles.detailLabel}>Hors carte</Text>
             <Text style={[styles.detailValue, styles.horsCarteValue]}>
-              {fuelCard.horsCarteTotal.toLocaleString()} DA
+              {fuelCard.horsCarteTotal.toLocaleString()} €
             </Text>
           </View>
         </ConditionalComponent>
         <View style={styles.detailItem}>
           <Text style={styles.detailLabel}>Reste</Text>
           <Text style={[styles.detailValue, styles.remainingValue]}>
-            {remainingBalance.toLocaleString()} DA
+            {remainingBalance.toLocaleString()} €
           </Text>
         </View>
         <View style={styles.detailItem}>

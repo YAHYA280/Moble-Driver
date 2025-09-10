@@ -45,6 +45,10 @@ export const ReceiptItem: React.FC<ReceiptItemProps> = ({
 
   const paymentConfig = getPaymentMethodConfig();
 
+  // Use fuel date/time if available, otherwise use system date/time
+  const displayDate = receipt.fuelDate || receipt.date;
+  const displayTime = receipt.fuelTime || receipt.time;
+
   const styles = StyleSheet.create({
     container: {
       backgroundColor: colors.backgroundSecondary,
@@ -156,6 +160,16 @@ export const ReceiptItem: React.FC<ReceiptItemProps> = ({
       borderTopWidth: 1,
       borderTopColor: colors.border,
     },
+    systemDate: {
+      fontSize: 10,
+      color: colors.textTertiary,
+      marginTop: 8,
+      paddingTop: 8,
+      borderTopWidth: 1,
+      borderTopColor: colors.border,
+      fontStyle: "italic",
+      textAlign: "center",
+    },
   });
 
   return (
@@ -170,7 +184,7 @@ export const ReceiptItem: React.FC<ReceiptItemProps> = ({
           <View style={styles.iconContainer}>
             <FontAwesome
               name={paymentConfig.icon}
-              size={14}
+              size={16}
               color={paymentConfig.color}
             />
           </View>
@@ -185,7 +199,7 @@ export const ReceiptItem: React.FC<ReceiptItemProps> = ({
         </View>
         <View style={styles.rightSection}>
           <Text style={styles.dateTime}>
-            {receipt.date} {receipt.time}
+            {displayDate} {displayTime}
           </Text>
           <View style={styles.paymentBadge}>
             <Text style={styles.paymentText}>{receipt.paymentMethod}</Text>
@@ -216,6 +230,13 @@ export const ReceiptItem: React.FC<ReceiptItemProps> = ({
       {/* Notes */}
       <ConditionalComponent isValid={!!receipt.notes}>
         <Text style={styles.notes}>{receipt.notes}</Text>
+      </ConditionalComponent>
+
+      {/* System Date - Now at the bottom */}
+      <ConditionalComponent isValid={!!(receipt.fuelDate && receipt.fuelTime)}>
+        <Text style={styles.systemDate}>
+          Ajouté le {receipt.date} à {receipt.time}
+        </Text>
       </ConditionalComponent>
     </TouchableOpacity>
   );

@@ -6,8 +6,10 @@ export type FuelCardStatus = "Active" | "Inactive" | "Expired";
 export interface Receipt {
   id: string;
   amount: number;
-  date: string;
-  time: string;
+  date: string; // Date when the receipt was added to the system
+  time: string; // Time when the receipt was added to the system
+  fuelDate?: string; // Custom date when fuel was actually purchased
+  fuelTime?: string; // Custom time when fuel was actually purchased
   stationName?: string;
   paymentMethod: PaymentMethod;
   photoUri?: string;
@@ -26,6 +28,7 @@ export interface FuelCard {
   assignedDriverId: string;
   assignedDriverName: string;
   expiryDate: string;
+  issueDate: string; // Date when the card was issued
   receipts: Receipt[];
   createdAt: string;
   lastModified: string;
