@@ -27,6 +27,8 @@ A comprehensive React Native mobile application built with Expo for vehicle flee
 
 ## 📁 Project Architecture
 
+.
+
 ```
 vsn-driver-front/
 ├── app/                          # Expo Router pages
